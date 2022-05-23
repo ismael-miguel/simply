@@ -1,0 +1,66 @@
+code
+{
+	padding: .25rem .15rem;
+	user-select: text !important;
+	
+	background-color: var(--bs-light);
+}
+
+pre {
+	tab-size: 4;
+	user-select: text !important;
+	
+	background-color: var(--bs-light);
+	
+	padding: .5rem;
+}
+
+pre > code {
+	padding: 0;
+}
+
+pre + pre {
+	margin-top: -.5rem;
+}
+
+p + pre {
+	margin-top: -.75rem;
+}
+
+h2.h4 {
+	color: var(--bs-blue);
+}
+
+h3.h5 {
+	color: var(--bs-gray);
+}
+
+hr {
+	margin: 2.5rem 0;
+}
+
+
+.keywords {
+	color: var(--bs-gray);
+	
+	margin-bottom: 1rem;
+}
+
+.keywords > ul {
+	display: inline;
+	margin-bottom: 0;
+	padding-left: 0;
+}
+
+.keywords > ul > li {
+	display: inline-block;
+	
+	user-select: text !important;
+	
+	padding: .15rem;
+	background-color: var(--bs-light);
+	
+	font-size: .875em;
+    color: #d63384;
+    word-wrap: break-word;
+}

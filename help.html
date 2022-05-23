@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		
+		<title>Help</title>
+		
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet" integrity="sha256-rzXMaro05QBd53CZ36ctTBp3FdKN3Ow0P0gDHcjLCLw=" crossorigin="anonymous">
+		
+		<link href="./style_help.css" rel="stylesheet">
+		
+	</head>
+	<body class="user-select-none">
+		<div class="container">
+			<h1 class="h3">Getting started</h2>
+			
+			<div id="doc-basic-syntax">
+				<h2 class="h4">Basic syntax</h2>
+				
+				<p>The syntax is pretty easy to follow.<br>Just write what you want in basic English.</p>
+				<p>Here's an example:</p>
+				<pre><code>Create a variable called $foo and set the value to "bar"<br>Show the contents of $foo</code></pre>
+				
+				<p>This will create a variable called <code>$foo</code> and will have the value of <code>"bar"</code></p>
+				
+				<p>The code doesn't require any specific capitalization, except when annotated.</p>
+				
+				<p>You can have multiple statements in a single line, separated by semi-collon (<code>;</code>) or on a new line.</p>
+				
+				<div>
+					<h3 class="h5">How does this work?</h3>
+					
+					<p>
+						Certain keywords are detected within the text, then they are processed and handled accordingly.<br>
+						Each action has certain keywords that will be detected, and each will be explain below.
+					</p>
+					
+					<p>
+						The following words are always ignored:<br>
+						<code>a</code>
+						<code>an</code>
+						<code>and</code>
+						<code>as</code>
+						<code>by</code>
+						<code>called</code>
+						<code>cons</code>
+						<code>constant</code>
+						<code>content</code>
+						<code>contents</code>
+						<code>fn</code>
+						<code>func</code>
+						<code>function</code>
+						<code>global</code>
+						<code>into</code>
+						<code>it</code>
+						<code>me</code>
+						<code>method</code>
+						<code>name</code>
+						<code>named</code>
+						<code>of</code>
+						<code>proc</code>
+						<code>procedure</code>
+						<code>result</code>
+						<code>results</code>
+						<code>string</code>
+						<code>takes</code>
+						<code>that</code>
+						<code>the</code>
+						<code>this</code>
+						<code>to</code>
+						<code>value</code>
+						<code>values</code>
+						<code>var</code>
+						<code>variable</code>
+						<code>which</code>
+						<code>with</code>
+					</p>
+					
+					<p>
+						While not intended, it is possible to write full sentences that are completely made of ignored word, with no negative consequences.<br>
+						Instead, please use comments, as they visually indicate that something is supposed to not be part of the code.
+					</p>
+				</div>
+			</div>
+			
+			<hr>
+			
+			<div id="doc-comments">
+				<h2 class="h4">Comments</h2>
+				
+				<p>Comments are used to write annotations about the code, to help to understand the code presented.</p>
+				<p>This way, it indicates that what is in a comment isn't supposed to be read as code.</p>
+				<p>There's 2 ways to write comments:</p>
+				<pre><code>// Single line comments</code></pre>
+				<pre><code>/*<br> Multi-line comments<br>*/</code></pre>
+				
+				<div class="alert alert-warning show" role="alert">
+					<b>Important:</b> everything after the <code>//</code> in a single-line comment will be part of the comment
+				</div>
+			</div>
+			
+			<hr>
+			
+			<div id="doc-data-types">
+				<h2 class="h4">Data types</h2>
+				
+				<p>There are a few data types, and they are easy to distinguish:</p>
+				<ul>
+					<li>
+						<p><b>Null</b></p>
+						<p>
+							This data type simply means that there is no value.<br>
+							This data type only has 1 value: <code>null</code>.
+						</p>
+					</li>
+					<li>
+						<p><b>Boolean</b></p>
+						<p>
+							This is the data type expected for binary expressions.<br>
+							It only has 2 values: <code>true</code> and <code>false</code>.
+						</p>
+					</li>
+					<li>
+						<p><b>Character</b></p>
+						<p>
+							A Character is a single letter, number or space.<br>
+							It is defined by having any character between single quotes (<code>'</code>).<br>
+							Example: <code>'A'</code>
+						</p>
+					</li>
+					<li>
+						<p><b>String</b></p>
+						<p>
+							A string is a set of characters.<br>
+							It is defined by having any number of character between double quotes (<code>"</code>).<br>
+							Example: <code>"Hello, World!"</code>
+						</p>
+					</li>
+					<li>
+						<p><b>Number</b></p>
+						<p>
+							This represents any number between -9007199254740991 and 9007199254740991.<br>
+							It can be positive numbers, negative numbers and have decimal points.<br>
+							The numbers can be represented in hexadecimal (preceeded by <code>0x</code>), binary (preceeded by <code>0b</code>) and scientific notation.<br>
+							Example: <code>42.0</code>, <code>0xFF</code>, <code>-69</code>, <code>1e5</code>
+						</p>
+						<p>
+							There are 2 special number values: <code>NaN</code> and <code>Infinity</code>.<br>
+							<code>Infinity</code> represents a value that is too large or too small.<br>
+							<code>NaN</code> means "Not a Number", which can be the result of some mathematical operations, like dividing 123 by "abc".
+						</p>
+					</li>
+					<li>
+						<p><b>Array</b></p>
+						<p>
+							An array is like a container for all other data types.<br>
+							It is defined by opening a square bracket (<code>[</code>), putting multiple values inside (separated by comma <code>,</code>) and then closing with another square bracket (<code>]</code>).<br>
+							You can even put variables and constants into the array.<br>
+							Example: <code>[null, true, false, 'A', "Hello, World!", 42.0, 0xFF, -69, 1e5]</code>
+						</p>
+					</li>
+					<li>
+						<p><b>Function</b></p>
+						<p>
+							Please check the <a hred="#doc-functions">"Functions"</a> section for more information.
+						</p>
+					</li>
+				</ul>
+			</div>
+			
+			<hr>
+			
+			<div id="doc-vars-const">
+				<h2 class="h4">Variables and constants</h2>
+				
+				<p>Variables and constants can be defined by just writting it in plain English.</p>
+				<p>Here are a few examples:</p>
+				<pre><code>Define the variable $foo</code></pre>
+				<pre><code>Create a variable called $foo</code></pre>
+				<pre><code>Define $foo</code></pre>
+				
+				<div>
+					<h3 class="h5">Local Variables</h3>
+					
+					<p>A variable is just where you store data. This can then be used in calculations and show on screen.</p>
+					
+					<p>A local variable is defined by starting with <code>$</code>, followed by letters and numbers and underscore (E.g.: <code>$foo</code>).</p>
+					
+				</div>
+				
+				<div>
+					<h3 class="h5">Gloval variables</h3>
+					
+					<p>Global variables work the same way, but are accessible anywhere in the program.</p>
+					
+					<p>A global variable is defined by starting with <code>%</code> followed by letters and numbers and underscore (E.g.: <code>%foo</code>).</p>
+					
+					<div class="alert alert-warning show" role="alert">
+						<b>Important:</b> Global variables can be changed anywhere in the program.
+						<br>
+						It is a good practice to avoid them.
+					</div>
+				</div>
+				
+				<div>
+					<h3 class="h5">Constants</h3>
+					
+					<p>Similarly to global variables, constants are accessible anywhere in the program.</p>
+					
+					<p>A constant is defined by starting with <code>!</code> and end with capital letters and numbers (E.g.: <code>!ENV</code>).</p>
+					
+					<div class="alert alert-info show" role="alert">
+						<b>Note:</b> A constant value will be available all over the program.
+					</div>
+					
+					<div class="alert alert-warning show" role="alert">
+						<b>Note:</b> The name of a constant MUST always be in CAPITALS.
+					</div>
+					
+					<div class="alert alert-warning show" role="alert">
+						<b>Important:</b> Once a constant is created, you can't change the value.
+					</div>
+					
+					<h3 class="h5">Pre-existing Constants</h3>
+					
+					<div>
+						<p>There are a few constants that are defined already for you:</p>
+						
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Description</th>
+									<th>Value</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>!ENV</code></td>
+									<td colspan="2">Environment functions and information, including the version number.</td>
+								</tr>
+								<tr>
+									<td><code>!ABCL</code></td>
+									<td>Alphabet in lowecase</td>
+									<td><code>"abcdefghijklmnopqrstuvwxyz"</code></td>
+								</tr>
+								<tr>
+									<td><code>!ABCU</code></td>
+									<td>Alphabet in uppercase</td>
+									<td><code>"ABCDEFGHIJKLMNOPQRSTUVWXYZ"</code></td>
+								</tr>
+								<tr>
+									<td><code>!DIGITS</code></td>
+									<td><a href="https://en.wikipedia.org/wiki/Arabic_numerals" target="_blank">Arabic numerals</a></td>
+									<td><code>"0123456789"</code></td>
+								</tr>
+								<tr>
+									<td><code>!EOL</code></td>
+									<td>Environent newline</td>
+									<td><code>'\r'</code> or <code>'\n'</code> or <code>"\r\n"</code></td>
+								</tr>
+								<tr>
+									<td><code>!FN</code></td>
+									<td colspan="2">Predefined functions for the language. Please check <a href="#doc-functions">"Available functions"</a>.</td>
+								</tr>
+								<tr>
+									<td><code>!NUMS</code></td>
+									<td colspan="2">Please check <code>!DIGITS</code> for information.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				
+				<div>
+					<h3 class="h5">Accessing Array values</h3>
+					
+					<p>To access an Array value, you can simply open and close square brackets after the variable or constant name (E.g.: <code>!ENV["version"]</code>).</p>
+					
+					<p>The key between the square brackets can be a string, a character, a number, a variable or a constant.</p>
+				</div>
+			</div>
+			
+			<hr>
+			
+			<div id="doc-creating-vars-consts">
+				<h2 class="h4">Creating variables and constants</h2>
+				
+				<div class="keywords">
+					Keywords:
+					<ul>
+						<li>create</li>
+						<li>def</li>
+						<li>define</li>
+						<li>make</li>
+					</ul>
+				</div>
+				
+				<p>To create a variable or a constant, just say it in plain English.<br>Just say the name of the variable or constant, and then the data type you want.</p>
+				
+				<p>Here are a few examples:</p>
+				
+				<pre><code>Define a variable with the name $foo and set it to "Never gonna give you up."</code></pre>
+				<pre><code>Create the constant %ABC with value "DEF"</code></pre>
+				<pre><code>Make %ABC value "DEF"</code></pre>
+				<pre><code>def $foo = "bar"</code></pre>
+				
+			</div>
+			
+			<hr>
+			
+			<div id="doc-assign-new-values-vars">
+				<h2 class="h4">Assign new values to variables</h2>
+				
+				<div class="keywords">
+					Keywords:
+					<ul>
+						<li>=</li>
+						<li>assign</li>
+						<li>give</li>
+						<li>set</li>
+					</ul>
+				</div>
+				
+				<p>You can assign a new value by saying it in plain English.</p>
+				
+				<p>Here are a few examples:</p>
+				
+				<pre><code>Assing the value "string" to the variable $foo</code></pre>
+				<pre><code>Give 123.45 to %ABC</code></pre>
+				<pre><code>Set "value" into $me</code></pre>
+				<pre><code>Set $me to "value"</code></pre>
+				<pre><code>$food = "yummy"</code></pre>
+					
+				<div class="alert alert-warning show" role="alert">
+					<b>Important:</b> You CAN'T assign new values to constants.
+				</div>
+			</div>
+			
+			<hr>
+			
+			<div id="doc-displaying-values">
+				<h2 class="h4">Displaying values</h2>
+				
+				<div class="keywords">
+					Keywords:
+					<ul>
+						<li>echo</li>
+						<li>print</li>
+						<li>out</li>
+						<li>output</li>
+						<li>show</li>
+						<li>display</li>
+						<li>write</li>
+						<li>tell</li>
+					</ul>
+				</div>
+				
+				<p>To display or show anything, you can just say to show it, with plain English.</p>
+				<p>Here are a few examples:</p>
+				<pre><code>Show the contents of the variable $foo</code></pre>
+				<pre><code>Display the variable $foo</code></pre>
+				<pre><code>echo "Hello, World!"</code></pre>
+				
+				<p>Multiple values may be separated by comma (<code>,</code>).</p>
+				
+				<div>
+					<h3 class="h5">Formatting the displayed values</h3>
+				
+					<div class="keywords">
+						Keywords:
+						<ul>
+							<li>echof</li>
+							<li>printf</li>
+							<li>outf</li>
+							<li>outputf</li>
+							<li>showf</li>
+							<li>displayf</li>
+							<li>writef</li>
+							<li>tellf</li>
+							<li>[...] format</li>
+							<li>[...] formatted</li>
+						</ul>
+					</div>
+					
+					<p>
+						A formatted string contains information on how to show certain values.<br>
+						The first value will be used as the format, and everything else will be used as arguments to the formatting.
+					</p>
+					
+					<p>
+						You can read about the formatting options in the <a href="https://www.php.net/manual/en/function.sprintf.php" target="_new">sprintf</a> documentation.<br>
+						An implementation of this function will be used to format the data.
+					</p>
+					
+					<p>Here are a few examples:</p>
+					<pre><code>Show the format string "%s" with the values "Hello, World!"</code></pre>
+					<pre><code>Display the string "Hello, World!" formatted by "%s"</code></pre>
+					<pre><code>printf "%s", "Hello, World!"</code></pre>
+					
+					<div class="alert alert-warning show" role="alert">
+						<b>Note:</b> while you can use any data type for the format, strings are always recommended.
+					</div>
+				</div>
+			</div>
+			
+			<hr>
+			
+			<div id="doc-receiving-values">
+				<h2 class="h4">Receiving values</h2>
+				
+				<p>To pass values into the code, you can pass an array as the second argument of the <code>.execute()</code> method.</p>
+				<p>
+					All values will be available in the <code>$argv</code> variable.<br>
+					To get the number of arguments, you can use the <code>$argc</code> variable.
+				</p>
+					
+				<div class="alert alert-warning show" role="alert">
+					<b>Note:</b> this variable is a local variable, and will be overwritten inside function.
+				</div>
+			</div>
+			
+			<hr>
+			
+			<div id="doc-functions">
+				<h2 class="h4">Functions</h2>
+				
+				<p>Functions are pieces of code that can be executed. They can be assigned to variables after created.</p>
+				
+				<div>
+					<h3 class="h5">Call a function</h3>
+					
+					<div class="keywords">
+						Keywords:
+						<ul>
+							<li>call</li>
+							<li>calling</li>
+							<li>run</li>
+							<li>running</li>
+							<li>exec</li>
+							<li>execute</li>
+							<li>execting</li>
+							<li>&&lt;name&gt;(...)</li>
+						</ul>
+					</div>
+					
+					
+					<p>
+						Executes the function, which can either be in a constant, variable, global variable or a function expression.
+					</p>
+					
+					<h4 class="h6">Arguments</h4>
+					
+					<div class="keywords">
+						Argument list:
+						<ul>
+							<li>(</li>
+							<li>arg</li>
+							<li>argument</li>
+							<li>args</li>
+							<li>arguments</li>
+							<li>param</li>
+							<li>params</li>
+							<li>parameter</li>
+							<li>parameters</li>
+						</ul>
+					</div>
+					<p>
+						You can pass as many arguments as you with, for the function to execute.
+					</p>
+					
+					<p><b>Example:</b></p>
+					<pre><code>$foo = &hello_world();<br>Execute the function &foo with arguments "123", "456";</code></pre>
+					
+				</div>
+				
+				<div>
+					<h3 class="h5">Available functions</h3>
+					
+					<p>
+						There are a few functions already defined.
+						They can be overwritten, but it may break other code.<br>
+						These functions are also accessible in <code>!FN["&lt;name&gt;"]</code> as well.
+					</p>
+					
+					<ul>
+						<li id="doc-function-hello_world">
+							<p><code>&hello_world($flags)</code></p>
+							
+							<ul class="list-unstyled mb-3">
+								<li><code>$flags</code> - <a href="#doc-data-types">Number</a> - 5-bit positive integer</li>
+								<li><code>Return</code> - <a href="#doc-data-types">String</a></li>
+							</ul>
+							
+							<p class="mb-0">
+								Returns the famous <a href="https://en.wikipedia.org/wiki/%22Hello,_World!%22_program" target="_blank">"Hello, World!"</a> text.<br>
+								The <code>$flags</code> argument defines how the output should be formatted based on the following bits being set:
+							</p>
+							<ol class="mb-3">
+								<li>The "H" in "Hello" will be in lowercase: <code>"hello"</code></li>
+								<li>Removes the comma (",") after "hello"</li>
+								<li>Removes the space (",") between "hello" and "world"</li>
+								<li>The "W" in "World" will be in lowercase: <code>"world"</code></li>
+								<li>Removes the exclamation mark ("!") at the end</li>
+							</ol>
+							
+							<p><b>Example:</b></p>
+							<pre><code>// returns "helloworld" instead of "Hello, World!"<br>&hello_world(0b11111)</code></pre>
+						</li>
+						
+						<li id="doc-function-iff">
+							<p><code>&iff($condition, $val_if_true, $val_if_false)</code></p>
+							
+							<ul class="list-unstyled mb-3">
+								<li><code>$condition</code> - <a href="#doc-data-types">Boolean</a> - Condition to verify</li>
+								<li><code>$val_if_true</code> - Any</li>
+								<li><code>$val_if_false</code> - Any</li>
+								<li><code>Return</code> - Any</li>
+							</ul>
+							
+							<p>
+								Returns <code>$val_if_true</code> if <code>$condition</code> is <a href="#doc-data-types"><code>true</code></a>.<br>
+								Otherwise, returns <code>$val_if_false</code>.
+							</p>
+							
+							<p><b>Example:</b></p>
+							<pre><code>// returns "123" if $foo is true<br>&iff($foo, "123", null)</code></pre>
+						</li>
+						
+						<li id="doc-function-is_anagram">
+							<p><code>&is_anagram($str1, $str2)</code></p>
+							
+							<ul class="list-unstyled mb-3">
+								<li><code>$str1</code> - <a href="#doc-data-types">String</a></li>
+								<li><code>$str2</code> - <a href="#doc-data-types">String</a></li>
+								<li><code>Return</code> - <a href="#doc-data-types">Boolean</a> or <a href="#doc-data-types"><code>null</code></a></li>
+							</ul>
+							
+							<p>
+								Returns <a href="#doc-data-types"><code>true</code></a> if <code>$str1</code> is an <a href="https://en.wikipedia.org/wiki/Anagram" target="_blank">anagram</a> of <code>$str2</code>.<br>
+								Otherwise, returns <a href="#doc-data-types"><code>false</code></a>.<br>
+								In case <code>$str1</code> or <code>$str2</code> are empty, returns <a href="#doc-data-types"><code>null</code></a>.
+							</p>
+							
+							<p><b>Example:</b></p>
+							<pre><code>&is_anagram("listen", "silent") // Returns true</code></pre>
+						</li>
+						
+						<li id="doc-function-is_palindrome">
+							<p><code>&is_palindrome($str)</code></p>
+							
+							<ul class="list-unstyled mb-3">
+								<li><code>$str</code> - <a href="#doc-data-types">String</a> or <a href="#doc-data-types">Number</a></li>
+								<li><code>Return</code> - <a href="#doc-data-types">Boolean</a> or <a href="#doc-data-types"><code>null</code></a></li>
+							</ul>
+							
+							<p>
+								Returns <a href="#doc-data-types"><code>true</code></a> if <code>$str</code> is a <a href="https://en.wikipedia.org/wiki/Palindrome" target="_blank">palindrome</a>.<br>
+								Otherwise, returns <a href="#doc-data-types"><code>false</code></a>.<br>
+								In case <code>$str</code> is empty, returns <a href="#doc-data-types"><code>null</code></a>.
+							</p>
+							
+							<p><b>Example:</b></p>
+							<pre><code>&is_palindrome("racecar") // Returns true</code></pre>
+						</li>
+						
+						<li id="doc-function-is_prime">
+							<p><code>&is_prime($number)</code></p>
+							
+							<ul class="list-unstyled mb-3">
+								<li><code>$number</code> - <a href="#doc-data-types">Number</a></li>
+								<li><code>Return</code> - <a href="#doc-data-types">Boolean</a> or <a href="#doc-data-types"><code>null</code></a></li>
+							</ul>
+							
+							<p>
+								Returns <a href="#doc-data-types"><code>true</code></a> if <code>$number</code> is a <a href="https://en.wikipedia.org/wiki/Prime_number" target="_blank">prime number</a>.<br>
+								Otherwise, returns <a href="#doc-data-types"><code>false</code></a>.<br>
+								In case <code>$number</code> isn't a number, returns <a href="#doc-data-types"><code>null</code></a>.
+							</p>
+							
+							<p><b>Example:</b></p>
+							<pre><code>&is_prime(101) // Returns true</code></pre>
+						</li>
+						
+						<li id="doc-function-join">
+							<p><code>&join($array, $join_char)</code></p>
+							
+							<ul class="list-unstyled mb-3">
+								<li><code>$array</code> - <a href="#doc-data-types">Array</a></li>
+								<li><code>$join_char</code> - <a href="#doc-data-types">String</a> or <a href="#doc-data-types">Char</a></li>
+								<li><code>Return</code> - <a href="#doc-data-types">String</a> or <a href="#doc-data-types"><code>null</code></a></li>
+							</ul>
+							
+							<p>
+								Joins all the elements in <code>$array</code>, separated by <code>$join_char</code>, and returns the result.<br>
+								If something goes wrong, returns <a href="#doc-data-types"><code>null</code></a>.
+							</p>
+							
+							<p><b>Example:</b></p>
+							<pre><code>// joins all received arguments, separated by a new line<br>&join($argv, !EOL)</code></pre>
+						</li>
+						
+						<li id="doc-function-len">
+							<p><code>&len($value)</code></p>
+							
+							<ul class="list-unstyled mb-3">
+								<li><code>$value</code> - <a href="#doc-data-types">Array</a> or <a href="#doc-data-types">String</a> or <a href="#doc-data-types">Char</a></li>
+								<li><code>Return</code> - <a href="#doc-data-types">Number</a> or <a href="#doc-data-types"><code>null</code></a></li>
+							</ul>
+							
+							<p>
+								Returns the number of characters/elements in <code>$value</code>.<br>
+								Returns <a href="#doc-data-types"><code>null</code></a> if passed an unexpected data type.
+							</p>
+							
+							<p><b>Example:</b></p>
+							<pre><code>// Returns the size of the EOL constant<br>&len(!EOL)</code></pre>
+						</li>
+						
+						<li id="doc-function-mirror_text">
+							<p><code>&mirror_text($str)</code></p>
+							
+							<ul class="list-unstyled mb-3">
+								<li><code>$str</code> - <a href="#doc-data-types">String</a> or <a href="#doc-data-types">Char</a></li>
+								<li><code>Return</code> - <a href="#doc-data-types">String</a></li>
+							</ul>
+							
+							<p>
+								Tries to rotate all characters that point in a direction, in <code>$str</code>, but rotated 180º.
+							</p>
+							
+							<p><b>Example:</b></p>
+							<pre><code>// Returns "&lt;hello&gt;"<br>&len("&gt;hello&lt;")</code></pre>
+						</li>
+						
+						<li id="doc-function-range">
+							<p><code>&range($start, $end, $step)</code></p>
+							
+							<ul class="list-unstyled mb-3">
+								<li><code>$start</code> - <a href="#doc-data-types">Number</a></li>
+								<li><code>$end</code> - <a href="#doc-data-types">Number</a></li>
+								<li><code>$step</code> - <a href="#doc-data-types">Number</a> - Default: <code>1</code></li>
+								<li><code>Return</code> - <a href="#doc-data-types">Array</a></li>
+							</ul>
+							
+							<p>
+								Returns an array that goes from <code>$start</code> to <code>$end</code>, going by <code>$step</code>.<br>
+								If <code>$start</code> is lower than <code>$end</code>, <b>OR</b> <code>$step</code> is lower than <code>0</code>, the range is inverted.<br>
+								Returns an empty array if <code>$start</code> or <code>$end</code> or <code>$step</code> (when provided) aren't <a href="#doc-data-types">Numbers</a>.
+							</p>
+							
+							<p><b>Example:</b></p>
+							<pre><code>// Returns [5, 3, 1]<br>&range(1, 5, -2)</code></pre>
+						</li>
+					</ul>
+				</div>
+				
+				<div>
+					<h3 class="h5">Create a function</h3>
+				
+					<div class="keywords">
+						Keywords:
+						<ul>
+							<li>create</li>
+							<li>def</li>
+							<li>define</li>
+							<li>make</li>
+						</ul>
+					</div>
+					
+					<p>To create a function, you will need to use one of the keywords, like the following example:</p>
+					<pre><code>Define a function called &foo()</code></pre>
+					
+					
+					
+					<h4 class="h6">Arguments</h4>
+					
+					<div class="keywords">
+						Argument list:
+						<ul>
+							<li>(</li>
+							<li>arg</li>
+							<li>argument</li>
+							<li>args</li>
+							<li>arguments</li>
+							<li>param</li>
+							<li>params</li>
+							<li>parameter</li>
+							<li>parameters</li>
+						</ul>
+					</div>
+					<p>
+						A function can take a few arguments, being passed as variable names to the argument list.<br>
+						For example:
+					</p>
+					
+					<pre><code>Define a function called &foo with arguments $a, $b, $c<br>Define &foo args ($a, $b, $c)</code></pre>
+					
+					
+					
+					<h4 class="h6">Return values</h4>
+					
+					<div class="keywords">
+						Argument list:
+						<ul>
+							<li>return</li>
+							<li>send</li>
+							<li>pass</li>
+						</ul>
+					</div>
+					
+					<p>
+						Returns the value passed after the keyword, or <code>null</code>.
+					</p>
+					
+					
+					
+					<h4 class="h6">Code Scope limit</h4>
+					
+					<div class="keywords">
+						Opening:
+						<ul>
+							<li>begin</li>
+							<li>{</li>
+						</ul>
+						Close:
+						<ul>
+							<li>end</li>
+							<li>close</li>
+							<li>}</li>
+						</ul>
+					</div>
+					
+					<p>
+						You can define a function with multiple expressions by opening a new scope.<br>
+						If you don't open a new scope, the next expression will be assumed to be the entire body of the function, implicitly returning the value after execution.
+					</p>
+					
+					<p><b>Examples:</b></p>
+					<pre><code>def &fn($foo)<br>{<br>&#9;return call &is_palindrome($foo);<br>}</code></pre>
+					
+				</div>
+			</div>
+			
+			<hr>
+			
+			<div id="doc-examples">
+				<h2 class="h4">Examples</h2>
+				
+				<div>
+					<h3 class="h5">A quine</h3>
+					
+					<p>A <a href="https://en.wikipedia.org/wiki/Quine_(computing)" target="_blank">quine</a> is a program that outputs it's own source code, without receiving any input from anywhere.</p>
+					
+					<pre><code>Set $code to "Set $code to %c%s%c
+Display the format string $code with the values 34, $code, 34"
+Display the format string $code with the values 34, $code, 34</code></pre>
+					
+					<p>A much smaller version:</p>
+					
+					<pre><code>$f="$f=%c%s%c;echof$f,34,$f,34";echof$f,34,$f,34</code></pre>
+				</div>
+			</div>
+			
+			<p class="text-white m-0 p-0">There are no easter eggs.</p>
+		</div>
+	
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	</body>
+</html>

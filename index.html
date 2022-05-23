@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		
+		<title>simply - A very simple scripting language</title>
+		
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet" integrity="sha256-rzXMaro05QBd53CZ36ctTBp3FdKN3Ow0P0gDHcjLCLw=" crossorigin="anonymous">
+		<link href="https://unpkg.com/@highlightjs/cdn-assets@11.5.1/styles/a11y-light.min.css" rel="stylesheet">
+		
+		<link href="./style.css" rel="stylesheet">
+		
+	</head>
+	<body class="user-select-none">
+		<div class="container">
+			<!-- <h1 class="h2">IVLTLLNL - Incredibly Verbose Language That Looks Like Natural Language</h1> -->
+			
+			<div class="row vh-100 p-2 align-items-stretch">
+				
+				<div class="col-12 col-md-6 mh-100">
+					<div class="row">
+						
+						<div class="col">
+							<label for="form-code-area" class="form-label mt-2 mb-0">
+								<i class="bi bi-braces"></i>
+								Code:
+							</label>
+						</div>
+						
+						<div class="col align-self-end">
+							<div class="btn-toolbar justify-content-end" role="toolbar" aria-label="Compiler Toolbar">
+								<div class="btn-group me-2" role="group" aria-label="Copy, Paste and Settings">
+									
+									<button type="button" class="btn btn-primary btn-sm">
+										<i class="bi bi-subtract"></i> Copy
+									</button>
+									
+									<!-- <button type="button" class="btn btn-primary btn-sm">
+										<i class="bi bi-clipboard"></i> Paste
+									</button> -->
+									
+									<div class="btn-group" role="group">
+										<button id="optimize-drop-btn" type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+											<i class="bi bi-gear-fill"></i> Settings
+										</button>
+										
+										<!-- <ul id="settings-drop" class="dropdown-menu dropdown-menu-end" aria-labelledby="settings-drop-btn">
+											<li><a class="dropdown-item" href="#">Dropdown link</a></li>
+											<li><a class="dropdown-item" href="#">Dropdown link</a></li>
+										</ul> -->
+										<div id="optimize-drop" class="dropdown-menu dropdown-menu-end" aria-labelledby="optimize-drop-btn">
+											<form class="px-3 py-2" id="optimize-drop-form"></form>
+											<!-- <div class="dropdown-divider"></div>
+											<a class="dropdown-item" href="#">New around here? Sign up</a>
+											<a class="dropdown-item" href="#">Forgot password?</a> -->
+										  </div>
+									</div>
+									
+								</div>
+								<div class="btn-group" role="group" aria-label="Run the code">
+									<button type="submit" class="btn btn-primary btn-sm" form="form-code">
+										<i class="bi bi-play-fill"></i> Run
+									</button>
+								</div>
+							</div>
+						</div>
+						
+					</div>
+					
+					<form action="javascript:void(0)" class="mt-2 g-3" id="form-code">
+						<div>
+							<textarea id="form-code-area" name="code" class="form-control" rows="8"></textarea>
+						</div>
+						
+						<hr class="mb-2">
+						
+						<div>
+							<label for="form-input-area" class="form-label">
+								<i class="bi bi-input-cursor"></i>
+								Input (JSON or text):
+							</label>
+							<textarea id="form-input-area" name="input" class="form-control" rows="3"></textarea>
+						</div>
+					</form>
+				</div>
+				
+				<div class="col-12 col-md-6 mh-100">
+					<hr class="d-md-none">
+					
+					<ul id="output-tabs" class="nav nav-tabs" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button id="output-tab-text" class="nav-link active" data-bs-toggle="tab" data-bs-target="#output-tab-text-content" type="button" role="tab" aria-controls="output-tab-text-content" aria-selected="true">
+								<span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+								<i class="bi bi-card-text"></i> Output
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button id="output-tab-json" class="nav-link" data-bs-toggle="tab" data-bs-target="#output-tab-json-content" type="button" role="tab" aria-controls="output-tab-json-content" aria-selected="false">
+								<i class="bi bi-filetype-json"></i> JSON Tree
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button id="output-tab-js" class="nav-link" data-bs-toggle="tab" data-bs-target="#output-tab-js-content" type="button" role="tab" aria-controls="output-tab-js-content" aria-selected="false">
+								<i class="bi bi-filetype-js"></i> JS Code
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button id="help-tab" class="nav-link" data-bs-toggle="tab" data-bs-target="#help-tab-content" type="button" role="tab" aria-controls="help-tab-content" aria-selected="false">
+								<i class="bi bi-question-circle"></i> Help
+							</button>
+						</li>
+					</ul>
+					<div id="output-tabs-content" class="tab-content">
+						<div id="output-tab-text-content" class="tab-pane fade show active" role="tabpanel" aria-labelledby="output-tab-text">
+							<pre id="output-code" class="bg-light px-2 py-3 h-100"></pre>
+						</div>
+						<div id="output-tab-json-content" class="tab-pane fade" role="tabpanel" aria-labelledby="output-tab-json-content">
+							<pre id="output-json" class="bg-light px-2 py-3 h-100 language-json"></pre>
+						</div>
+						<div id="output-tab-js-content" class="tab-pane fade" role="tabpanel" aria-labelledby="output-tab-js-content">
+							<pre id="output-js" class="bg-light px-2 py-3 h-100 language-js"></pre>
+						</div>
+						<div id="help-tab-content" class="tab-pane fade" role="tabpanel" aria-labelledby="help-tab">
+							<iframe src="./help.html" class="h-100 w-100"></iframe>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.2/beautify.min.js" integrity="sha512-Jg+IkoiE6LfLKMW7DC4p9JSJqZkYsRa1KJjHkbtIzzuRVSdwQuS2TdhX6r9pzj6m16Tth1QfTQJJyBdaKsl2xA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<script src="https://unpkg.com/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+		
+		<script src="./simply.js"></script>
+		<script src="./script.js"></script>
+	</body>
+</html>
