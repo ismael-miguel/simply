@@ -3702,7 +3702,7 @@
 				
 				return this.compileToken(token, info[token.type])
 					+ (~this._no_semicollon.indexOf(token.type) ? '' : ';');
-			}, this).join('\n');
+			}, this).join('\n\n');
 		},
 		
 		compileToken: function(token, info){
