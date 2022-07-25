@@ -56,7 +56,7 @@ Classes bring a lot of complications, including but not limited to inheritance a
 |   ⚠️   |    Displaying<br> Values   | Works, but currently needs some work to improve on some aspects.                                                                     |
 |   ❌   |   Boolean<br> expressions  | These expressions haven't been implemented yet.                                                                                      |
 |   ❌   | Arithmetic<br> expressions | These haven't been implemented at all.                                                                                               |
-|   ❌   | Conditional<br> statements | The if block isn't implemented at all.                                                                                               |
+|   ⚠️   | Conditional<br> statements | The else block isn't implemented at all.                                                                                               |
 |   ❌   |            Loops           | Do ... while, while and for loops haven't been implemented.                                                                          |
 |   ❌   |        Syntax sugar        | Some "nice to have" syntax sugar, like a syntax for ranges.                                                                          |
 |   ❌   |           Modules          | Modules haven't been implemented yet. Ideas include regular expressions, HTML and a canvas.                                          |
