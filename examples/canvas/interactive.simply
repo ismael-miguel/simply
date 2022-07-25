@@ -1,4 +1,7 @@
-/* Try these settings into $argv: {"width": 500, "height": 400, "bgcolor": "lightblue", "dotsize": "random", "fontsize": 25, "padding": 40, "spacing": 5} */
+/*
+	Try also these settings into $argv:
+	{"width": 500, "height": 400, "bgcolor": "lightblue", "dotsize": "random", "fontsize": 25, "padding": 40, "spacing": 5}
+*/
 
 unless !CANVAS then {
 	echo "❌ The canvas module is required for this example";
@@ -11,7 +14,7 @@ unless !CANVAS then {
 %settings->bgcolor = "lightblue";
 %settings->dotsize = "random";
 %settings->fontsize = 15;
-%settings->padding = 15;
+%settings->padding = 20;
 %settings->spacing = 5;
 
 if $argv[0] then {
@@ -57,6 +60,11 @@ $y = &sum($y, $fontsize, $spacing);
 call %c->drawText($x, $y, "Draw many random rectangles", $maxwidth);
 $y = &sum($y, $fontsize, $spacing);
 call %c->drawText($x, $y, "❗ All colors are random", $maxwidth);
+
+call %c->drawText(0, 7, "⭐");
+call %c->drawText(0, &sub(call %c->getHeight, $fontsize, 2), "⭐");
+call %c->drawText(&sub(call %c->getWidth, $fontsize, 8), 7, "⭐");
+call %c->drawText(&sub(call %c->getWidth, $fontsize, 8), &sub(call %c->getHeight, $fontsize, 2), "⭐");
 
 def &draw_random {
 	$width = &rand(1, call %c->getWidth);
