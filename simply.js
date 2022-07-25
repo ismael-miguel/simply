@@ -274,7 +274,67 @@
 	
 	
 	// used only for error reporting
-	const FILENAME = 'ivltllnl';
+	const FILENAME = 'simply';
+	
+	const MODULES_ORDER = ['rick'];
+	const MODULES_DEFAULTS = {
+		Spec: [],
+		Exports: {},
+		Analyze: {},
+		Compile: {},
+		Cleanup: function(){},
+		Init: function(){}
+	};
+	const MODULES = {
+		'rick': Object.assign(Object.create(null), MODULES_DEFAULTS, {
+			Exports: {
+				'version': '1.0',
+				'roll': Object.assign(function rickroll(){
+					if(!rickroll.result)
+					{
+						var n = 'Never gonna ';
+						var N = [
+							n + 'give you up',
+							'let you down',
+							'run around and desert you',
+							'make you cry',
+							'say goodbye',
+							'tell a lie and hurt you'
+						].join('\n' + n);
+						
+						var f = ' how I\'m feeling';
+						var F = [
+							'I just wanna tell you' + f,
+							'Gotta make you understand'
+						].join('\n');
+						
+						var g = [
+							'We\'ve known each other for so long',
+							'Your heart\'s been aching, but you\'re too shy to say it (say it)',
+							'Inside, we both know what\'s been going on (going on)',
+							'We know the game and we\'re gonna play it'
+						].join('\n');
+						
+						rickroll.result = [
+							'We\'re no strangers to love',
+							'You know the rules and so do I (do I)',
+							'A full commitment\'s what I\'m thinking of',
+							'You wouldn\'t get this from any other guy',
+							'', F,'', N,'', g,'',
+							'And if you ask me' + f,
+							'Don\'t tell me you\'re too blind to see',
+							'', N,'', N,'', g,'', F, '', N, '', N, '', N
+						].join('\n');
+					}
+					
+					return rickroll.result;
+				}, {
+					__doc__: 'Returns the lyrics to Rick Astley - Never Gonna Give You Up',
+					result: null
+				})
+			}
+		})
+	};
 	
 	const RDP = {
 		Spec: [
@@ -337,6 +397,12 @@
 			// close
 			[/^(?:end(?![a-z\d])|\})/i, 'SCOPE_CLOSE'],
 			
+			// DECISION BLOCKS
+			// if/in case
+			[/^(?:if|in case)(?![a-z\d])/i, 'IF_BLOCK'],
+			// unless - same as "if", but negative
+			[/^(?:unless)(?![a-z\d])/i, 'UNLESS_BLOCK'],
+			
 			// RETURN
 			[/^(?:return|send|pass)(?![a-z\d])/i, 'RETURN'],
 			
@@ -345,7 +411,7 @@
 			
 			// ANY 'WORD'
 			[/^[a-z][a-z_]*/i, 'WORD'],
-			[/^[^,\[\("'\da-z#\s]+/i, 'SYMBOL']
+			[/^[^;,\[\("'\da-z#\s]+/i, 'SYMBOL']
 		],
 		Words: {
 			'OPEN': ['open', 'start', 'begin'],
@@ -362,6 +428,7 @@
 				'var', 'variable', 'cons', 'constant', 'and', 'it', 'to', 'the', 'value', 'values',
 				'a', 'an', 'as', 'with', 'name', 'named', 'called', 'which', 'takes', 'that', 'this',
 				'global', 'content', 'contents', 'me', 'of', 'into', 'string', 'by', 'result', 'results',
+				'then',
 				
 				// FUNCTION:
 				'fn', 'func', 'function', 'method', 'proc', 'procedure'
@@ -419,6 +486,17 @@
 					) + '.';
 			}, {
 				__doc__: 'Returns the documentation string for a function, if it exists, otherwise returns null'
+			}),
+			empty: Object.assign(function empty(value){
+				return value === undefined
+					|| value === null
+					|| value.length === 0 // !value.length will return true for null or undefined
+					|| Object.keys(value).length === 0;
+			}, {
+				__doc__: [
+					'Checks if the value is empty',
+					'Empty values are null, empty strings, empty arrays and empty objects'
+				]
 			}),
 			
 			// array related
@@ -538,6 +616,56 @@
 					'Returns an empty array if $start or $end or $step (when provided) aren\'t numbers'
 				]
 			}),
+			array_chunk: Object.assign(function array_chunk(array, length){
+				if(length < 1)
+				{
+					return [];
+				}
+				else if(length > array.length)
+				{
+					return [array];
+				}
+				
+				var size = Math.ceil(array.length / length);
+				var result = Array(size);
+				var offset = 0;
+				
+				for(var i = 0; i < size; i++) {
+					result[i] = str.slice(offset, offset + length);
+					offset += length;
+				}
+				
+				return result;
+			}, {
+				__doc__: [
+					'Splits the string into chunks of up to a specified length',
+					'If the length is lower than 1, returns an empty array'
+				]
+			}),
+			array_concat: Object.assign(function array_concat(){
+				var array = [];
+				return array.concat.apply(array, Array.from(arguments));
+			}, {
+				__doc__: [
+					'Concatenates all values into a single array',
+					'Returns an empty array if no values are passed'
+				]
+			}),
+			array_rev: Object.assign(function array_rev(array){
+				return array.reverse();
+			}, {
+				__doc__: 'Reverses the array'
+			}),
+			array_keys: Object.assign(function array_keys(array){
+				return Object.keys(array);
+			}, {
+				__doc__: 'Returns the keys in the array'
+			}),
+			array_update: Object.assign(function array_update(array, obj){
+				return Object.assign(array, obj);
+			}, {
+				__doc__: 'Updates the values in the $array, based on the values in $obj'
+			}),
 			
 			// string related
 			mirror_text: Object.assign(function mirror_text(str){
@@ -639,6 +767,70 @@
 			}, {
 				__doc__: '🤫 this is a secret function. Just an anagram for &is_anagram().'
 			}),
+			str_split: Object.assign(function str_split(str, sep, limit){
+				return str.toString().split(sep, limit);
+			}, {
+				__doc__: [
+					'Splits the string into multiple parts',
+					'Takes a separator and an optional limit number of splits to execute'
+				]
+			}),
+			str_chunk: Object.assign(function str_chunk(str, length){
+				if(length < 1)
+				{
+					return [];
+				}
+				else if(length > str.length)
+				{
+					return [str];
+				}
+				else if(length === 1)
+				{
+					return str.split('');
+				}
+				
+				var size = Math.ceil(str.length / length);
+				var result = Array(size);
+				var offset = 0;
+				
+				for(var i = 0; i < size; i++) {
+					result[i] = str.substr(offset, length);
+					offset += length;
+				}
+				
+				return result;
+			}, {
+				__doc__: [
+					'Splits the string into chunks of up to a specified length',
+					'If the length is lower than 1, returns an empty array'
+				]
+			}),
+			str_concat: Object.assign(function str_concat(){
+				return Array.from(arguments).join('');
+			}, {
+				__doc__: [
+					'Concatenates all values into a single string',
+					'Returns an empty string if no values are passed'
+				]
+			}),
+			str_rev: Object.assign(function str_rev(str){
+				return window.esrever
+					? window.esrever.reverse(str)
+					: Array.from(str).reverse().join('');
+			}, {
+				__doc__: [
+					'Reverses a string',
+					'If you want proper results for UTF-8/UTF-16, you may want to include https://github.com/mathiasbynens/esrever'
+				]
+			}),
+			str_compare: Object.assign(function str_compare(str1, str2){
+				return str1 === str2 ? 0 : (str1 > str2 ? 1 : -1);
+			}, {
+				__doc__: [
+					'Compares $str1 with $str2, returning 0 if they are equal',
+					'If $str1 is greater than $str2, returns 1, otherwise returns -1'
+				]
+			}),
 			
 			// math-related
 			is_prime: Object.assign(function is_prime(number){
@@ -734,6 +926,113 @@
 					'For example, 8 is a perfect cube, because it is 2³ = 2*2*2 = 8'
 				]
 			}),
+			is_nan: Object.assign(function is_nan(number){
+				return Number.isNaN(number);
+			}, {
+				__doc__: [
+					'Checks if the number is NaN or not',
+					'It only returns true if the number is NaN',
+					'All other values return false'
+				]
+			}),
+			is_odd: Object.assign(function is_odd(number){
+				return !!(number % 2);
+			}, {
+				__doc__: [
+					'Checks if the number is odd',
+					'NaN, Infinity, -Infinity and 0 return false',
+					'Fractional numbers return true'
+				]
+			}),
+			is_even: Object.assign(function is_even(number){
+				return !(number % 2);
+			}, {
+				__doc__: [
+					'Checks if the number is even',
+					'NaN, Infinity, -Infinity and 0 return true',
+					'Fractional numbers return false'
+				]
+			}),
+			nth_root: Object.assign(function nth_root(number, root){
+				// taken from: https://stackoverflow.com/a/35690374
+				if(number < 0 && root%2 != 1) return NaN; // Not well defined
+				return (number < 0 ? -1 : 1) * Math.pow(Math.abs(number), 1/root);
+			}, {
+				__doc__: [
+					'Calculates the nth root of any number',
+					'Returns NaN if there are no solutions',
+					'Otherwise, returns a positive or negative number, depending on the needs'
+				]
+			}),
+			sqrt: Object.assign(function sqrt(number){
+				return Math.sqrt(number);
+			}, {
+				__doc__: [
+					'Calculates the square root of any number',
+					'Returns NaN on negative numbers'
+				]
+			}),
+			pow: Object.assign(function pow(number, power){
+				return Math.pow(number, power);
+			}, {
+				__doc__: [
+					'Calculates the number (base) raised by the power (exponent)',
+					'Returns NaN on negative numbers with fractional powers'
+				]
+			}),
+			rand: Object.assign(function rand(min, max){
+				if(min === undefined)
+				{
+					min = Number.MIN_SAFE_INTEGER;
+				}
+				
+				if(max === undefined)
+				{
+					max = Number.MAX_SAFE_INTEGER;
+				}
+				
+				// taken from https://stackoverflow.com/questions/4959975/generate-random-number-between-two-numbers-in-javascript
+				return Math.floor(Math.random() * (max - min + 1) + min);
+			}, {
+				__doc__: [
+					'Returns a random integer number between $min and $max',
+					'If not set, $min will be ' + Number.MIN_SAFE_INTEGER + ' and $max will be ' + Number.MAX_SAFE_INTEGER
+				]
+			}),
+			add: Object.assign(function add(){
+				return Array.from(arguments).reduce(function(value, total){
+					return value + total;
+				}, 0);
+			}, {
+				__doc__: 'Adds all values together'
+			}),
+			sum: Object.assign(function sum(){
+				return Array.from(arguments).reduce(function(value, total){
+					return value + total;
+				}, 0);
+			}, {
+				__doc__: 'Adds all values together'
+			}),
+			sub: Object.assign(function sub(){
+				var array = Array.from(arguments);
+				
+				if(array.length === 0)
+				{
+					return 0;
+				}
+				else if(array.length === 1)
+				{
+					return -array[0];
+				}
+				
+				var initial = array.shift();
+				
+				return array.reduce(function(value, total){
+					return value - total;
+				}, initial);
+			}, {
+				__doc__: 'Subtracts all values together'
+			}),
 			
 			// type convertion and information
 			int: Object.assign(function int(any, radix){
@@ -780,6 +1079,9 @@
 							return 'object';
 						}
 					
+					case 'undefined':
+						return 'null';
+						
 					default:
 						return null;
 				}
@@ -1193,6 +1495,10 @@
 				
 				case 'FUNCTION':
 					return this.CallStatement();
+				
+				case 'IF_BLOCK':
+				case 'UNLESS_BLOCK':
+					return this.IfBlockStatement();
 				
 				default:
 					return this.ExpressionStatement();
@@ -1662,6 +1968,61 @@
 		},
 		
 		/**
+		 *   IfBlockStatement
+		 *     : IF_BLOCK Expression SCOPE_OPEN Statement [Statement]* SCOPE_CLOSE
+		 *     | UNLESS_BLOCK Expression SCOPE_OPEN Statement [Statement]* SCOPE_CLOSE
+		 *     | IF_BLOCK Expression Statement
+		 *     | UNLESS_BLOCK Expression Statement
+		 *     ;
+		 */
+		IfBlockStatement: function(){
+			var token = this._eat('IF_BLOCK', 'UNLESS_BLOCK');
+			var expression = this.Expression();
+			
+			var result = {
+				type: 'IfBlockStatement',
+				condition: expression,
+				body: [],
+				line: token.line,
+				column: token.column,
+				unless: token.type === 'UNLESS_BLOCK'
+			};
+			
+			if(!this._lookahead)
+			{
+				return result;
+			}
+			
+			this._jump(';');
+			if(this._lookahead.type === 'SCOPE_OPEN')
+			{
+				this._eat('SCOPE_OPEN');
+				
+				while(this._lookahead && this._lookahead.type !== 'SCOPE_CLOSE')
+				{
+					var tokens = this.PrimaryExpression();
+					if(tokens)
+					{
+						result.body = result.body.concat(tokens);
+					}
+				}
+				
+				this._eat('SCOPE_CLOSE');
+			}
+			else
+			{
+				var tokens = this.PrimaryExpression();
+				if(tokens)
+				{
+					result.body = result.body.concat(tokens);
+				}
+			}
+			
+			
+			return result;
+		},
+		
+		/**
 		 * ParenthesizedExpression
 		 *   : '(' Expression ')'
 		 *   ;
@@ -1820,18 +2181,37 @@
 						break;
 					
 					case 'OPERATOR':
-						var value = this._eat('WORD');
+						if(!this._lookahead)
+						{
+							throw new SyntaxError('Unexpected end of the code', FILENAME, this._line);
+						}
+						
+						var value = this._lookahead.value || this._lookahead.value_raw;
+						
+						if(!/^[a-z_\d]+$/i.test(value))
+						{
+							throw new SyntaxError('Expected any word, got "' + value + '"', FILENAME, this._line);
+						}
+						
+						var value_token = this._eat(this._lookahead.type);
 						
 						// Fakes a string literal to be easier to compile
 						token.value = {
 							type: 'StringLiteral',
-							value: value.value_raw,
-							line: value.line,
-							column: value.column
+							value: value,
+							line: value_token.line,
+							column: value_token.column
 						};
 						
-						token.close_line = value.line;
-						token.close_column = value.column + value.value_raw.length;
+						while(this._lookahead && /^[a-z_\d]+$/i.test(this._lookahead.value || this._lookahead.value_raw))
+						{
+							value_token = this._eat(this._lookahead.type);
+							
+							token.value.value += this._lookahead.value || this._lookahead.value_raw;
+						}
+						
+						token.close_line = value_token.line;
+						token.close_column = value_token.column + token.value.value.length;
 						
 						break;
 					
@@ -2088,6 +2468,11 @@
 					args_token = this._eat('(');
 				}
 				
+				while(this._lookahead && this._lookahead.value === "\n")
+				{
+					this._jump(this._lookahead.type);
+				}
+				
 				while(this._lookahead && RDP.Utils.tokenIsExpression(this._lookahead))
 				{
 					var arg = this.Expression();
@@ -2108,7 +2493,17 @@
 					
 					result.value[result.value.length] = arg;
 					
+					while(this._lookahead && this._lookahead.value === "\n")
+					{
+						this._jump(this._lookahead.type);
+					}
+					
 					this._jump(',');
+					
+					while(this._lookahead && this._lookahead.value === "\n")
+					{
+						this._jump(this._lookahead.type);
+					}
 				}
 				
 				if(args_token.type === '(')
@@ -2162,7 +2557,14 @@
 					throw new SyntaxError('Only a single argument is expected', FILENAME, this._line);
 				}
 				
-				this._jump(',');
+				var jumped = this._jump(',');
+				if(jumped)
+				{
+					while(this._lookahead && this._lookahead.value === "\n")
+					{
+						this._jump(this._lookahead.type);
+					}
+				}
 			}
 			
 			return result;
@@ -2460,13 +2862,13 @@
 						return value;
 					});
 				}
-				else if(token.args && token.args.length)
+				/*else if(token.args && token.args.length)
 				{
 					// Read Note 1
 					token.args = token.args.map(handle_body, this).filter(function(value){
 						return value;
 					});
-				}
+				}*/
 				
 				if(types.length && !~types.indexOf(token.type))
 				{
@@ -2985,7 +3387,9 @@
 					'1- Stray constant values (like numbers, strings, `null´ ...)',
 					'2- Stray variables, constants or functions',
 					'3- Anything after a `return´ statement, on a function body',
-					'4- Stray literal arrays that don\'t have a function call'
+					'4- Stray literal arrays that don\'t have a function call',
+					'5- If/unless blocks that will never execute',
+					'6- If/unless blocks that are empty, but have constant conditions'
 				],
 				types: ['bool'],
 				fn: function removeDeadCode(body, settings){
@@ -3040,6 +3444,67 @@
 						return token.value.length ? token : null;
 					});
 					
+					// step 5 - remove if/unless blocks that will never run
+					body = this._handleBodyTokens(body, 'IfBlockStatement', function(token){
+						var condition = token.condition;
+						var is_zero_regex = /^[+\-]?0+(?:[bx]0+)?(?:\.0*)?$/;
+						
+						// the value is falsy
+						if (
+							(
+								condition.type === 'ConstantLiteral'
+								&& !!~['false', 'null', 'nan'].indexOf(condition.value.toLowerCase())
+							)
+							|| (
+								condition.type === 'NumericLiteral'
+								&& (
+									condition.value === '0'
+									|| is_zero_regex.test(condition.value)
+								)
+							)
+							|| (condition.type === 'CharLiteral' && condition.value === '')
+							|| (condition.type === 'StringLiteral' && condition.value === '')
+						)
+						{
+							return token.unless ? token : null;
+						}
+						// the value is truthy
+						else if(
+							(
+								condition.type === 'ConstantLiteral'
+								&& !!~['true', 'infinity'].indexOf(condition.value.toLowerCase())
+							)
+							|| (
+								condition.type === 'NumericLiteral'
+								&& !is_zero_regex.test(condition.value)
+							)
+							|| (condition.type === 'CharLiteral' && condition.value !== '')
+							|| (condition.type === 'StringLiteral' && condition.value !== '')
+						)
+						{
+							return token.unless ? null : token;
+						}
+						
+						// the value can't be determined
+						return token;
+					});
+					
+					// step 6 - remove empty if/unless blocks with constant conditions
+					body = this._handleBodyTokens(body, 'IfBlockStatement', function(token){
+						if(token.body.length)
+						{
+							return token;
+						}
+						
+						return !!~[
+							'ConstantLiteral',
+							'NumericLiteral',
+							'CharLiteral',
+							'StringLiteral'
+						].indexOf(token.condition.type)
+							? null
+							: token;
+					});
 					
 					return body;
 				}
@@ -3068,6 +3533,7 @@
 			'Object.defineProperty($CONST, \'DIGITS\', { value: "0123456789", writable: false, enumerable: true })',
 			
 			'Object.defineProperty($CONST, \'FN\', { value: Object.assign({}, arguments[2]), writable: false, enumerable: true })',
+			'for(var k in arguments[3]) Object.defineProperty($CONST, k, { value: Object.assign({}, arguments[3][k]), writable: false, enumerable: true })',
 			'Object.freeze($CONST.FN)'
 		],
 		
@@ -3085,7 +3551,8 @@
 		],
 		
 		_no_semicollon: [
-			'CommentStatement'
+			'CommentStatement',
+			'IfBlockStatement'
 		],
 		
 		init: function(abs){
@@ -3236,6 +3703,9 @@
 				
 				case 'ParenthesizedExpression':
 					return this.compileParenthesizedExpression(token, info);
+				
+				case 'IfBlockStatement':
+					return this.compileIfBlockStatement(token, info);
 				
 				default:
 					return '// TODO: implement support for ' + token.type + '\n';
@@ -3455,6 +3925,16 @@
 			+ ')';
 		},
 		
+		compileIfBlockStatement: function(token, info){
+			return 'if('
+				+ (token.unless ? '!(' : '')
+					+ this.compileToken(token.condition, info)
+				+ (token.unless ? ')' : '')
+			+ '){\n'
+				+ this.compileBody(token.body, info)
+			+ '\n}';
+		},
+		
 		compileParenthesizedExpression: function(token, info){
 			return '(' + this.compileToken(token.value, info) + ')';
 		}
@@ -3469,7 +3949,7 @@
 	};
 	
 	simply.prototype = {
-		version: 0.05,
+		version: 0.07,
 		
 		execute: function(code, argv){
 			this._clear_output();
@@ -3648,7 +4128,25 @@
 					writeln: ENV.writeln
 				}, RDP.FNS);
 				
-				result = fn.call(ENV, argv, ENV, FNS);
+				var MODULES_EXPORTS = {};
+				var settings = this._settings;
+				
+				MODULES_ORDER.forEach(function(k){
+					MODULES[k].Init(settings);
+					
+					if(!MODULES[k].Exports)
+					{
+						return;
+					}
+					
+					MODULES_EXPORTS[k.toUpperCase()] = MODULES[k].Exports;
+				});
+				
+				result = fn.call(ENV, argv, ENV, FNS, MODULES_EXPORTS);
+				
+				MODULES_ORDER.forEach(function(k){
+					MODULES[k].Cleanup(settings);
+				});
 			}
 			catch(e)
 			{
@@ -3719,6 +4217,32 @@
 			this._do_output('\n❌ Error!\n' + e.toString() + '\n');
 		}
 	};
+	
+	// public methods
+	Object.defineProperties(simply, {
+		module_register: {
+			value: function module_register(name, module_info){
+				name = name.toLowerCase();
+				if(MODULES.hasOwnProperty(name))
+				{
+					return false;
+				}
+				
+				MODULES_ORDER.push(name);
+				MODULES[name] = Object.assign(Object.create(null), MODULES_DEFAULTS, module_info);
+				
+				return true;
+			},
+			enumerable: true
+		},
+		
+		module_is_registered: {
+			value: function module_is_registered(name){
+				return MODULES.hasOwnProperty(name.toLowerCase());
+			},
+			enumerable: true
+		}
+	});
 	
 	window.simply = simply;
 	
