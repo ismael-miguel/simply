@@ -8,7 +8,7 @@
 		<title>Help</title>
 		
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-		<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet" integrity="sha256-rzXMaro05QBd53CZ36ctTBp3FdKN3Ow0P0gDHcjLCLw=" crossorigin="anonymous">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css" rel="stylesheet" integrity="sha256-8M+b2Hj+vy/2J5tZ9pYDHeuPD59KsaEZn1XXj3xVhjg=" crossorigin="anonymous">
 		
 		<link href="./style_help.css" rel="stylesheet">
 		
@@ -69,6 +69,7 @@
 						<code>takes</code>
 						<code>that</code>
 						<code>the</code>
+						<code>then</code>
 						<code>this</code>
 						<code>to</code>
 						<code>value</code>
@@ -421,6 +422,58 @@
 				<div class="alert alert-warning show" role="alert">
 					<b>Note:</b> this variable is a local variable, and will be overwritten inside function.
 				</div>
+			</div>
+			
+			<hr>
+			
+			<div id="doc-conditional-blocks">
+				<h2 class="h4">Conditional blocks</h2>
+				
+				<div>
+					<h3 class="h5">IF Block</h3>
+				
+					<div class="keywords">
+						Keywords:
+						<ul>
+							<li>if</li>
+							<li>in case</li>
+						</ul>
+					</div>
+					
+					<p>
+						An IF block controls the flow the code will have when executing.<br>
+						If the expression that comes after results in a truthy value, the block of code after is executed.
+					</p>
+					
+					<p>
+						In the absence of a scope opening, the first expression after the IF block will be executed.
+					</p>
+					
+					<p>Here are a few examples:</p>
+					<pre><code>If $a then display $a</code></pre>
+					<pre><code>In case &can_display($foo) then display the string "Hello, World!" formatted by "%s"</code></pre>
+				</div>
+				
+				<div>
+					<h3 class="h5">Unless Block</h3>
+				
+					<div class="keywords">
+						Keywords:
+						<ul>
+							<li>unless</li>
+						</ul>
+					</div>
+					
+					<p>
+						An Unless block controls the flow the code will have when executing.<br>
+						It does exactly the same as the IF Block, except it executes when the expression results in a falsy value.
+					</p>
+					
+					<p>Here are a few examples:</p>
+					<pre><code>Unless &fn then define &fn returns 3;</code></pre>
+					<pre><code>Unless $a then echo "The variable $a is missing a value."</code></pre>
+				</div>
+				
 			</div>
 			
 			<hr>
