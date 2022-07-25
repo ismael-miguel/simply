@@ -402,6 +402,8 @@
 			[/^(?:if|in case)(?![a-z\d])/i, 'IF_BLOCK'],
 			// unless - same as "if", but negative
 			[/^(?:unless)(?![a-z\d])/i, 'UNLESS_BLOCK'],
+			// else block
+			[/^(?:else|otherwise)(?![a-z\d])/i, 'ELSE_BLOCK'],
 			
 			// RETURN
 			[/^(?:return|send|pass)(?![a-z\d])/i, 'RETURN'],
@@ -1499,6 +1501,8 @@
 				case 'IF_BLOCK':
 				case 'UNLESS_BLOCK':
 					return this.IfBlockStatement();
+				case 'ELSE_BLOCK':
+					return this.ElseBlockStatement();
 				
 				default:
 					return this.ExpressionStatement();
@@ -1969,8 +1973,8 @@
 		
 		/**
 		 *   IfBlockStatement
-		 *     : IF_BLOCK Expression SCOPE_OPEN Statement [Statement]* SCOPE_CLOSE
-		 *     | UNLESS_BLOCK Expression SCOPE_OPEN Statement [Statement]* SCOPE_CLOSE
+		 *     : IF_BLOCK Expression SCOPE_OPEN [Statement]* SCOPE_CLOSE
+		 *     | UNLESS_BLOCK Expression SCOPE_OPEN [Statement]* SCOPE_CLOSE
 		 *     | IF_BLOCK Expression Statement
 		 *     | UNLESS_BLOCK Expression Statement
 		 *     ;
@@ -1986,6 +1990,56 @@
 				line: token.line,
 				column: token.column,
 				unless: token.type === 'UNLESS_BLOCK'
+			};
+			
+			if(!this._lookahead)
+			{
+				return result;
+			}
+			
+			this._jump(';');
+			if(this._lookahead.type === 'SCOPE_OPEN')
+			{
+				this._eat('SCOPE_OPEN');
+				
+				while(this._lookahead && this._lookahead.type !== 'SCOPE_CLOSE')
+				{
+					var tokens = this.PrimaryExpression();
+					if(tokens)
+					{
+						result.body = result.body.concat(tokens);
+					}
+				}
+				
+				this._eat('SCOPE_CLOSE');
+			}
+			else
+			{
+				var tokens = this.PrimaryExpression();
+				if(tokens)
+				{
+					result.body = result.body.concat(tokens);
+				}
+			}
+			
+			
+			return result;
+		},
+		
+		/**
+		 *   ElseBlockStatement
+		 *     : ELSE_BLOCK SCOPE_OPEN [Statement]* SCOPE_CLOSE
+		 *     | ELSE_BLOCK Statement
+		 *     ;
+		 */
+		ElseBlockStatement: function(){
+			var token = this._eat('ELSE_BLOCK');
+			
+			var result = {
+				type: 'ElseBlockStatement',
+				body: [],
+				line: token.line,
+				column: token.column
 			};
 			
 			if(!this._lookahead)
@@ -2424,7 +2478,7 @@
 		 *   : CONSTANT_VAL
 		 *   ;
 		 */
-		 ConstantLiteral: function(){
+		ConstantLiteral: function(){
 			var token = this._eat('CONSTANT_VAL');
 			
 			return {
@@ -2589,7 +2643,6 @@
 				throw new SyntaxError('Unexpected end of input, expected ' + types, FILENAME, token.line);
 			}
 			
-			// if(!types.some(function(_){ return _ === token.type; }))
 			if(!~types.indexOf(token.type))
 			{
 				var message = 'Unexpected token ' + JSON.stringify(token.value) + ' of type ' + token.type + ', expected ' + types;
@@ -2645,12 +2698,21 @@
 				case 'WordStatement':
 					return this.analyzeWordStatement(token);
 				
-				case 'ReturnStatement':
-					return this.analyzeReturnStatement(token);
+				/*case 'ElseBlockStatement': // <-- to fix!
+					return this.analyzeElseBlockStatement(token);*/
 				
 				default:
 					return token;
 			}
+		},
+		
+		analyzeElseBlockStatement: function(token){
+			if(!this._last_token || this._last_token.type !== 'IfBlockStatement')
+			{
+				throw new SyntaxError('An else block can only come after an if/unless block', FILENAME, token.line);
+			}
+			
+			return token;
 		},
 		
 		analyzeOutputStatement: function(token){
@@ -3706,6 +3768,8 @@
 				
 				case 'IfBlockStatement':
 					return this.compileIfBlockStatement(token, info);
+				case 'ElseBlockStatement':
+					return this.compileElseBlockStatement(token, info);
 				
 				default:
 					return '// TODO: implement support for ' + token.type + '\n';
@@ -3933,6 +3997,12 @@
 			+ '){\n'
 				+ this.compileBody(token.body, info)
 			+ '\n}';
+		},
+		
+		compileElseBlockStatement: function(token, info){
+			return token.body.length === 1 && token.body[0].type === 'IfBlockStatement'
+				? 'else ' + this.compileBody(token.body, info)
+				: 'else {\n' + this.compileBody(token.body, info) + '\n}';
 		},
 		
 		compileParenthesizedExpression: function(token, info){
