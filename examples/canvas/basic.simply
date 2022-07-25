@@ -1,0 +1,14 @@
+unless !CANVAS then {
+	echo "❌ The canvas module is required for this example";
+	return;
+}
+
+$c = call !CANVAS->init(300, 300, "lightblue");
+
+$width = &rand(1, call $c->getWidth);
+$height = &rand(1, call $c->getHeight);
+$x = &rand(0, &sub(call $c->getWidth, $width, 1));
+$y = &rand(0, &sub(call $c->getHeight, $height, 1));
+$color = call $c->getRandomColor;
+
+call $c->fillRect($x, $y, $width, $height, $color);
