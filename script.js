@@ -86,6 +86,14 @@
 			}
 		});
 		
+		//  autocapitalize="none" autocorrect="off" autocomplete="off"
+		$form.find('textarea').each(function(){
+			this.setAttribute('autocapitalize', 'none');
+			this.setAttribute('autocorrect', 'off');
+			this.setAttribute('autocomplete', 'off');
+			this.setAttribute('spellcheck', 'false');
+		});
+		
 		$form.on('submit', function(e){
 			e.preventDefault();
 			
