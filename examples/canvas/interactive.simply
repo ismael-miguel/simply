@@ -29,7 +29,13 @@ unless (call &str_compare(%settings->dotsize, "random")) then {
 %c = call !CANVAS->init(%settings->width, %settings->height, %settings->bgcolor);
 %draw = false;
 
-call %c->fillRect(%settings->padding, %settings->padding, &sub(call %c->getWidth, &add(%settings->padding, %settings->padding)), &sub(call %c->getHeight, &add(%settings->padding, %settings->padding)), "rgba(0, 0, 0, 0.5)");
+call %c->fillRect(
+	%settings->padding,
+	%settings->padding,
+	&sub(call %c->getWidth, &add(%settings->padding, %settings->padding)),
+	&sub(call %c->getHeight, &add(%settings->padding, %settings->padding)),
+	"rgba(0, 0, 0, 0.5)"
+);
 
 $fontsize = %settings->fontsize;
 $spacing = %settings->spacing;
@@ -39,8 +45,9 @@ call %c->setFillStyle("white");
 call %c->getStrokeStyle("red");
 call %c->setFontStyle(&str_concat($fontsize, "px monospace"));
 
-/* no loops ... yet */
 $maxwidth = &sub(call %c->getWidth, 80, 10);
+
+/* no loops ... yet */
 call %c->drawText($x, $y, "Interactive <canvas> example", $maxwidth, null, "gold");
 $y = &sum($y, $fontsize, $spacing);
 call %c->drawText($x, $y, "🖱️ Left + move 🖱️:", $maxwidth);
@@ -61,10 +68,15 @@ call %c->drawText($x, $y, "Draw many random rectangles", $maxwidth);
 $y = &sum($y, $fontsize, $spacing);
 call %c->drawText($x, $y, "❗ All colors are random", $maxwidth);
 
+/* draws the stars on the corners */
 call %c->drawText(0, 7, "⭐");
 call %c->drawText(0, &sub(call %c->getHeight, $fontsize, 2), "⭐");
 call %c->drawText(&sub(call %c->getWidth, $fontsize, 8), 7, "⭐");
-call %c->drawText(&sub(call %c->getWidth, $fontsize, 8), &sub(call %c->getHeight, $fontsize, 2), "⭐");
+call %c->drawText(
+	&sub(call %c->getWidth, $fontsize, 8),
+	&sub(call %c->getHeight, $fontsize, 2),
+	"⭐"
+);
 
 def &draw_random {
 	$width = &rand(1, call %c->getWidth);
@@ -80,11 +92,15 @@ def &draw_random {
 def &onmove($e, $c) {
 	unless %draw return; /* if not %draw, return */
 	
-	unless $e->shift {
-		call %c->fillRect($e->x, $e->y, %settings->dotsize, %settings->dotsize, call %c->getRandomColor);
-	}
-	
-	if $e->shift {
+	/* if the shift key isnt' pressed, draw the random square */
+	unless $e->shift then {
+		call %c->fillRect(
+			$e->x, $e->y,
+			%settings->dotsize,
+			%settings->dotsize,
+			call %c->getRandomColor
+		);
+	} else {
 		call %draw_random;
 	}
 }
@@ -95,10 +111,9 @@ def &ondown($e, $c) {
 def &onup %draw = false;
 
 def &onclick($e) {
-	if $e->shift {
+	if $e->shift then {
 		call %draw_random;
-	}
-	if $e->ctrl {
+	} else if $e->ctrl then {
 		call %c->clear(%settings->bgcolor);
 		call %draw_random;
 	}
