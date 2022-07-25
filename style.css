@@ -25,6 +25,11 @@ pre {
 	max-width: min(15rem, 80vw);
 }
 
+#form-code textarea {
+	font-family: monospace;
+	tab-size: 4;
+}
+
 /*@media screen and (min-width: 768px)
 {
 	.container > .row {
