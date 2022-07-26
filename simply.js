@@ -1818,7 +1818,8 @@
 					result.body = result.body.concat(tokens);
 				}
 				
-				if(
+				// keeping this here, in case i change my mind
+				/*if(
 					result.body.length === 1
 					&& RDP.Utils.tokenIsExpression(result.body[0])
 				)
@@ -1829,7 +1830,7 @@
 						line: result.body[0].line,
 						column: result.body[0].column
 					}];
-				}
+				}*/
 			}
 			
 			return result;
@@ -3612,9 +3613,23 @@
 			'_ = null'
 		],
 		
+		_boilerplate_fn_arrow: [
+			'var old_$VAR = $VAR',
+			'$VAR = Object.assign({}, $VAR)',
+			'$VAR.argv = Array.from(arguments)',
+			'$VAR.argc = $VAR.argv.length',
+			'var result = null'
+		],
+		
+		_boilerplate_fn_arrow_end: [
+			'$VAR = old_$VAR',
+			'return result'
+		],
+		
 		_no_semicollon: [
 			'CommentStatement',
-			'IfBlockStatement'
+			'IfBlockStatement',
+			'ElseBlockStatement'
 		],
 		
 		init: function(abs){
@@ -3955,9 +3970,28 @@
 				{
 					var token_body = token.body[0];
 					
-					body = RDP.Utils.tokenIsExpression(token_body)
-						? 'return ' + this.compileToken(token_body, info) + ';'
+					
+					body = '// FN Boilerplate code\n\n'
+						+ this._boilerplate_fn_arrow.join(';\n') + ';\n\n'
+						+ '// FN Boilerplate code ended\n\n'
+						+ '// ==========================================\n\n';
+					
+					if(token.args.length)
+					{
+						// don't know how to dry this - yuck :/
+						body += '// Arguments code - ' + token.args.length + ' argument(s)\n\n'
+							+ token.args.map(function(arg, i){
+								return this.compileVariableExpression(arg, info) + ' = $VAR.argv[' + i + ']';
+							}, this).join(';\n') + ';\n\n'
+							+ '// Arguments code ended\n\n'
+							+ '// ==========================================\n\n';
+					}
+					
+					body += RDP.Utils.tokenIsExpression(token_body)
+						? 'result = (' + this.compileToken(token_body, info) + ');'
 						: this.compileBody(token.body, info); // token.body is intentional!
+					
+					body += '\n\n' + this._boilerplate_fn_arrow_end.join(';\n') + ';';
 				}
 			}
 			
