@@ -16,6 +16,11 @@
 	
 	var ctx = canvas.getContext('2d');
 	
+	// ctx.globalCompositeOperation = 'destination-in';
+	// console.log(ctx.globalCompositeOperation);
+	ctx.imageSmoothingEnabled = false;
+	ctx.imageSmoothingQuality = 'high';
+	
 	var SETTINGS = {};
 	var EXPORTED = {};
 	
@@ -101,6 +106,42 @@
 			}
 		},
 		
+		showFPSCounter_raf: null,
+		showFPSCounter: function(){
+			if(methods.showFPSCounter_raf)
+			{
+				return;
+			}
+			
+			var times = [];
+			var last_fps = '--';
+			
+			// Taken from: https://stackoverflow.com/questions/69279653/use-gpu-to-draw-on-html5-canvas-on-google-chrome
+			var update_fps = function() {
+				methods.showFPSCounter_raf = window.requestAnimationFrame(update_fps);
+				
+				var now = performance.now();
+				while (times.length > 0 && times[0] <= now - 1000) {
+					times.shift();
+					last_fps = times.length.toString();
+				}
+				times.push(now);
+				
+				methods.fillRect(0, 0, 40, 30, '#000');
+				methods.drawText(3, 3, last_fps);
+			};
+			
+			update_fps();
+		},
+		
+		hideFPSCounter: function(){
+			if(methods.showFPSCounter_raf)
+			{
+				window.cancelAnimationFrame(methods.showFPSCounter_raf);
+				methods.showFPSCounter_raf = null;
+			}
+		},
+		
 		onclick: function(fn){
 			canvas.onclick = function(e){
 				var data = {
@@ -162,6 +203,8 @@
 			};
 		},
 		reset: function(){
+			methods.hideFPSCounter();
+			
 			ctx.font = '10px sans-serif';
 			ctx.fillStyle = '#000000';
 			ctx.strokeStyle = '#000000';
@@ -385,6 +428,23 @@
 					'Clears the entire area of the canvas',
 					'Takes an optional $style, which will be used to fill the area with'
 				]
+			}),
+			enumerable: true
+		},
+		
+		showFPSCounter: {
+			value: Object.assign(function showFPSCounter(){
+				return methods.showFPSCounter();
+			}, {
+				__doc__: 'Shows a rough FPS counter at 3x3'
+			}),
+			enumerable: true
+		},
+		hideFPSCounter: {
+			value: Object.assign(function hideFPSCounter(style){
+				return methods.hideFPSCounter();
+			}, {
+				__doc__: 'Hides the FPS counter'
 			}),
 			enumerable: true
 		},
