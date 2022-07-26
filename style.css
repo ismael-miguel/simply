@@ -28,6 +28,7 @@ pre {
 #form-code textarea {
 	font-family: monospace;
 	tab-size: 4;
+	font-size: .875rem;
 }
 
 /*@media screen and (min-width: 768px)
