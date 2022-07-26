@@ -1,0 +1,21 @@
+Create a variable called $foo and set the value to "bar"
+Show the contents of $foo
+
+/*
+	Alternativelly:
+	
+	$foo = "bar";
+	echo $foo;
+*/
+
+Define the variable %bar
+Assign the value True to the variable %bar
+Display the value of %bar
+
+/*
+	Alternativelly:
+	
+	def %bar;
+	%bar = true;
+	echo %bar;
+*/

@@ -1,0 +1,25 @@
+/* You can view the documentation of any function, if it exists */
+
+echo &doc(&doc);
+
+/*
+	Expected output:
+	
+	Documentation for doc:
+	Returns the documentation string for a function, if it exists, otherwise returns null.
+*/
+
+echo &doc(&hello_world);
+
+/*
+	Expected output:
+	
+	Documentation for hello_world:
+	Generates the "Hello, World!" text. (Please check: https://en.wikipedia.org/wiki/%22Hello,_World!%22_program).
+	The function accepts a binary 5-bit integer as a flag, and generates the text based on the following bits being set:.
+	1- The "H" in "Hello" will be in lowercase instead: "hello".
+	2- Removes the comma.
+	3- Removes the space after the comma.
+	4- The "W" in "World" will be in lowercase instead: "world".
+	5- Removes the exclamation mark (!) at the end.
+*/
