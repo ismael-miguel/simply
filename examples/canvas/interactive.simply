@@ -93,7 +93,7 @@ def &onmove($e, $c) {
 	unless %draw return; /* if not %draw, return */
 	
 	/* if the shift key isnt' pressed, draw the random square */
-	unless $e->shift then {
+	else unless $e->shift then {
 		call %c->fillRect(
 			$e->x, $e->y,
 			%settings->dotsize,
@@ -105,9 +105,7 @@ def &onmove($e, $c) {
 	}
 }
 
-def &ondown($e, $c) {
-	%draw = &iff($e->button, false, true);
-}
+def &ondown($e) %draw = &iff($e->button, false, true);
 def &onup %draw = false;
 
 def &onclick($e) {
