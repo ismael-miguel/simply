@@ -512,7 +512,12 @@
 					'Canvas module object',
 					'All functions available: ' + Object.keys(EXPORTS).join('(), ') + '()'
 				]
-			})
+			}),
+			__doc__: [
+				'Canvas module',
+				'Please run !CANVAS->init($width, $height, $bgcolor)',
+				'Store the value on a variable for later use'
+			]
 		},
 		Cleanup: function(){},
 		Init: function(settings){
