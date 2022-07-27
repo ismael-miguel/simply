@@ -283,7 +283,8 @@
 		Analyze: {},
 		Compile: {},
 		Cleanup: function(){},
-		Init: function(){}
+		Init: function(){},
+		CSS: ''
 	};
 	const MODULES = {
 		'rick': Object.assign(Object.create(null), MODULES_DEFAULTS, {
@@ -477,11 +478,16 @@
 				__doc__: 'Returns the number of elements in the string, array or character.'
 			}),
 			doc: Object.assign(function doc(fn, no_header){
-				return typeof fn !== 'function' || !fn.hasOwnProperty('__doc__')
+				return !fn.hasOwnProperty('__doc__')
 					? null
 					: (no_header
 						? ''
-						: 'Documentation for ' + (fn.name || 'anonymous function') + ':\n'
+						: 'Documentation for '
+							+ (typeof fn === 'function'
+								? fn.name || 'anonymous function'
+								: typeof fn
+							)
+							+ ':\n'
 					) + (Array.isArray(fn.__doc__)
 						? fn.__doc__.join('.\n')
 						: fn.__doc__
@@ -4334,6 +4340,14 @@
 				
 				MODULES_ORDER.push(name);
 				MODULES[name] = Object.assign(Object.create(null), MODULES_DEFAULTS, module_info);
+				
+				if(MODULES[name].CSS && MODULES[name].CSS.length)
+				{
+					var style = document.createElement('style');
+					style.textContent = MODULES[name].CSS;
+					
+					document.head.appendChild(style);
+				}
 				
 				return true;
 			},
