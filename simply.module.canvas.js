@@ -7,7 +7,14 @@
 	}
 	
 	var canvas = document.createElement('canvas');
-	canvas.style.display = 'block';
+	
+	var div = document.createElement('div');
+	div.id = 'm-canvas-holder';
+	div.setAttribute('data-showfps', 'false');
+	div.setAttribute('data-currfps', '--');
+	
+	div.appendChild(canvas);
+	
 	
 	if(!canvas.getContext)
 	{
@@ -106,9 +113,9 @@
 			}
 		},
 		
-		showFPSCounter_raf: null,
-		showFPSCounter: function(){
-			if(methods.showFPSCounter_raf)
+		showFPS_raf: null,
+		showFPS: function(){
+			if(methods.showFPS_raf)
 			{
 				return;
 			}
@@ -116,9 +123,11 @@
 			var times = [];
 			var last_fps = '--';
 			
+			div.setAttribute('data-showfps', 'true');
+			
 			// Taken from: https://stackoverflow.com/questions/69279653/use-gpu-to-draw-on-html5-canvas-on-google-chrome
 			var update_fps = function() {
-				methods.showFPSCounter_raf = window.requestAnimationFrame(update_fps);
+				methods.showFPS_raf = window.requestAnimationFrame(update_fps);
 				
 				var now = performance.now();
 				while (times.length > 0 && times[0] <= now - 1000) {
@@ -127,18 +136,22 @@
 				}
 				times.push(now);
 				
-				methods.fillRect(0, 0, 40, 30, '#000');
-				methods.drawText(3, 3, last_fps);
+				// methods.fillRect(0, 0, 40, 30, '#000');
+				// methods.drawText(3, 3, last_fps);
+				div.setAttribute('data-currfps', last_fps);
 			};
 			
 			update_fps();
 		},
 		
-		hideFPSCounter: function(){
-			if(methods.showFPSCounter_raf)
+		hideFPS: function(){
+			if(methods.showFPS_raf)
 			{
-				window.cancelAnimationFrame(methods.showFPSCounter_raf);
-				methods.showFPSCounter_raf = null;
+				div.setAttribute('data-currfps', '--');
+				div.setAttribute('data-showfps', 'false');
+				
+				window.cancelAnimationFrame(methods.showFPS_raf);
+				methods.showFPS_raf = null;
 			}
 		},
 		
@@ -203,7 +216,7 @@
 			};
 		},
 		reset: function(){
-			methods.hideFPSCounter();
+			methods.hideFPS();
 			
 			ctx.font = '10px sans-serif';
 			ctx.fillStyle = '#000000';
@@ -432,31 +445,35 @@
 			enumerable: true
 		},
 		
-		showFPSCounter: {
-			value: Object.assign(function showFPSCounter(){
-				return methods.showFPSCounter();
+		showFPS: {
+			value: Object.assign(function showFPS(scale){
+				return methods.showFPS(+scale > 0.1 ? +scale : 1);
 			}, {
-				__doc__: 'Shows a rough FPS counter at 3x3'
+				__doc__: [
+					'Shows a rough FPS counter',
+					'Optionally, takes a scale value',
+					'Any value below 0.1 will be ignored'
+				]
 			}),
 			enumerable: true
 		},
-		hideFPSCounter: {
-			value: Object.assign(function hideFPSCounter(style){
-				return methods.hideFPSCounter();
+		hideFPS: {
+			value: Object.assign(function hideFPS(){
+				return methods.hideFPS();
 			}, {
 				__doc__: 'Hides the FPS counter'
 			}),
 			enumerable: true
-		},
+		}
 	});
 	
 	simply.module_register('canvas', {
 		Exports: {
 			'version': '1.0',
 			'init': Object.assign(function canvas_init(width, height, bgcolor){
-				if(canvas.parentNode)
+				if(div.parentNode)
 				{
-					canvas.parentNode.removeChild(canvas);
+					div.parentNode.removeChild(div);
 				}
 				
 				canvas.width = width;
@@ -470,28 +487,61 @@
 					var hr = SETTINGS.output_element.querySelector('hr');
 					if(hr && hr.nextSibling)
 					{
-						SETTINGS.output_element.insertBefore(canvas, hr.nextSibling);
+						SETTINGS.output_element.insertBefore(div, hr.nextSibling);
 					}
 					else
 					{
-						SETTINGS.output_element.appendChild(canvas);
+						SETTINGS.output_element.appendChild(div);
 					}
 				}
 				
-				return EXPORTED = Object.assign({}, EXPORTS);
+				EXPORTED = Object.assign({}, EXPORTS);
+				
+				Object.defineProperty(EXPORTED, '__doc__', {
+					value: canvas_init.__doc_export__
+				});
+				
+				return EXPORTED;
 			}, {
 				__doc__: [
 					'Initializes a canvas, inside the output area',
 					'It\'s required to pass a $width, $height and a $bgcolor',
 					'Returns a custom 2d context object'
 				],
-				result: null
+				__doc_export__: [
+					'Canvas module object',
+					'All functions available: ' + Object.keys(EXPORTS).join('(), ') + '()'
+				]
 			})
 		},
 		Cleanup: function(){},
 		Init: function(settings){
 			Object.assign(SETTINGS, settings);
-		}
+		},
+		CSS: [
+			'#' + div.id + ' {',
+				'position: relative;',
+				'transform: translate3d(0, 0, 0);',
+			'}',
+			'#' + div.id + ':before {',
+				'content: "";',
+				'pointer-events: none;',
+				'display: none;',
+				'position: absolute;',
+				'top: 0;',
+				'left: 0;',
+				'background: rgba(0,0,0,.5);',
+				'font-size: 1rem;',
+				'font-family: monospace;',
+				'color: #fff;',
+				'padding: 0 .5rem;',
+			'}',
+			'#' + div.id + '[data-showfps="true"]:before {',
+				'content: attr(data-currfps);',
+				'display: block;',
+			'}',
+			'#' + div.id + ' > canvas {display: block}'
+		].join('\n')
 	});
 	
 })(Function('return this')());
