@@ -42,7 +42,6 @@ $spacing = %settings->spacing;
 $x = &add(%settings->padding, $spacing);
 $y = $x;
 call %c->setFillStyle("white");
-call %c->getStrokeStyle("red");
 call %c->setFontStyle(&str_concat($fontsize, "px monospace"));
 
 $maxwidth = &sub(call %c->getWidth, 80, 10);
@@ -68,15 +67,26 @@ call %c->drawText($x, $y, "Draw many random rectangles", $maxwidth);
 $y = &sum($y, $fontsize, $spacing);
 call %c->drawText($x, $y, "❗ All colors are random", $maxwidth);
 
+
+
 // draws the stars on the corners
-call %c->drawText(0, 7, "⭐");
-call %c->drawText(0, &sub(call %c->getHeight, $fontsize, 2), "⭐");
-call %c->drawText(&sub(call %c->getWidth, $fontsize, 8), 7, "⭐");
-call %c->drawText(
-	&sub(call %c->getWidth, $fontsize, 8),
-	&sub(call %c->getHeight, $fontsize, 2),
-	"⭐"
-);
+def &draw_stars {
+	$size = call %c->measureText("⭐");
+
+	$star_top_y = &add($size->translateY, 2);
+	$star_right_x = &sub(call %c->getWidth, $size->width, $size->translateX);
+	$star_bottom_y = &sum(&sub(call %c->getHeight, $size->height), $size->translateY, 2);
+	$star_left_x = 0;
+
+	call %c->drawText($star_left_x, $star_top_y, "⭐");
+	call %c->drawText($star_right_x, $star_top_y, "⭐");
+	call %c->drawText($star_left_x, $star_bottom_y, "⭐");
+	call %c->drawText($star_right_x , $star_bottom_y, "⭐");
+}
+%draw_stars = &draw_stars;
+&draw_stars();
+
+
 
 def &draw_random {
 	$width = &rand(1, call %c->getWidth);
@@ -106,6 +116,7 @@ def &onmove($e, $c) {
 		);
 	} else {
 		call %draw_random;
+		call %draw_stars;
 	}
 }
 
@@ -115,9 +126,11 @@ def &onup %draw = false;
 def &onclick($e) {
 	if $e->shift then {
 		call %draw_random;
+		call %draw_stars;
 	} else if $e->ctrl then {
 		call %c->clear(%settings->bgcolor);
 		call %draw_random;
+		call %draw_stars;
 	}
 }
 
