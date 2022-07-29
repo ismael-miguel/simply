@@ -476,13 +476,13 @@
 				__doc__: [
 					'Measures the $text size, and returns an object with the width and height',
 					'Takes an optional $font, which will be used to calculate the size instead of the one provided in !CANVAS->setFontStyle()',
-					'It returns an object with the following values:',
-					'"font"			Full font description (size, family and style)',
-					'"length" 		Number of characters of the text',
-					'"width" 		Width, in pixels and subpixels',
-					'"height"		Height, in pixels and subpixels',
-					'"translateX"	How many pixels and subpixels to move the text in the X axis',
-					'"translateY"	How many pixels and subpixels to move the text in the Y axis',
+					'It returns an object with the following keys:',
+					'• font			Full font description (size, family and style)',
+					'• length 		Number of characters of the text',
+					'• width 		Width, in pixels and subpixels',
+					'• height		Height, in pixels and subpixels',
+					'• translateX	How many pixels and subpixels to move the text in the X axis',
+					'• translateY	How many pixels and subpixels to move the text in the Y axis',
 					'These translation values can be useful to determine how many pixels the characters "poke out" on each axis',
 					'For example, the emoji ⭐ may have an height above the line height'
 				]
