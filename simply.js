@@ -1212,12 +1212,67 @@
 			}, {
 				__doc__: 'Multiplies all values together'
 			}),
+			mod: Object.assign(function mod(num, divisor){
+				return num % divisor;
+			}, {
+				__doc__: 'Returns the modulos (reminder) of dividing $num by $divisor'
+			}),
 			compare: Object.assign(function compare(num1, num2){
 				return num1 === num2 ? 0 : (num1 > num2 ? 1 : -1);
 			}, {
 				__doc__: [
 					'Compares $num1 with $num2, returning 0 if they are equal',
 					'If $num1 is greater than $num2, returns 1, otherwise returns -1'
+				]
+			}),
+			clamp: Object.assign(function clamp(min, max, num){
+				return num < min ? min : (num > max ? max : num);
+			}, {
+				__doc__: [
+					'Makes sure the $number is between $min and $max',
+					'If $number is greater than $max, returns $max',
+					'If $number is lower than $min, returns $min',
+					'Otherwise, returns the $number'
+				]
+			}),
+			min: Object.assign(function min(){
+				var array = Array.from(arguments);
+				
+				if(!array.length)
+				{
+					return null;
+				}
+				else if(array.length === 1)
+				{
+					return array[0];
+				}
+				
+				return Math.min.apply(Math, array);
+			}, {
+				__doc__: 'Returns the minimum value'
+			}),
+			max: Object.assign(function max(){
+				var array = Array.from(arguments);
+				
+				if(!array.length)
+				{
+					return null;
+				}
+				else if(array.length === 1)
+				{
+					return array[0];
+				}
+				
+				return Math.max.apply(Math, array);
+			}, {
+				__doc__: 'Returns the maximum value'
+			}),
+			abs: Object.assign(function abs(num){
+				return Math.abs(num);
+			}, {
+				__doc__: [
+					'Returns the absolute value of the $number',
+					'That is, it returns the number without the negative sign'
 				]
 			}),
 			
