@@ -194,6 +194,7 @@
 		onclick: function(fn){
 			canvas.onclick = function(e){
 				var data = {
+					trusted: e.isTrusted,
 					x: e.offsetX, y: e.offsetY,
 					lastX: e.movementX, lastY: e.movementY,
 					button: e.button,
@@ -209,6 +210,7 @@
 		onmove: function(fn){
 			canvas.onmousemove = function(e){
 				var data = {
+					trusted: e.isTrusted,
 					x: e.offsetX, y: e.offsetY,
 					lastX: e.movementX, lastY: e.movementY,
 					button: e.button,
@@ -220,10 +222,35 @@
 				
 				fn(data, EXPORTED);
 			};
+			
+			if('ontouchmove' in canvas)
+			{
+				canvas.ontouchmove = function(e){
+					e.preventDefault();
+					
+					var touch = e.touches[0] || e.changedTouches[0];
+					var rect = canvas.getBoundingClientRect();
+					
+					var data = {
+						trusted: e.isTrusted,
+						x: touch ? touch.clientX - rect.x : e.offsetX,
+						y: touch ? touch.clientY - rect.y : e.offsetY,
+						lastX: e.movementX, lastY: e.movementY,
+						button: e.button,
+						alt: e.altKey,
+						meta: e.metaKey,
+						shift: e.shiftKey,
+						ctrl: e.ctrlKey
+					};
+					
+					fn(data, EXPORTED);
+				};
+			}
 		},
 		ondown: function(fn){
 			canvas.onmousedown = function(e){
 				var data = {
+					trusted: e.isTrusted,
 					x: e.offsetX, y: e.offsetY,
 					lastX: e.movementX, lastY: e.movementY,
 					button: e.button,
@@ -235,10 +262,35 @@
 				
 				fn(data, EXPORTED);
 			};
+			
+			if('ontouchstart' in canvas)
+			{
+				canvas.ontouchstart = function(e){
+					e.preventDefault();
+					
+					var touch = e.touches[0] || e.changedTouches[0];
+					var rect = canvas.getBoundingClientRect();
+					
+					var data = {
+						trusted: e.isTrusted,
+						x: touch ? touch.clientX - rect.x : e.offsetX,
+						y: touch ? touch.clientY - rect.y : e.offsetY,
+						lastX: e.movementX, lastY: e.movementY,
+						button: e.button,
+						alt: e.altKey,
+						meta: e.metaKey,
+						shift: e.shiftKey,
+						ctrl: e.ctrlKey
+					};
+					
+					fn(data, EXPORTED);
+				};
+			}
 		},
 		onup: function(fn){
 			canvas.onmouseup = function(e){
 				var data = {
+					trusted: e.isTrusted,
 					x: e.offsetX, y: e.offsetY,
 					lastX: e.movementX, lastY: e.movementY,
 					button: e.button,
@@ -250,6 +302,31 @@
 				
 				fn(data, EXPORTED);
 			};
+			
+			
+			if('ontouchend' in canvas)
+			{
+				canvas.ontouchend = function(e){
+					e.preventDefault();
+					
+					var touch = e.touches[0] || e.changedTouches[0];
+					var rect = canvas.getBoundingClientRect();
+					
+					var data = {
+						trusted: e.isTrusted,
+						x: touch ? touch.clientX - rect.x : e.offsetX,
+						y: touch ? touch.clientY - rect.y : e.offsetY,
+						lastX: e.movementX, lastY: e.movementY,
+						button: e.button,
+						alt: e.altKey,
+						meta: e.metaKey,
+						shift: e.shiftKey,
+						ctrl: e.ctrlKey
+					};
+					
+					fn(data, EXPORTED);
+				};
+			}
 		},
 		reset: function(){
 			methods.hideFPS();
@@ -266,6 +343,13 @@
 			canvas.onmousemove = null;
 			canvas.onmousedown = null;
 			canvas.onmouseup = null;
+			
+			if('ontouchend' in canvas)
+			{
+				canvas.ontouchstart = null;
+				canvas.ontouchmove = null;
+				canvas.ontouchend = null;
+			}
 		}
 	};
 	
