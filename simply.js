@@ -351,7 +351,7 @@
 			
 			// COMMENTS
 			// single-line comments
-			[/^\/\/(?:$|\s*.*)/m, 'COMMENT_SINGLE_LINE'],
+			[/^\/\/.*(?:\r?\n|\r)?/, 'COMMENT_SINGLE_LINE'],
 			// multiline comments
 			[/^\/\*[\s\S]*?\*\//, 'COMMENT_MULTI_LINE'],
 			
