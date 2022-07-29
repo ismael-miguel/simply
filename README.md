@@ -47,7 +47,7 @@ Classes bring a lot of complications, including but not limited to inheritance a
 |:-----:|:--------------------------:|--------------------------------------------------------------------------------------------------------------------------------------|
 |   ✔️   |         Data types         | Definitions and compilation of all the basic data types (excluding functions).                                                       |
 |   ❌   |         Array keys         | Defining array keys on the array definition itself isn't implemented yet.                                                            |
-|   ⚠️   |          Functions         | Currently, some function definitions ignore arguments.                                                                               |
+|   ⚠️   |          Functions         | Currently, If/Unless/Else blocks aren't properly handled on scopeless functions.                                                     |
 |   ✔️   |    Calling<br> Functions   | Call a function with or without arguments, and optionally store the returned value in a variable or use it as part of an expression. |
 |   ✔️   |        Return values       | Return values from the function. Unrelated with the previous feature.                                                                |
 |   ⚠️   |   Language<br> Functions   | Not all functions have been added to the language.                                                                                   |
@@ -56,8 +56,8 @@ Classes bring a lot of complications, including but not limited to inheritance a
 |   ⚠️   |    Displaying<br> Values   | Works, but currently needs some work to improve on some aspects.                                                                     |
 |   ❌   |   Boolean<br> expressions  | These expressions haven't been implemented yet.                                                                                      |
 |   ❌   | Arithmetic<br> expressions | These haven't been implemented at all.                                                                                               |
-|   ⚠️   | Conditional<br> statements | The else block isn't implemented for "for" blocks                                                                                             |
+|   ⚠️   | Conditional<br> statements | The else block isn't implemented for "for" blocks                                                                                    |
 |   ❌   |            Loops           | Do ... while, while and for loops haven't been implemented.                                                                          |
 |   ❌   |        Syntax sugar        | Some "nice to have" syntax sugar, like a syntax for ranges.                                                                          |
-|   ⚠️   |           Modules          | Modules haven't been implemented yet. Ideas include regular expressions, HTML and a canvas.                                          |
+|   ⚠️   |           Modules          | Modules have been implemented, but not fully. Implement some ideas, like regular expressions and HTML.                               |
 
