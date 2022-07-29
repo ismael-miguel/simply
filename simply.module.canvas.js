@@ -123,12 +123,15 @@
 			text_measurer.textContent = text;
 			
 			var size = text_measurer.getBoundingClientRect();
+			var size_holder = text_measurer_holder.getBoundingClientRect();
 			
 			return {
 				length: text.length,
 				width: size.width,
-				height: size.height,
-				font: font
+				height: size_holder.height,
+				font: font,
+				translateX: 0,
+				translateY: size_holder.height - size.height
 			};
 		},
 		
@@ -472,7 +475,16 @@
 			}, {
 				__doc__: [
 					'Measures the $text size, and returns an object with the width and height',
-					'Takes an optional $font, which will be used to calculate the size instead of the one provided in !CANVAS->setFontStyle()'
+					'Takes an optional $font, which will be used to calculate the size instead of the one provided in !CANVAS->setFontStyle()',
+					'It returns an object with the following values:',
+					'"font"			Full font description (size, family and style)',
+					'"length" 		Number of characters of the text',
+					'"width" 		Width, in pixels and subpixels',
+					'"height"		Height, in pixels and subpixels',
+					'"translateX"	How many pixels and subpixels to move the text in the X axis',
+					'"translateY"	How many pixels and subpixels to move the text in the Y axis',
+					'These translation values can be useful to determine how many pixels the characters "poke out" on each axis',
+					'For example, the emoji ⭐ may have an height above the line height'
 				]
 			}),
 			enumerable: true
@@ -602,9 +614,9 @@
 				'top: 0;',
 				'left: 0;',
 				'width: 0 !important;',
-				'height: 0 !important;',
+				// 'height: 0 !important;',
 				'max-width: 0 !important;',
-				'max-height: 0 !important;',
+				// 'max-height: 0 !important;',
 				'overflow: hidden;',
 				'z-index: -100;',
 			'}',
@@ -613,6 +625,9 @@
 				'margin: 0 !important;',
 				'padding: 0 !important;',
 				'font: var(--font, 10px sans-serif) !important;',
+				'line-height: normal;',
+				'vertical-align: bottom;',
+				'text-align: left;',
 			'}',
 		].join('\n')
 	});
