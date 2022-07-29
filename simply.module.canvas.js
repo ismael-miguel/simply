@@ -119,7 +119,7 @@
 		measureText: function(text, font){
 			font = (font || ctx.font).trim();
 			
-			text_measurer.style.setProperty('--font', font);
+			text_measurer_holder.style.setProperty('--font', font);
 			text_measurer.textContent = text;
 			
 			var size = text_measurer.getBoundingClientRect();
@@ -732,13 +732,17 @@
 				// 'max-height: 0 !important;',
 				'overflow: hidden;',
 				'z-index: -100;',
+				// 'line-height: normal;',
+				'margin: 0 !important;',
+				'padding: 0 !important;',
+				'font: var(--font, 10px sans-serif) !important;',
 			'}',
 			'#' + div.id + ' .text-measurer {',
 				'display: inline;',
 				'margin: 0 !important;',
 				'padding: 0 !important;',
 				'font: var(--font, 10px sans-serif) !important;',
-				'line-height: normal;',
+				// 'line-height: normal;',
 				'vertical-align: bottom;',
 				'text-align: left;',
 			'}',
