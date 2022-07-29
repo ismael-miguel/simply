@@ -195,9 +195,11 @@
 			canvas.onclick = function(e){
 				var data = {
 					trusted: e.isTrusted,
+					touch: false,
 					x: e.offsetX, y: e.offsetY,
 					lastX: e.movementX, lastY: e.movementY,
 					button: e.button,
+					force: 1.0,
 					alt: e.altKey,
 					meta: e.metaKey,
 					shift: e.shiftKey,
@@ -211,9 +213,11 @@
 			canvas.onmousemove = function(e){
 				var data = {
 					trusted: e.isTrusted,
+					touch: false,
 					x: e.offsetX, y: e.offsetY,
 					lastX: e.movementX, lastY: e.movementY,
 					button: e.button,
+					force: 1.0,
 					alt: e.altKey,
 					meta: e.metaKey,
 					shift: e.shiftKey,
@@ -226,6 +230,11 @@
 			if('ontouchmove' in canvas)
 			{
 				canvas.ontouchmove = function(e){
+					if(!e.cancelable)
+					{
+						return;
+					}
+					
 					e.preventDefault();
 					
 					var touch = e.touches[0] || e.changedTouches[0];
@@ -233,10 +242,12 @@
 					
 					var data = {
 						trusted: e.isTrusted,
+						touch: !!touch,
 						x: touch ? touch.clientX - rect.x : e.offsetX,
 						y: touch ? touch.clientY - rect.y : e.offsetY,
-						lastX: e.movementX, lastY: e.movementY,
-						button: e.button,
+						lastX: null, lastY: null,
+						button: 0,
+						force: touch ? touch.force : null,
 						alt: e.altKey,
 						meta: e.metaKey,
 						shift: e.shiftKey,
@@ -251,9 +262,11 @@
 			canvas.onmousedown = function(e){
 				var data = {
 					trusted: e.isTrusted,
+					touch: false,
 					x: e.offsetX, y: e.offsetY,
 					lastX: e.movementX, lastY: e.movementY,
 					button: e.button,
+					force: 1.0,
 					alt: e.altKey,
 					meta: e.metaKey,
 					shift: e.shiftKey,
@@ -266,6 +279,11 @@
 			if('ontouchstart' in canvas)
 			{
 				canvas.ontouchstart = function(e){
+					if(!e.cancelable)
+					{
+						return;
+					}
+					
 					e.preventDefault();
 					
 					var touch = e.touches[0] || e.changedTouches[0];
@@ -273,10 +291,12 @@
 					
 					var data = {
 						trusted: e.isTrusted,
+						touch: !!touch,
 						x: touch ? touch.clientX - rect.x : e.offsetX,
 						y: touch ? touch.clientY - rect.y : e.offsetY,
-						lastX: e.movementX, lastY: e.movementY,
-						button: e.button,
+						lastX: null, lastY: null,
+						button: 0,
+						force: touch ? touch.force : null,
 						alt: e.altKey,
 						meta: e.metaKey,
 						shift: e.shiftKey,
@@ -291,9 +311,11 @@
 			canvas.onmouseup = function(e){
 				var data = {
 					trusted: e.isTrusted,
+					touch: false,
 					x: e.offsetX, y: e.offsetY,
 					lastX: e.movementX, lastY: e.movementY,
 					button: e.button,
+					force: 1.0,
 					alt: e.altKey,
 					meta: e.metaKey,
 					shift: e.shiftKey,
@@ -307,6 +329,11 @@
 			if('ontouchend' in canvas)
 			{
 				canvas.ontouchend = function(e){
+					if(!e.cancelable)
+					{
+						return;
+					}
+					
 					e.preventDefault();
 					
 					var touch = e.touches[0] || e.changedTouches[0];
@@ -314,10 +341,12 @@
 					
 					var data = {
 						trusted: e.isTrusted,
+						touch: !!touch,
 						x: touch ? touch.clientX - rect.x : e.offsetX,
 						y: touch ? touch.clientY - rect.y : e.offsetY,
-						lastX: e.movementX, lastY: e.movementY,
-						button: e.button,
+						lastX: null, lastY: null,
+						button: 0,
+						force: touch ? touch.force : null,
 						alt: e.altKey,
 						meta: e.metaKey,
 						shift: e.shiftKey,
