@@ -1,0 +1,62 @@
+/*
+	Defines a function without a scope.
+	Only the first statement or expression will be part of the body
+*/
+
+def &foo echo !EOL;
+
+// A more verbose example
+Define the function &rickroll
+Begin
+	Return the result of executing !RICK->roll;
+End
+
+
+// A more conventional looking code:
+def &fn() {
+	// The variable $argv contains all arguments passed
+	return &json_encode($argv);
+}
+
+
+// An example with arguments
+Create a function called &chocolate with arguments ($type).
+Open.
+	Define the variable $result and set the value [].
+	
+	// You can mix styles, but don't do it!
+	Define a function called &get_type.
+		Return $type.
+	
+	// Functions can be assigned to variables
+	Set $result["get_type"] to the function &get_type.
+	
+	Return $result.
+Close.
+
+
+// =============================================
+
+
+// Calling a function
+
+Set $output to the result of executing the function &doc with the argument (&doc).
+Display the contents of the variable $output.
+
+/*
+	Alternatively:
+	
+	$output = &doc(&doc);
+	echo $output;
+*/
+
+
+&foo(); // No need for call here
+
+$x = &chocolate("White");
+echo call $x->get_type();
+
+/*
+	When a function is assigned to a variable, you must use "call".
+	This makes it explicit that you intent to call the variable or constant as a function.
+*/
