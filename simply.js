@@ -342,7 +342,7 @@
 			
 			// SEPARATORS
 			// expression separator
-			[/^(?:;|\.?\r?\n)/, ';'],
+			[/^(?:;|\.?\r?\n|\.$)/, ';'],
 			// value separator
 			[/^,\s*/, ','],
 			
@@ -394,9 +394,9 @@
 			
 			// SCOPE MANIPULATION
 			// open
-			[/^(?:begin(?![a-z\d])|\{)/i, 'SCOPE_OPEN'],
+			[/^(?:(?:begin|open|start)(?![a-z\d])|\{)/i, 'SCOPE_OPEN'],
 			// close
-			[/^(?:end(?![a-z\d])|\})/i, 'SCOPE_CLOSE'],
+			[/^(?:(?:begin|close|end)(?![a-z\d])|\})/i, 'SCOPE_CLOSE'],
 			
 			// DECISION BLOCKS
 			// if/in case
