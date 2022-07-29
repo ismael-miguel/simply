@@ -1,6 +1,6 @@
 /*
 	Try also these settings into $argv:
-	{"width": 500, "height": 400, "bgcolor": "lightblue", "fontsize": 25, "fontfamily": "serif", "fontstyle": "bold", "padding": 40, "spacing": 5, "text": "Never gonna give you up."}
+	{"width": 500, "height": 400, "bgcolor": "lightblue", "fontsize": 25, "fontfamily": "serif", "fontstyle": "bold", "padding": 40, "spacing": 5, "text": "⭐ Never gonna give you up. ⭐"}
 */
 
 unless !CANVAS then {
@@ -50,7 +50,7 @@ call %c->fillRect(
 );
 
 
-call %c->drawText($x, $y, %settings->text, null, $font, "gold");
+call %c->drawText(&sum($x, $size->translateX), &sum($y, $size->translateY), %settings->text, null, $font, "gold");
 
 call %c->setFillStyle("white");
 call %c->setFontStyle("15px monospace");
@@ -69,5 +69,11 @@ call %c->drawText($x, $y, &str_concat("Height: ", $size->height, "px"));
 
 $y = &sum($y, 15, %settings->spacing);
 call %c->drawText($x, $y, &str_concat("Area: ", &prod($size->width, $size->height), "px"));
+
+$y = &sum($y, 15, %settings->spacing);
+call %c->drawText($x, $y, &str_concat("TranslateX: ", $size->translateX, "px"));
+
+$y = &sum($y, 15, %settings->spacing);
+call %c->drawText($x, $y, &str_concat("TranslateY: ", $size->translateY, "px"));
 
 echo &doc(%c->measureText);
