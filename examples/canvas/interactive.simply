@@ -21,7 +21,7 @@ if $argv[0] then {
 	&array_update(%settings, $argv[0]);
 }
 
-/* str_compare returns 0 (falsy) when both are equal */
+// str_compare returns 0 (falsy) when both are equal
 unless (call &str_compare(%settings->dotsize, "random")) then {
 	%settings->dotsize = &rand(1, 25);
 }
@@ -47,7 +47,7 @@ call %c->setFontStyle(&str_concat($fontsize, "px monospace"));
 
 $maxwidth = &sub(call %c->getWidth, 80, 10);
 
-/* no loops ... yet */
+// no loops ... yet
 call %c->drawText($x, $y, "Interactive <canvas> example", $maxwidth, null, "gold");
 $y = &sum($y, $fontsize, $spacing);
 call %c->drawText($x, $y, "🖱️ Left + move 🖱️:", $maxwidth);
@@ -68,7 +68,7 @@ call %c->drawText($x, $y, "Draw many random rectangles", $maxwidth);
 $y = &sum($y, $fontsize, $spacing);
 call %c->drawText($x, $y, "❗ All colors are random", $maxwidth);
 
-/* draws the stars on the corners */
+// draws the stars on the corners
 call %c->drawText(0, 7, "⭐");
 call %c->drawText(0, &sub(call %c->getHeight, $fontsize, 2), "⭐");
 call %c->drawText(&sub(call %c->getWidth, $fontsize, 8), 7, "⭐");
@@ -90,9 +90,13 @@ def &draw_random {
 %draw_random = &draw_random;
 
 def &onmove($e, $c) {
-	unless %draw return; /* if not %draw, return */
+	/*
+		if not %draw, return
+		can also be read as "unless %draw isn't true, return".
+	*/
+	unless %draw return;
 	
-	/* if the shift key isnt' pressed, draw the random square */
+	// if the shift key isnt' pressed, draw the random square
 	else unless $e->shift then {
 		call %c->fillRect(
 			$e->x, $e->y,

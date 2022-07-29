@@ -1,4 +1,4 @@
-/* You can view the documentation of any function, if it exists */
+// You can view the documentation of any function, if it exists
 
 echo &doc(&doc);
 
