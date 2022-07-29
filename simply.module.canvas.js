@@ -114,7 +114,9 @@
 		},
 		
 		showFPS_raf: null,
-		showFPS: function(){
+		showFPS: function(scale){
+			div.style.setProperty('--fps-scale', scale);
+			
 			if(methods.showFPS_raf)
 			{
 				return;
@@ -149,6 +151,7 @@
 			{
 				div.setAttribute('data-currfps', '--');
 				div.setAttribute('data-showfps', 'false');
+				div.style.setProperty('--fps-scale', '1');
 				
 				window.cancelAnimationFrame(methods.showFPS_raf);
 				methods.showFPS_raf = null;
@@ -452,7 +455,8 @@
 				__doc__: [
 					'Shows a rough FPS counter',
 					'Optionally, takes a scale value',
-					'Any value below 0.1 will be ignored'
+					'Any value below 0.1 will be ignored',
+					'The FPS count won\'t be part of the generated canvas image'
 				]
 			}),
 			enumerable: true
@@ -525,6 +529,7 @@
 		},
 		CSS: [
 			'#' + div.id + ' {',
+				'--fps-scale: 1;',
 				'position: relative;',
 				'transform: translate3d(0, 0, 0);',
 			'}',
@@ -537,6 +542,7 @@
 				'left: 0;',
 				'background: rgba(0,0,0,.5);',
 				'font-size: 1rem;',
+				'font-size: calc(var(--fps-scale, 1) * 1rem);',
 				'font-family: monospace;',
 				'color: #fff;',
 				'padding: 0 .5rem;',
