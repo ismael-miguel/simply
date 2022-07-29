@@ -35,7 +35,7 @@
 							</label>
 						</div>
 						
-						<div class="col align-self-end">
+						<div class="col-8 align-self-end">
 							<div class="btn-toolbar justify-content-end" role="toolbar" aria-label="Compiler Toolbar">
 								<div class="btn-group me-2" role="group" aria-label="Copy, Paste and Settings">
 									
@@ -48,8 +48,31 @@
 									</button> -->
 									
 									<div class="btn-group" role="group">
-										<button id="optimize-drop-btn" type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+										<button id="settings-drop-btn" type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
 											<i class="bi bi-gear-fill"></i> Settings
+										</button>
+										
+										<div id="settings-drop" class="dropdown-menu dropdown-menu-end" aria-labelledby="settings-drop-btn">
+											<form class="px-3 py-2" id="settings-drop-form">
+												<div class="mb-3">
+													<div class="form-check form-switch">
+														<input type="checkbox" name="wordWrap" class="form-check-input">
+														<label class="form-check-label">Word wrap</label>
+													</div>
+												</div>
+												<div>
+													<div class="form-check form-switch">
+														<input type="checkbox" name="showLineNumbers" class="form-check-input">
+														<label class="form-check-label">Show line numbers</label>
+													</div>
+												</div>
+											</form>
+										</div>
+									</div>
+									
+									<div class="btn-group" role="group">
+										<button id="optimize-drop-btn" type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+											<i class="bi bi-stopwatch"></i> Optimize
 										</button>
 										
 										<!-- <ul id="settings-drop" class="dropdown-menu dropdown-menu-end" aria-labelledby="settings-drop-btn">
@@ -61,7 +84,7 @@
 											<!-- <div class="dropdown-divider"></div>
 											<a class="dropdown-item" href="#">New around here? Sign up</a>
 											<a class="dropdown-item" href="#">Forgot password?</a> -->
-										  </div>
+										</div>
 									</div>
 									
 								</div>

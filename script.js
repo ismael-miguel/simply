@@ -12,6 +12,7 @@
 		var $output_js = $('#output-js');
 		
 		var $optimize_form = $('#optimize-drop-form');
+		var $settings_form = $('#settings-drop-form');
 		
 		var beautify_settings = {
 			'indent_with_tabs': true,
@@ -27,6 +28,15 @@
 			removeComments: true,
 			removeEmptyOutput: true,
 			removeDeadCode: false
+		};
+		
+		var settings = {
+			wordWrap: false,
+			showLineNumbers: true
+		};
+		var settings_attr = {
+			wordWrap: 'data-wordwrap',
+			showLineNumbers: 'data-show-ln'
 		};
 		
 		var simply = new window.simply({
@@ -239,6 +249,22 @@
 			{
 				window.sessionStorage.optimize_settings = window.JSON.stringify(optimize_settings);
 			}
+			
+			if(window.sessionStorage.settings)
+			{
+				try
+				{
+					settings = window.JSON.parse(window.sessionStorage.settings);
+				}
+				catch(e)
+				{
+					window.sessionStorage.settings = window.JSON.stringify(settings);
+				}
+			}
+			else
+			{
+				window.sessionStorage.settings = window.JSON.stringify(settings);
+			}
 		}
 		
 		// console.log(simply.getOptimizationsInfo());
@@ -251,7 +277,7 @@
 			
 			if(~option.types.indexOf('bool'))
 			{
-				html += '<div class="form-check">'
+				html += '<div class="form-check form-switch">'
 					+ '<input type="checkbox" name="' + option.name + '" class="form-check-input" data-type="bool"' + (status ? ' checked="checked"' : '') + '>'
 					+ '<label class="form-check-label" data-bs-toggle="tooltip" data-bs-html="true" data-bs-custom-class="text-start" title="' + option.desc.join('<br>').replace(/&/g, '&amp;') + '">' + option.title + '</label>'
 				+ '</div>';
@@ -315,6 +341,25 @@
 			simply.updateSettings({optimize: optimize_settings});
 			window.sessionStorage.optimize_settings = window.JSON.stringify(optimize_settings);
 			
+		});
+		
+		$settings_form.find('input').filter('[type="checkbox"]').each(function(){
+			this.checked = settings[this.name];
+				
+			$output_js.attr(settings_attr[this.name], this.checked.toString());
+			$output_json.attr(settings_attr[this.name], this.checked.toString());
+		});
+		$settings_form.on('change', function(){
+			var $inputs = $settings_form.find('input');
+			
+			$inputs.filter('[type="checkbox"]').each(function(){
+				settings[this.name] = this.checked;
+				
+				$output_js.attr(settings_attr[this.name], this.checked.toString());
+				$output_json.attr(settings_attr[this.name], this.checked.toString());
+			});
+			
+			window.sessionStorage.settings = window.JSON.stringify(settings);
 		});
 		
 		[].slice.call(window.document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function(elem){

@@ -20,13 +20,13 @@ pre[data-wordwrap="true"] {
 	height: 100%;
 }
 
-#optimize-drop {
+.dropdown-menu > form {
 	width: min(15rem, 80vw);
 }
 
 .tooltip-inner {
 	text-align: left !important;
-	max-width: min(15rem, 80vw);
+	max-width: min(20rem, 80vw);
 }
 
 #form-code textarea {
@@ -64,4 +64,12 @@ pre[data-wordwrap="true"] {
 /* for block of code */
 .hljs-ln-code {
     padding-left: .25rem !important;
+}
+
+/* custom styles for settings */
+pre[data-show-ln="false"] .hljs-ln-numbers {
+	display: none;
+}
+pre[data-show-ln="false"] .hljs-ln-code {
+	padding-left: 0 !important;
 }
