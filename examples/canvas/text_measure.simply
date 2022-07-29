@@ -69,3 +69,5 @@ call %c->drawText($x, $y, &str_concat("Height: ", $size->height, "px"));
 
 $y = &sum($y, 15, %settings->spacing);
 call %c->drawText($x, $y, &str_concat("Area: ", &prod($size->width, $size->height), "px"));
+
+echo &doc(%c->measureText);
