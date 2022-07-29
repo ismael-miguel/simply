@@ -500,7 +500,7 @@
 			empty: Object.assign(function empty(value){
 				return value === undefined
 					|| value === null
-					|| value.length === 0 // !value.length will return true for null or undefined
+					|| value.length === 0
 					|| Object.keys(value).length === 0;
 			}, {
 				__doc__: [
@@ -712,6 +712,16 @@
 				return Object.assign(array, obj);
 			}, {
 				__doc__: 'Updates the values in the $array, based on the values in $obj'
+			}),
+			array_contains: Object.assign(function array_contains(array, value){
+				array = Array.from(array);
+				var keys = RDP.FNS.array_keys(array);
+				
+				return keys.some(function(key){
+					return array[key] === value;
+				});
+			}, {
+				__doc__: 'Verifies if the $array contains the $value'
 			}),
 			
 			// string related
@@ -972,6 +982,14 @@
 					'Optionally takes a string or an array with all the characters to trim'
 				]
 			}),
+			str_contains: Object.assign(function array_contains(str, substr){
+				str = str.toString();
+				substr = substr.toString();
+				
+				return str.length !== str.replace(substr, '').length;
+			}, {
+				__doc__: 'Verifies if the $string contains the $substring'
+			}),
 			
 			// math-related
 			is_prime: Object.assign(function is_prime(number){
@@ -1193,6 +1211,14 @@
 				}, initial);
 			}, {
 				__doc__: 'Multiplies all values together'
+			}),
+			compare: Object.assign(function compare(num1, num2){
+				return num1 === num2 ? 0 : (num1 > num2 ? 1 : -1);
+			}, {
+				__doc__: [
+					'Compares $num1 with $num2, returning 0 if they are equal',
+					'If $num1 is greater than $num2, returns 1, otherwise returns -1'
+				]
 			}),
 			
 			// type convertion and information
