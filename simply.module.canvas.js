@@ -357,8 +357,41 @@
 				};
 			}
 		},
+		
+		ontick_int: null,
+		ontick: function(fn, ms){
+			if(methods.ontick_int)
+			{
+				return false;
+			}
+			
+			var data = {
+				last: null,
+				now: null,
+				delta: 0
+			};
+			
+			methods.ontick_int = setInterval(function(){
+				data.last = data.now;
+				data.now = performance.now();
+				data.delta = data.now - data.last;
+				
+				var copy = Object.assign({}, data);
+				
+				fn(copy, EXPORTED);
+			}, ms);
+			
+			return true;
+		},
+		
 		reset: function(){
 			methods.hideFPS();
+			
+			if(methods.ontick_int)
+			{
+				clearInterval(methods.ontick_int);
+				methods.ontick_int = null;
+			}
 			
 			ctx.font = '10px sans-serif';
 			ctx.fillStyle = '#000000';
@@ -455,6 +488,22 @@
 					'Sets the function to detect when the mouse button is up',
 					'The first argument is the triggered event',
 					'The second argument is the $canvas'
+				]
+			}),
+			enumerable: true
+		},
+		ontick: {
+			value: Object.assign(function ontick(fn, ms){
+				if(ms < 10 || methods.ontick_int || typeof fn !== 'function')
+				{
+					return false;
+				}
+				
+				return methods.ontick(fn, ms);
+			}, {
+				__doc__: [
+					'Runs the $fn every $ms',
+					'The minimum time for $ms is 10ms'
 				]
 			}),
 			enumerable: true
