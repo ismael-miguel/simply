@@ -2,6 +2,10 @@ pre {
 	tab-size: 4;
 	user-select: text !important;
 }
+pre[data-wordwrap="true"] {
+	word-wrap: break-word;
+    white-space: pre-wrap;
+}
 
 #output-code > span {
 	word-break: break-all;
@@ -37,3 +41,27 @@ pre {
 		height: calc(100vh - 3.75rem) !important;
 	}
 }*/
+
+
+/* https://github.com/wcoder/highlightjs-line-numbers.js */
+
+/* for block of numbers */
+.hljs-ln-numbers {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+    text-align: right;
+    color: #ccc;
+    border-right: 1px solid #CCC;
+    vertical-align: top;
+    padding-right: .25rem !important;
+}
+
+/* for block of code */
+.hljs-ln-code {
+    padding-left: .25rem !important;
+}

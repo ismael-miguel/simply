@@ -55,8 +55,14 @@
 				
 				if(window.hljs)
 				{
-					window.hljs.highlightElement($output_js[0]);
-					window.hljs.highlightElement($output_json[0]);
+					hljs.highlightElement($output_js[0]);
+					hljs.highlightElement($output_json[0]);
+					
+					if(hljs.lineNumbersBlock)
+					{
+						hljs.lineNumbersBlock($output_js[0]);
+						hljs.lineNumbersBlock($output_json[0]);
+					}
 				}
 			},
 			onerror: function(info){

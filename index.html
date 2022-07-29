@@ -5,6 +5,11 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		
+		<link rel="preconnect" href="https://cdn.jsdelivr.net">
+		<link rel="preconnect" href="https://unpkg.com">
+		<link rel="preconnect" href="https://code.jquery.com">
+		<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+		
 		<title>simply - A very simple scripting language</title>
 		
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -120,13 +125,13 @@
 					</ul>
 					<div id="output-tabs-content" class="tab-content">
 						<div id="output-tab-text-content" class="tab-pane fade show active" role="tabpanel" aria-labelledby="output-tab-text">
-							<pre id="output-code" class="bg-light px-2 py-3 h-100"></pre>
+							<pre id="output-code" class="bg-light px-2 h-100"></pre>
 						</div>
 						<div id="output-tab-json-content" class="tab-pane fade" role="tabpanel" aria-labelledby="output-tab-json-content">
-							<pre id="output-json" class="bg-light px-2 py-3 h-100 language-json"></pre>
+							<pre id="output-json" class="bg-light px-2 h-100 language-json"></pre>
 						</div>
 						<div id="output-tab-js-content" class="tab-pane fade" role="tabpanel" aria-labelledby="output-tab-js-content">
-							<pre id="output-js" class="bg-light px-2 py-3 h-100 language-js"></pre>
+							<pre id="output-js" class="bg-light px-2 h-100 language-js"></pre>
 						</div>
 						<div id="help-tab-content" class="tab-pane fade" role="tabpanel" aria-labelledby="help-tab">
 							<iframe src="./help.html" class="h-100 w-100"></iframe>
@@ -143,6 +148,7 @@
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.2/beautify.min.js" integrity="sha512-Jg+IkoiE6LfLKMW7DC4p9JSJqZkYsRa1KJjHkbtIzzuRVSdwQuS2TdhX6r9pzj6m16Tth1QfTQJJyBdaKsl2xA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 		<script src="https://unpkg.com/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
 		
 		<script src="./simply.js"></script>
 		<script src="./script.js"></script>
