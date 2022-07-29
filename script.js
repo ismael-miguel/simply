@@ -53,15 +53,15 @@
 				this.writeln('took ' + info.time.toFixed(2) + ' msec(s)');
 				this.writesep();
 				
-				$output_json.text(window.JSON.stringify(info.abs, null, '\t'));
+				$output_json.text(JSON.stringify(info.abs, null, '\t'));
 			},
 			onaftercompile: function(info){
 				var fn_text = info.fn.toString()
 					.replace(/^function\s*(?:anonymous\s*)?\(\s*\)\s*\{\s*(?:['"]use\s*strict['"]\s*\;?\s*)?/, '')
 					.replace(/\s*\}\s*\;?\s*$/, '');
 				
-				$output_js.text(window.js_beautify(fn_text, beautify_settings));
-				$output_json.text(window.JSON.stringify(info.abs, null, '\t'));
+				$output_js.text(js_beautify(fn_text, beautify_settings));
+				$output_json.text(JSON.stringify(info.abs, null, '\t'));
 				
 				if(window.hljs)
 				{
@@ -121,7 +121,7 @@
 			{
 				try
 				{
-					input = window.JSON.parse(input);
+					input = JSON.parse(input);
 				}
 				catch(e)
 				{
@@ -207,63 +207,63 @@
 		if(window.sessionStorage)
 		{
 			$form_code.on('input', function(){
-				window.sessionStorage.code = this.value;
-				window.sessionStorage.codeSelStart = this.selectionStart;
-				window.sessionStorage.codeSelEnd = this.selectionEnd;
+				sessionStorage.code = this.value;
+				sessionStorage.codeSelStart = this.selectionStart;
+				sessionStorage.codeSelEnd = this.selectionEnd;
 			}).on('mouseup', function(){
-				window.sessionStorage.codeSelStart = this.selectionStart;
-				window.sessionStorage.codeSelEnd = this.selectionEnd;
+				sessionStorage.codeSelStart = this.selectionStart;
+				sessionStorage.codeSelEnd = this.selectionEnd;
 			});
 			
 			$form_input.on('input', function(){
-				window.sessionStorage.input = this.value;
+				sessionStorage.input = this.value;
 			});
 			
-			if(window.sessionStorage.code)
+			if(sessionStorage.code)
 			{
-				$form_code.val(window.sessionStorage.code)
+				$form_code.val(sessionStorage.code)
 					.focus()
-					.prop('selectionStart', window.sessionStorage.codeSelStart)
-					.prop('selectionEnd', window.sessionStorage.codeSelEnd);
+					.prop('selectionStart', sessionStorage.codeSelStart)
+					.prop('selectionEnd', sessionStorage.codeSelEnd);
 			}
 			
-			if(window.sessionStorage.input)
+			if(sessionStorage.input)
 			{
-				$form_input.val(window.sessionStorage.input);
+				$form_input.val(sessionStorage.input);
 			}
 			
-			if(window.sessionStorage.optimize_settings)
+			if(sessionStorage.optimize_settings)
 			{
 				try
 				{
-					optimize_settings = window.JSON.parse(window.sessionStorage.optimize_settings);
+					Object.assign(optimize_settings, JSON.parse(sessionStorage.optimize_settings));
 					
 					simply.updateSettings({optimize: optimize_settings});
 				}
 				catch(e)
 				{
-					window.sessionStorage.optimize_settings = window.JSON.stringify(optimize_settings);
+					sessionStorage.optimize_settings = JSON.stringify(optimize_settings);
 				}
 			}
 			else
 			{
-				window.sessionStorage.optimize_settings = window.JSON.stringify(optimize_settings);
+				sessionStorage.optimize_settings = JSON.stringify(optimize_settings);
 			}
 			
-			if(window.sessionStorage.settings)
+			if(sessionStorage.settings)
 			{
 				try
 				{
-					settings = window.JSON.parse(window.sessionStorage.settings);
+					Object.assign(settings, JSON.parse(sessionStorage.settings));
 				}
 				catch(e)
 				{
-					window.sessionStorage.settings = window.JSON.stringify(settings);
+					sessionStorage.settings = JSON.stringify(settings);
 				}
 			}
 			else
 			{
-				window.sessionStorage.settings = window.JSON.stringify(settings);
+				sessionStorage.settings = JSON.stringify(settings);
 			}
 		}
 		
@@ -339,7 +339,7 @@
 			});
 			
 			simply.updateSettings({optimize: optimize_settings});
-			window.sessionStorage.optimize_settings = window.JSON.stringify(optimize_settings);
+			sessionStorage.optimize_settings = JSON.stringify(optimize_settings);
 			
 		});
 		
@@ -359,11 +359,11 @@
 				$output_json.attr(settings_attr[this.name], this.checked.toString());
 			});
 			
-			window.sessionStorage.settings = window.JSON.stringify(settings);
+			sessionStorage.settings = JSON.stringify(settings);
 		});
 		
-		[].slice.call(window.document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function(elem){
-			return new window.bootstrap.Tooltip(elem);
+		[].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function(elem){
+			return new bootstrap.Tooltip(elem);
 		});
 		
 	});
