@@ -8,20 +8,34 @@
 	
 	var canvas = document.createElement('canvas');
 	
+	if(!canvas.getContext)
+	{
+		throw new Error('Canvas support is required to use this module');
+	}
+	var ctx = canvas.getContext('2d');
+	
+	
+	
+	// text measurement element
+	var text_measurer = document.createElement('span');
+	text_measurer.className = 'text-measurer';
+	
+	var text_measurer_holder = document.createElement('div');
+	text_measurer_holder.className = 'text-measurer-holder';
+	
+	text_measurer_holder.appendChild(text_measurer);
+	
+	
+	
+	// global holder
 	var div = document.createElement('div');
 	div.id = 'm-canvas-holder';
 	div.setAttribute('data-showfps', 'false');
 	div.setAttribute('data-currfps', '--');
 	
 	div.appendChild(canvas);
+	div.appendChild(text_measurer_holder);
 	
-	
-	if(!canvas.getContext)
-	{
-		throw new Error('Canvas support is required to use this module');
-	}
-	
-	var ctx = canvas.getContext('2d');
 	
 	// ctx.globalCompositeOperation = 'destination-in';
 	// console.log(ctx.globalCompositeOperation);
@@ -100,6 +114,22 @@
 			ctx.font = old_font;
 			ctx.fillStyle = old_style;
 			ctx.strokeStyle = old_stroke;
+		},
+		
+		measureText: function(text, font){
+			font = (font || ctx.font).trim();
+			
+			text_measurer.style.setProperty('--font', font);
+			text_measurer.textContent = text;
+			
+			var size = text_measurer.getBoundingClientRect();
+			
+			return {
+				length: text.length,
+				width: size.width,
+				height: size.height,
+				font: font
+			};
 		},
 		
 		clearEverything: function(style){
@@ -427,10 +457,22 @@
 				__doc__: [
 					'Draws the $text at $x,$y',
 					'Takes an optional $max_width, which will limit the width of the text when drawing',
-					'Also taken an optional $font, which will be reset after drawing the text',
+					'Also takes an optional $font, which will be reset after drawing the text',
 					'Also takes an optional $style, which will be reset after drawing the text',
-					'Also taken an optional $stroke, which will be reset after drawing the text',
+					'Also takes an optional $stroke, which will be reset after drawing the text',
 					'If $stroke is true, it will use the stroke style set by !CANVAS->getStrokeStyle()'
+				]
+			}),
+			enumerable: true
+		},
+		
+		measureText: {
+			value: Object.assign(function measureText(text, font){
+				return methods.measureText(text.toString(), font ? font.toString() : null);
+			}, {
+				__doc__: [
+					'Measures the $text size, and returns an object with the width and height',
+					'Takes an optional $font, which will be used to calculate the size instead of the one provided in !CANVAS->setFontStyle()'
 				]
 			}),
 			enumerable: true
@@ -551,7 +593,27 @@
 				'content: attr(data-currfps);',
 				'display: block;',
 			'}',
-			'#' + div.id + ' > canvas {display: block}'
+			'#' + div.id + ' canvas {display: block}',
+			'#' + div.id + ' .text-measurer-holder {',
+				'display: block;',
+				'pointer-events: none;',
+				'visibility: hidden;',
+				'position: absolute;',
+				'top: 0;',
+				'left: 0;',
+				'width: 0 !important;',
+				'height: 0 !important;',
+				'max-width: 0 !important;',
+				'max-height: 0 !important;',
+				'overflow: hidden;',
+				'z-index: -100;',
+			'}',
+			'#' + div.id + ' .text-measurer {',
+				'display: inline;',
+				'margin: 0 !important;',
+				'padding: 0 !important;',
+				'font: var(--font, 10px sans-serif) !important;',
+			'}',
 		].join('\n')
 	});
 	
