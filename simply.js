@@ -506,6 +506,43 @@
 					'Empty values are null, empty strings, empty arrays and empty objects'
 				]
 			}),
+			json_encode: Object.assign(function json_encode(obj, spaces){
+				if(spaces)
+				{
+					if(Array.isArray(spaces))
+					{
+						spaces = spaces.slice(0, 9).join('').slice(0, 9);
+					}
+					else if(typeof spaces === 'string')
+					{
+						spaces = spaces.slice(0, 9);
+					}
+					else if(typeof spaces === 'number')
+					{
+						spaces = Math.max(Math.abs(spaces), 10);
+					}
+					else
+					{
+						spaces = undefined;
+					}
+				}
+				
+				return JSON.stringify(obj, null, spaces);
+			}, {
+				__doc__: [
+					'Turns the $object into a JSON string',
+					'Optionally, accepts a value into the $spaces variable, which will be used to indent the resulting JSON',
+					'It accepts the following values:',
+					'- A number between 0 and 10, which will be used as the number of spaces',
+					'- A character, which will be used as the character to indent',
+					'- A string, in which the first 10 characters will be used as the characters to indent'
+				]
+			}),
+			json_decode: Object.assign(function json_decode(str){
+				return JSON.stringify(str.toString());
+			}, {
+				__doc__: 'Parses the $str as a JSON string'
+			}),
 			
 			// array related
 			join: Object.assign(function join(array, str){
@@ -839,6 +876,100 @@
 					'If $str1 is greater than $str2, returns 1, otherwise returns -1'
 				]
 			}),
+			trim: Object.assign(function trim(str, chars){
+				if(chars)
+				{
+					if(!Array.isArray(chars))
+					{
+						chars = Array.from(chars.toString());
+					}
+					
+					var start = 0;
+					var end = str.length - 1;
+					
+					if(!end)
+					{
+						return '';
+					}
+					
+					for(; !!~chars.indexOf(str[start]); start++);
+					for(; !!~chars.indexOf(str[end]); end--); end++;
+					
+					return str.slice(start, end);
+				}
+				else
+				{
+					return str.toString().trim();
+				}
+			}, {
+				__doc__: [
+					'Trims whitespace characters from the start and end of the string',
+					'A writespace character is a space, a tab, a non-breaking space, line terminators, a null byte and others',
+					'Optionally takes a string or an array with all the characters to trim'
+				]
+			}),
+			ltrim: Object.assign(function ltrim(str, chars){
+				if(chars)
+				{
+					if(!Array.isArray(chars))
+					{
+						chars = Array.from(chars.toString());
+					}
+					
+					var start = 0;
+					var end = str.length - 1;
+					
+					if(!end)
+					{
+						return '';
+					}
+					
+					for(; !!~chars.indexOf(str[start]); start++);
+					
+					return str.slice(start, end);
+				}
+				else
+				{
+					return str.toString().trimStart();
+				}
+			}, {
+				__doc__: [
+					'Trims whitespace characters from the start of the string',
+					'A writespace character is a space, a tab, a non-breaking space, line terminators, a null byte and others',
+					'Optionally takes a string or an array with all the characters to trim'
+				]
+			}),
+			rtrim: Object.assign(function rtrim(str, chars){
+				if(chars)
+				{
+					if(!Array.isArray(chars))
+					{
+						chars = Array.from(chars.toString());
+					}
+					
+					var start = 0;
+					var end = str.length - 1;
+					
+					if(!end)
+					{
+						return '';
+					}
+					
+					for(; !!~chars.indexOf(str[end]); end--); end++;
+					
+					return str.slice(start, end);
+				}
+				else
+				{
+					return str.toString().trimEnd();
+				}
+			}, {
+				__doc__: [
+					'Trims whitespace characters from the end of the string',
+					'A writespace character is a space, a tab, a non-breaking space, line terminators, a null byte and others',
+					'Optionally takes a string or an array with all the characters to trim'
+				]
+			}),
 			
 			// math-related
 			is_prime: Object.assign(function is_prime(number){
@@ -1040,6 +1171,26 @@
 				}, initial);
 			}, {
 				__doc__: 'Subtracts all values together'
+			}),
+			prod: Object.assign(function prod(){
+				var array = Array.from(arguments);
+				
+				if(array.length === 0)
+				{
+					return 0;
+				}
+				else if(array.length === 1)
+				{
+					return array[0];
+				}
+				
+				var initial = array.shift();
+				
+				return array.reduce(function(value, total){
+					return value * total;
+				}, initial);
+			}, {
+				__doc__: 'Multiplies all values together'
 			}),
 			
 			// type convertion and information
