@@ -480,18 +480,20 @@
 			doc: Object.assign(function doc(fn, no_header){
 				return !fn.hasOwnProperty('__doc__')
 					? null
-					: (no_header
-						? ''
-						: 'Documentation for '
-							+ (typeof fn === 'function'
-								? fn.name || 'anonymous function'
-								: typeof fn
-							)
-							+ ':\n'
-					) + (Array.isArray(fn.__doc__)
-						? fn.__doc__.join('.\n')
-						: fn.__doc__
-					) + '.';
+					: (
+						(no_header
+							? ''
+							: 'Documentation for '
+								+ (typeof fn === 'function'
+									? fn.name || 'anonymous function'
+									: typeof fn
+								)
+								+ ':\n'
+						) + (Array.isArray(fn.__doc__)
+							? fn.__doc__.join('.\n')
+							: fn.__doc__
+						) + '.'
+					).replace(/(?:([^\.])\.(\.)|(\:)\.)$/mg, '$1$2$3');
 			}, {
 				__doc__: 'Returns the documentation string for a function, if it exists, otherwise returns null'
 			}),
