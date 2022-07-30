@@ -384,6 +384,201 @@
 			return true;
 		},
 		
+		drawImage: function(image, x, y){
+			return ctx.drawImage(image, x, y);
+		},
+		
+		drawImagePart: function(source_image, source_x, source_y, width, height, x, y){
+			return ctx.drawImage(source_image, source_x, source_y, width, height, x, y, width, height);
+		},
+		
+		createSpritesheet: function(url, sprite_width, sprite_height, fn){
+			var image = new Image();
+			var sprites = [];
+			var sprites_map = Object.create(null);
+			
+			image.onload = function(){
+				var sprites_cols = (image.naturalWidth / sprite_width) | 0;
+				var sprites_rows = (image.naturalHeight / sprite_height) | 0;
+				
+				if(sprites_cols && sprites_rows)
+				{
+					for(var i = 0, key = 0; i < sprites_rows; i++)
+					{
+						for(var j = 0; j < sprites_cols; j++)
+						{
+							sprites[key] = {
+								x: j * sprite_width,
+								y: i * sprite_height,
+								width: sprite_width,
+								height: sprite_height,
+								key: key
+							};
+							
+							key++;
+						}
+					}
+				}
+				
+				var data = Object.defineProperties(Object.create(null), {
+					error: {
+						value: false,
+						enumerable: true
+					},
+					width: {
+						value: sprite_width,
+						enumerable: true
+					},
+					height: {
+						value: sprite_height,
+						enumerable: true
+					},
+					length: {
+						value: sprites.length,
+						enumerable: true
+					},
+					cols: {
+						value: sprites_cols,
+						enumerable: true
+					},
+					rows: {
+						value: sprites_rows,
+						enumerable: true
+					},
+					getSprite: {
+						value: Object.assign(function getSprite(key){
+							var sprite = null;
+							if(typeof key === 'string' && key in sprites_map)
+							{
+								sprite = sprites[sprites_map[key]];
+							}
+							else
+							{
+								sprite = sprites[key];
+							}
+							
+							return sprite || null;
+						}, {
+							__doc__: 'Returns the information of a single sprite based on the $key'
+						}),
+						enumerable: true
+					},
+					drawSprite: {
+						value: Object.assign(function drawSprite(key, x, y){
+							var sprite = data.getSprite(key);
+							if(!sprite)
+							{
+								return null;
+							}
+							
+							methods.drawImagePart(image, sprite.x, sprite.y, sprite.width, sprite.height, x, y);
+							
+							return true;
+						}, {
+							__doc__: 'Draws the sprite $key into the canvas at $x,$y'
+						}),
+						enumerable: true
+					},
+					drawSpriteLine: {
+						value: Object.assign(function drawSprite(keys, x, y){
+							var sprites = [];
+							if(typeof keys === 'string')
+							{
+								Array.from(keys).forEach(function(key){
+									var sprite = data.getSprite(key);
+									if(sprite)
+									{
+										sprites.push(sprite);
+									}
+								});
+							}
+							else
+							{
+								Object.keys(keys).forEach(function(key){
+									var sprite = data.getSprite(key);
+									if(sprite)
+									{
+										sprites.push(sprite);
+									}
+								});
+							}
+							
+							sprites.forEach(function(sprite, i){
+								methods.drawImagePart(
+									image,
+									sprite.x, sprite.y,
+									sprite.width, sprite.height,
+									x + (i * sprite.width), y
+								);
+							});
+							
+							return true;
+						}, {
+							__doc__: [
+								'Draws the sprite $key into the canvas at $x,$y',
+								'Continues drawing until the end of the $keys, always staying on the same $y line'
+							]
+						}),
+						enumerable: true
+					},
+					addMap:  {
+						value: Object.assign(function addMap(map){
+							if(typeof map === 'string')
+							{
+								Array.from(map).forEach(function(key, i){
+									sprites_map[key] = i;
+								});
+							}
+							else
+							{
+								Object.keys(map).forEach(function(key){
+									sprites_map[key] = map[key];
+								});
+							}
+						}, {
+							__doc__: [
+								'Adds name mappings to sprite numbers',
+								'The argument $map must be an array or string'
+							]
+						}),
+						enumerable: true
+					},
+					getSprites:  {
+						value: Object.assign(function getSprites(){
+							return Object.assign([], sprites);
+						}, {
+							__doc__: 'Returns a copy of the sprites list'
+						}),
+						enumerable: true
+					},
+					getSpritesMap:  {
+						value: Object.assign(function getSpritesMap(){
+							return Object.assign({}, sprites_map);
+						}, {
+							__doc__: 'Returns a copy of the sprite key mappings'
+						}),
+						enumerable: true
+					}
+				});
+				
+				if(fn)
+				{
+					fn(data, EXPORTED);
+				}
+			};
+			
+			image.onerror = function(){
+				var data = Object.defineProperty(Object.create(null), "error", {
+					value: true,
+					enumerable: true
+				});
+				
+				fn(data, EXPORTED);
+			};
+			
+			image.src = url;
+		},
+		
 		reset: function(){
 			methods.hideFPS();
 			
@@ -682,6 +877,24 @@
 				return methods.hideFPS();
 			}, {
 				__doc__: 'Hides the FPS counter'
+			}),
+			enumerable: true
+		},
+		
+		
+		createSpritesheet: {
+			value: Object.assign(function createSpritesheet(url, width, height, fn){
+				return methods.createSpritesheet(
+					url.toString(),
+					width < 1 ? 8 : width,
+					height < 1 ? 8 : height,
+					fn && typeof fn === 'function' ? fn : function(){}
+				);
+			}, {
+				__doc__: [
+					'Loads an image from $url and creates a spritesheet of sprites with $width and $height',
+					'Pass a $function as the last argument, to be able to use the sprites after loaded'
+				]
 			}),
 			enumerable: true
 		}
