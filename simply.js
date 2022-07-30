@@ -723,6 +723,13 @@
 			}, {
 				__doc__: 'Verifies if the $array contains the $value'
 			}),
+			array_map: Object.assign(function array_map(array, fn){
+				return Array.from(array).map(function(value, index){
+					return fn(value, index);
+				});
+			}, {
+				__doc__: 'Runs the $fn for each element in the $array, returning a new copy with the new values'
+			}),
 			
 			// string related
 			mirror_text: Object.assign(function mirror_text(str){
@@ -989,6 +996,16 @@
 				return str.length !== str.replace(substr, '').length;
 			}, {
 				__doc__: 'Verifies if the $string contains the $substring'
+			}),
+			ord: Object.assign(function ord(chr){
+				return chr.toString().codePointAt(0);
+			}, {
+				__doc__: 'Returns the Unicode Codepoint for the character'
+			}),
+			chr: Object.assign(function ord(codepoint){
+				return String.fromCodePoint(codepoint);
+			}, {
+				__doc__: 'Returns an Unicode character corresponding to the codepoint provided'
 			}),
 			
 			// math-related
@@ -2324,7 +2341,20 @@
 		 */
 		ParenthesizedExpression: function(){
 			var open = this._eat('(');
+			
+			while(this._lookahead && this._lookahead.value === '\n')
+			{
+				this._jump(this._lookahead.type);
+			}
+			
 			var expression = this.Expression();
+			
+			
+			while(this._lookahead && this._lookahead.value === '\n')
+			{
+				this._jump(this._lookahead.type);
+			}
+			
 			var close = this._eat(')');
 			
 			return {
@@ -2691,6 +2721,11 @@
 		 */
 		ArrayLiteral: function(){
 			var token = this._eat('[');
+					
+			while(this._lookahead && this._lookahead.value === '\n')
+			{
+				this._jump(this._lookahead.type);
+			}
 			
 			var result = {
 				type: 'ArrayLiteral',
@@ -2708,6 +2743,11 @@
 					this._eat(',');
 				}
 			}*/
+					
+			while(this._lookahead && this._lookahead.value === '\n')
+			{
+				this._jump(this._lookahead.type);
+			}
 			
 			this._eat(']');
 			
@@ -2763,7 +2803,7 @@
 					args_token = this._eat('(');
 				}
 				
-				while(this._lookahead && this._lookahead.value === "\n")
+				while(this._lookahead && this._lookahead.value === '\n')
 				{
 					this._jump(this._lookahead.type);
 				}
@@ -2788,14 +2828,14 @@
 					
 					result.value[result.value.length] = arg;
 					
-					while(this._lookahead && this._lookahead.value === "\n")
+					while(this._lookahead && this._lookahead.value === '\n')
 					{
 						this._jump(this._lookahead.type);
 					}
 					
 					this._jump(',');
 					
-					while(this._lookahead && this._lookahead.value === "\n")
+					while(this._lookahead && this._lookahead.value === '\n')
 					{
 						this._jump(this._lookahead.type);
 					}
@@ -2855,7 +2895,7 @@
 				var jumped = this._jump(',');
 				if(jumped)
 				{
-					while(this._lookahead && this._lookahead.value === "\n")
+					while(this._lookahead && this._lookahead.value === '\n')
 					{
 						this._jump(this._lookahead.type);
 					}
@@ -3834,6 +3874,7 @@
 			'Object.defineProperty($CONST, \'ABCU\', { value: "ABCDEFGHIJKLMNOPQRSTUVWXYZ", writable: false, enumerable: true })',
 			'Object.defineProperty($CONST, \'NUMS\', { value: "0123456789", writable: false, enumerable: true })',
 			'Object.defineProperty($CONST, \'DIGITS\', { value: "0123456789", writable: false, enumerable: true })',
+			'Object.defineProperty($CONST, \'PRINTABLE\', { value: " !\\\"#$%&\\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~", writable: false, enumerable: true })',
 			
 			'Object.defineProperty($CONST, \'FN\', { value: Object.assign({}, arguments[2]), writable: false, enumerable: true })',
 			'for(var k in arguments[3]) Object.defineProperty($CONST, k, { value: Object.assign({}, arguments[3][k]), writable: false, enumerable: true })',
