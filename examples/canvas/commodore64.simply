@@ -1,0 +1,72 @@
+/*
+	This canvas example demonstrates the use of a sprite sheet.
+	It also demonstrates the use of the !CANVAS->ontick() function.
+	The goal was to replicate the Commodore64's BASIC screen, after boot.
+*/
+
+unless !CANVAS then {
+	echo "❌ The canvas module is required for this example";
+	return;
+}
+
+
+/*
+	Base-64 encoded 40x40 image URL.
+	Try using other 8x8 font sprites.
+*/
+$spritesheet_url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoAQMAAAC2MCouAAAABlBMVEVgSe2ij/+XgPdPAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAiElEQVQIHQXBIU4FQRRFwaNaEfQVhDUgETes5SU/OYYROFpM+i8dqsjdfaheg47DuceNjoN6Dd7dBwA49VEm169M9lN2fr5lsh8yuR4y9VEA4O5RNIoT5W4se8VwmQabBABIu0r0VT7Xeh/y8uZNPtZTMi45p6sAQAugAlqgX3+Aq4AaaAkA8A/d6DKyduTF+gAAAABJRU5ErkJggg==";
+
+
+// Colors extracted from the image
+%fg = "rgb(162, 143, 255)";
+%bg = "rgb(96, 73, 237)";
+
+
+// Faithfully replicates the resolution from the VICE emulator
+%c = call !CANVAS->init(384, 272, %fg);
+
+
+/*
+	Draws the rectangle area in the middle.
+	This is intentional!
+	On the real hardware, a Basic ROM Fault U3 will only display this zone.
+	It won't have any other text.
+	
+	Source: https://retrocomputerverzamelaar.nl/commodore-64-problems/
+*/
+call %c->fillRect(
+	32, 36,
+	&sub(call %c->getWidth(), 32, 32),
+	&sub(call %c->getHeight(), 36, 36),
+	%bg
+);
+
+
+// Handles the spritesheet loading
+def &fn($sheet) {
+	if $sheet->error {
+		echo "❌ Failed to load the sprite sheet";
+		return;
+	}
+	
+	// Maps all the characters we need to the position in the spritesheet
+	call $sheet->addMap("ABCDEFIKMORSTVY1234689*. ");
+	
+	// After the mapping is added, just write the text!
+	call $sheet->drawSpriteLine("    **** COMMODORE 64 BASIC V2 ****", 32, 44);
+	call $sheet->drawSpriteLine(" 64K RAM SYSTEM  38911 BASIC BYTES FREE", 32, 60);
+	call $sheet->drawSpriteLine("READY.", 32, 76);
+	
+	// Blinky blinky cursor
+	%on = false;
+	def &ontick call %c->fillRect(
+		32, 84, 8, 8,
+		&iff(%on = &iff(%on, false, true), %fg, %bg)
+	);
+	
+	// Blinks every 1000ms (1 second)
+	call %c->ontick(&ontick, 1000);
+}
+
+// $url, $width and $height of the sprites and a function
+call %c->createSpritesheet($spritesheet_url, 8, 8, &fn);

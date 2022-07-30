@@ -1,0 +1,106 @@
+unless !CANVAS then {
+	echo "❌ The canvas module is required for this example";
+	return;
+}
+
+
+/*
+	Base-64 encoded 40x40 image URL.
+	Encoded using https://www.base64-image.de/
+*/
+$url = &join([
+	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAA",
+	"AABAAQMAAADoGO08AAAABlBMVEUAAAD///+l2Z/dAAAACXBIWX",
+	"MAAAsTAAALEwEAmpwYAAAB+klEQVQ4y9WTMW/TQBTH310seqnA",
+	"OZtWdLCs69VSo24wZUDVJTlEBqQixAcA0Q8QMbmSB8eKZBuJIm",
+	"dhg5YJPgZtpCx8gW5JAXWuuqQb79wikWZoVt707qf//d//9HQA",
+	"cyUOm3dtxlR5aAgD2j8GjK8/jwGofoWg8pusgOBjBNazAwSknT",
+	"AQzsW4FrOX5kploleNogfAdxEAeZoPAD0QCG0UpEneA06hYEFj",
+	"CrdXo/vm54d9z7RLthd2QWdfLCgkF4KyQuoMrKq0iCMB2hP2Ue",
+	"oY2MOLUWL7ADH0VrfDGDgTgXYoiPaEPjAKkZXAeAA3HlF347hv",
+	"e4DPp7bEKbdXeHk+3PksVe6MUt+PMtA9GrSIVCdu0CkEL4HVIo",
+	"H6NvgLzk+XjkhD5S82s0/elWLXKPJHwXJB+bWHg6ZuUHUMCC/J",
+	"cGdfRrkzvFM85osE07m7eQxrHGILCKyVQLQ4q4MyALegs0OVMI",
+	"brGaU1LwoRKMyKADCpFJjj60FCqVH86jjbIoT6Ce9TgoCatwgG",
+	"POcpToEpOUtrvlgkmBKuddXRawB0FoTjt/qe74V7r8+ycrda3O",
+	"8vY5cPzLLrBrgaQbhHjhBwjL7uBtipKsjOu606Az093cgKT1Ur",
+	"39P+il4kGPDmzd+g4plzJFSi/gVMqSczEn7zipjzmJvy39YfbD",
+	"eM0an2NDEAAAAASUVORK5CYII="
+], '');
+
+
+%c = call !CANVAS->init(300, 300, "lightblue");
+
+
+// Handles the spritesheet loading
+def &fn($sheet) {
+	if $sheet->error {
+		echo "❌ Failed to load the sprite sheet";
+		return;
+	}
+	
+	// Maps all the characters we need to the position in the spritesheet
+	call $sheet->addMap(!PRINTABLE);
+	
+	$x = 16;
+	$y = 32;
+	$line = $sheet->height;
+	
+	// After the mapping is added, just write the text!
+	call $sheet->drawSpriteLine(&hello_world(), $x, $y);
+	call $sheet->drawSpriteLine(
+		"A simple sprite font example",
+		$x, $y = &add($y, $line)
+	);
+	
+	call $sheet->drawSpriteLine(
+		"'Oldschool' font created by domsson:",
+		$x, $y = &add($y, $line)
+	);
+	
+	call $sheet->drawSpriteLine(
+		"https://opengameart.org/users/domsson",
+		$x, $y = &add($y, $line)
+	);
+	
+	call $sheet->drawSpriteLine(
+		"https://opengameart.org/content/ascii-bi",
+		$x, $y = &add($y, $line)
+	);
+	call $sheet->drawSpriteLine(
+		"tmap-font-oldschool",
+		$x, $y = &add($y, $line)
+	);
+	
+	call $sheet->drawSpriteLine(
+		"This is an example of how to use",
+		$x, $y = &add($y, $line, $line)
+	);
+	call $sheet->drawSpriteLine(
+		"a spritesheet for text.",
+		$x, $y = &add($y, $line)
+	);
+	
+	call $sheet->drawSpriteLine(
+		"Although it wasn't intended for this use",
+		$x, $y = &add($y, $line, $line)
+	);
+	
+	call $sheet->drawSpriteLine(
+		"it works quite well for text!",
+		$x, $y = &add($y, $line)
+	);
+	
+	call $sheet->drawSpriteLine(
+		"Printable ASCII table:",
+		$x, $y = &add($y, $line, $line)
+	);
+	
+	$y = &add($y, $line, $line);
+	def &x($txt, $i) call $sheet->drawSpriteLine($txt, $x, &add($y, &prod($line, $i)));
+	
+	&array_map(&str_chunk(!PRINTABLE, 33), &x);
+}
+
+// $url, $width and $height of the sprites and a function
+call %c->createSpritesheet($url, 7, 9, &fn);
