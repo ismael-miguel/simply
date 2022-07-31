@@ -7,12 +7,23 @@
 	}
 	
 	var canvas = document.createElement('canvas');
+	var buffer = document.createElement('canvas');
 	
 	if(!canvas.getContext)
 	{
 		throw new Error('Canvas support is required to use this module');
 	}
-	var ctx = canvas.getContext('2d');
+	var ctx = buffer.getContext('2d');
+	var canvas_ctx = canvas.getContext('2d');
+	
+	
+	var SETTINGS_DEFAULT = {
+		frameskip: 0
+	};
+	/*var SETTINGS = Object.assign({}, SETTINGS_DEFAULT);*/
+	var SETTINGS = {};
+	var EXPORTED = {};
+	var CHANGED = true;
 	
 	
 	
@@ -35,6 +46,7 @@
 	
 	div.appendChild(canvas);
 	div.appendChild(text_measurer_holder);
+	// div.appendChild(buffer);
 	
 	
 	// ctx.globalCompositeOperation = 'destination-in';
@@ -123,16 +135,110 @@
 	};
 	
 	
+	// requestAnimationFrame and double-buffering
+	var RAF = {
+		handlers: [],
+		id: null,
+		data: {
+			last: null,
+			now: null,
+			delta: 0,
+			fps: 0,
+			changed: CHANGED,
+			fps_ellapsed: 0,
+			fps_count: 0
+		},
+		fn: function(){
+			RAF.data.last = RAF.data.now;
+			RAF.data.now = performance.now();
+			RAF.data.delta = RAF.data.now - RAF.data.last;
+			RAF.data.fps_ellapsed += RAF.data.delta;
+			RAF.data.changed = CHANGED;
+			
+			if(RAF.data.fps_ellapsed < 999)
+			{
+				RAF.data.fps_count++;
+			}
+			else
+			{
+				RAF.data.fps = RAF.data.fps_count;
+				RAF.data.fps_ellapsed = 0;
+				RAF.data.fps_count = 0;
+			}
+			
+			var copy = {
+				last: RAF.data.last,
+				now: RAF.data.now,
+				delta: RAF.data.delta,
+				fps: RAF.data.fps,
+				changed: RAF.data.changed
+			};
+			
+			Array.from(RAF.handlers).forEach(function(fn){
+				fn && fn(copy, EXPORTED);
+			});
+			
+			if(CHANGED && (
+				!SETTINGS.canvas.frameskip
+				|| !(RAF.data.fps_count % (SETTINGS.canvas.frameskip + 1))
+			))
+			{
+				if(window.devicePixelRatio && window.devicePixelRatio > 1)
+				{
+					canvas_ctx.drawImage(
+						buffer, 0, 0,
+						(buffer.width / window.devicePixelRatio) | 0,
+						(buffer.height / window.devicePixelRatio) | 0
+					);
+				}
+				else
+				{
+					canvas_ctx.drawImage(buffer, 0, 0);
+				}
+				
+				CHANGED = false;
+			}
+			
+			RAF.id = window.requestAnimationFrame(RAF.fn);
+		},
+		reset: function(){
+			if(RAF.id)
+			{
+				window.cancelAnimationFrame(RAF.id);
+			}
+			
+			RAF.handlers.length = 0;
+			RAF.data = {
+				last: null,
+				now: null,
+				delta: 0,
+				fps: 0,
+				fps_ellapsed: 0,
+				fps_count: 0,
+				changed: true
+			};
+		}
+	};
 	
-	var SETTINGS = {};
-	var EXPORTED = {};
+	
 	
 	var methods = {
+		setFrameskip: function(num){
+			SETTINGS.canvas.frameskip = num;
+		},
+		getFrameskip: function(){
+			return SETTINGS.canvas.frameskip;
+		},
+		
 		getWidth: function(){
-			return canvas.width;
+			return window.devicePixelRatio > 1
+				? (canvas.width / window.devicePixelRatio)|0
+				: canvas.width;
 		},
 		getHeight: function(){
-			return canvas.height;
+			return window.devicePixelRatio > 1
+				? (canvas.height / window.devicePixelRatio)|0
+				: canvas.height;
 		},
 		
 		setFillStyle: function(str){
@@ -155,6 +261,8 @@
 		},
 		
 		fillRect: function(x, y, width, height, style){
+			CHANGED = true;
+			
 			var old_style = ctx.fillStyle;
 			
 			if(style)
@@ -167,6 +275,8 @@
 		},
 		
 		drawText: function(x, y, text, max_width, font, style, stroke){
+			CHANGED = true;
+			
 			var old_font = ctx.font;
 			var old_style = ctx.fillStyle;
 			var old_stroke = ctx.strokeStyle;
@@ -218,6 +328,8 @@
 		},
 		
 		clearEverything: function(style){
+			CHANGED = true;
+			
 			if(style)
 			{
 				methods.fillRect(0, 0, canvas.width, canvas.height, style);
@@ -228,49 +340,36 @@
 			}
 		},
 		
-		showFPS_raf: null,
+		showFPSHandler: function(data){
+			div.setAttribute('data-currfps', data.fps || '--');
+		},
 		showFPS: function(scale){
 			div.style.setProperty('--fps-scale', scale);
 			
-			if(methods.showFPS_raf)
+			if(!!~RAF.handlers.indexOf(methods.showFPSHandler))
 			{
 				return;
 			}
 			
-			var times = [];
-			var last_fps = '--';
+			RAF.handlers.unshift(methods.showFPSHandler);
 			
 			div.setAttribute('data-showfps', 'true');
-			
-			// Taken from: https://stackoverflow.com/questions/69279653/use-gpu-to-draw-on-html5-canvas-on-google-chrome
-			var update_fps = function() {
-				methods.showFPS_raf = window.requestAnimationFrame(update_fps);
-				
-				var now = performance.now();
-				while (times.length > 0 && times[0] <= now - 1000) {
-					times.shift();
-					last_fps = times.length.toString();
-				}
-				times.push(now);
-				
-				// methods.fillRect(0, 0, 40, 30, '#000');
-				// methods.drawText(3, 3, last_fps);
-				div.setAttribute('data-currfps', last_fps);
-			};
-			
-			update_fps();
+			div.setAttribute('data-currfps', RAF.data.fps || '--');
 		},
-		
 		hideFPS: function(){
-			if(methods.showFPS_raf)
+			div.setAttribute('data-showfps', 'false');
+			div.setAttribute('data-currfps', '--');
+			
+			div.style.setProperty('--fps-scale', '1');
+			
+			var index = RAF.handlers.indexOf(methods.showFPSHandler);
+			
+			if(!~index)
 			{
-				div.setAttribute('data-currfps', '--');
-				div.setAttribute('data-showfps', 'false');
-				div.style.setProperty('--fps-scale', '1');
-				
-				window.cancelAnimationFrame(methods.showFPS_raf);
-				methods.showFPS_raf = null;
+				return;
 			}
+			
+			RAF.handlers.splice(index, 1);
 		},
 		
 		onclick: function(fn){
@@ -466,11 +565,19 @@
 			return true;
 		},
 		
+		onframe: function(fn){
+			RAF.handlers.push(fn);
+		},
+		
 		drawImage: function(image, x, y){
+			CHANGED = true;
+			
 			return ctx.drawImage(image, x, y);
 		},
 		
 		drawImagePart: function(source_image, source_x, source_y, width, height, x, y){
+			CHANGED = true;
+			
 			return ctx.drawImage(source_image, source_x, source_y, width, height, x, y, width, height);
 		},
 		
@@ -672,7 +779,14 @@
 		},
 		
 		reset: function(){
+			CHANGED = false;
+			
 			methods.hideFPS();
+			
+			RAF.reset();
+			
+			CHANGED = true;
+			SETTINGS.canvas = Object.assign(SETTINGS.canvas || {}, SETTINGS_DEFAULT);
 			
 			if(methods.ontick_int)
 			{
@@ -794,6 +908,66 @@
 					'Runs the $fn every $ms',
 					'The minimum time for $ms is 10ms'
 				]
+			}),
+			enumerable: true
+		},
+		onframe: {
+			value: Object.assign(function onframe(fn){
+				if(typeof fn !== 'function')
+				{
+					return false;
+				}
+				
+				methods.onframe(fn);
+				return true;
+			}, {
+				__doc__: [
+					'Runs the $fn every frame',
+					'Multiple can be registered, and they will run from first to last'
+				]
+			}),
+			enumerable: true
+		},
+		onchange: {
+			value: Object.assign(function onchange(fn){
+				if(typeof fn !== 'function')
+				{
+					return false;
+				}
+				
+				methods.onframe(function(data, obj){
+					if(data.changed)
+					{
+						fn(data, obj);
+					}
+				});
+				return true;
+			}, {
+				__doc__: [
+					'Runs the $fn every frame',
+					'Multiple can be registered, and they will run from first to last'
+				]
+			}),
+			enumerable: true
+		},
+		
+		setFrameskip: {
+			value: Object.assign(function setFrameskip(num){
+				return methods.setFrameskip(num < 0 ? 0 : (num > 10 ? 10 : num));
+			}, {
+				__doc__: [
+					'Sets the number of frames to skip',
+					'All changes will be in a buffered canvas, outside the screen',
+					'Takes a value between 0 (no skip) and 10 (renders every 10 frames)'
+				]
+			}),
+			enumerable: true
+		},
+		getFrameskip: {
+			value: Object.assign(function getFrameskip(){
+				return methods.getFrameskip();
+			}, {
+				__doc__: 'Gets the number of frames that are skipped'
 			}),
 			enumerable: true
 		},
@@ -939,12 +1113,12 @@
 					'Measures the $text size, and returns an object with the width and height',
 					'Takes an optional $font, which will be used to calculate the size instead of the one provided in !CANVAS->setFontStyle()',
 					'It returns an object with the following keys:',
-					'• font			Full font description (size, family and style)',
-					'• length 		Number of characters of the text',
-					'• width 		Width, in pixels and subpixels',
-					'• height		Height, in pixels and subpixels',
-					'• translateX	How many pixels and subpixels to move the text in the X axis',
-					'• translateY	How many pixels and subpixels to move the text in the Y axis',
+					' • font			Full font description (size, family and style)',
+					' • length 		Number of characters of the text',
+					' • width 		Width, in pixels and subpixels',
+					' • height		Height, in pixels and subpixels',
+					' • translateX	How many pixels and subpixels to move the text in the X axis',
+					' • translateY	How many pixels and subpixels to move the text in the Y axis',
 					'These translation values can be useful to determine how many pixels the characters "poke out" on each axis',
 					'For example, the emoji ⭐ may have an height above the line height'
 				]
@@ -1069,8 +1243,30 @@
 					div.parentNode.removeChild(div);
 				}
 				
-				canvas.width = width;
-				canvas.height = height;
+				
+				if(window.devicePixelRatio > 1)
+				{
+					canvas.width = (width * window.devicePixelRatio)|0;
+					canvas.height = (height * window.devicePixelRatio)|0;
+					canvas_ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+					canvas.style.width = width + 'px';
+					canvas.style.height = height + 'px';
+					
+					
+					buffer.width = canvas.width;
+					buffer.height = canvas.height;
+					ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+				}
+				else
+				{
+					canvas.removeAttribute('style');
+					canvas.width = width;
+					canvas.height = height;
+					
+					buffer.width = width;
+					buffer.height = height;
+				}
+					
 				
 				methods.reset();
 				methods.clearEverything(bgcolor);
@@ -1094,6 +1290,8 @@
 					value: canvas_init.__doc_export__
 				});
 				
+				RAF.fn();
+				
 				return EXPORTED;
 			}, {
 				__doc__: [
@@ -1115,6 +1313,7 @@
 		Cleanup: function(){},
 		Init: function(settings){
 			Object.assign(SETTINGS, settings);
+			SETTINGS.canvas = Object.assign(SETTINGS.canvas || {}, SETTINGS_DEFAULT);
 		},
 		CSS: [
 			'#' + div.id + ' {',
