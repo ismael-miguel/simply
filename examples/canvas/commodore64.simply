@@ -25,6 +25,8 @@ $spritesheet_url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoAQMAAA
 // Faithfully replicates the resolution from the VICE emulator
 %c = call !CANVAS->init(384, 272, %fg);
 
+// sets the coordinates mode to 8x8 pixels
+call %c->setCoordMode("grid", 8);
 
 /*
 	Draws the rectangle area in the middle.
@@ -34,12 +36,7 @@ $spritesheet_url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoAQMAAA
 	
 	Source: https://retrocomputerverzamelaar.nl/commodore-64-problems/
 */
-call %c->fillRect(
-	32, 36,
-	&sub(call %c->getWidth(), 32, 32),
-	&sub(call %c->getHeight(), 36, 36),
-	%bg
-);
+call %c->fillRect(4, 4.5, 40, 25, %bg);
 
 
 // Handles the spritesheet loading
@@ -53,15 +50,18 @@ def &fn($sheet) {
 	call $sheet->addMap("ABCDEFIKMORSTVY1234689*. ");
 	
 	// After the mapping is added, just write the text!
-	call $sheet->drawSpriteLine("    **** COMMODORE 64 BASIC V2 ****", 32, 44);
-	call $sheet->drawSpriteLine(" 64K RAM SYSTEM  38911 BASIC BYTES FREE", 32, 60);
-	call $sheet->drawSpriteLine("READY.", 32, 76);
+	call $sheet->drawSpriteLine("**** COMMODORE 64 BASIC V2 ****", 8, 5.5);
+	call $sheet->drawSpriteLine("64K RAM SYSTEM  38911 BASIC BYTES FREE", 5, 7.5);
+	call $sheet->drawSpriteLine("READY.", 4, 9.5);
 	
 	// Blinky blinky cursor
 	%on = false;
 	def &ontick call %c->fillRect(
-		32, 84, 8, 8,
-		&iff(%on = &iff(%on, false, true), %fg, %bg)
+		4, 10.5, 1, 1,
+		&iff(
+			%on = &iff(%on, false, true),
+			%fg, %bg
+		)
 	);
 	
 	// Blinks every 1000ms (1 second)
@@ -69,4 +69,4 @@ def &fn($sheet) {
 }
 
 // $url, $width and $height of the sprites and a function
-call %c->createSpritesheet($spritesheet_url, 8, 8, &fn);
+call %c->createSpritesheet($spritesheet_url, 1, 1, &fn);

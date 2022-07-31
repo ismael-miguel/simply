@@ -28,9 +28,16 @@ $url = &join([
 	"eM0an2NDEAAAAASUVORK5CYII="
 ], '');
 
+$grid_size = [7, 9];
 
-%c = call !CANVAS->init(300, 300, "lightblue");
+%c = call !CANVAS->init(
+	&prod(42, $grid_size[0]),
+	&prod(24, $grid_size[1]),
+	"lightblue"
+);
 
+// Sets the grid to 7,9 pixels
+call %c->setCoordMode("grid", $grid_size);
 
 // Handles the spritesheet loading
 def &fn($sheet) {
@@ -42,65 +49,64 @@ def &fn($sheet) {
 	// Maps all the characters we need to the position in the spritesheet
 	call $sheet->addMap(!PRINTABLE);
 	
-	$x = 16;
-	$y = 32;
-	$line = $sheet->height;
+	$x = 2;
+	$y = 2;
 	
 	// After the mapping is added, just write the text!
 	call $sheet->drawSpriteLine(&hello_world(), $x, $y);
 	call $sheet->drawSpriteLine(
 		"A simple sprite font example",
-		$x, $y = &add($y, $line)
+		$x, $y = &add($y, 1)
 	);
 	
 	call $sheet->drawSpriteLine(
 		"'Oldschool' font created by domsson:",
-		$x, $y = &add($y, $line)
+		$x, $y = &add($y, 1)
 	);
 	
 	call $sheet->drawSpriteLine(
 		"https://opengameart.org/users/domsson",
-		$x, $y = &add($y, $line)
+		$x, $y = &add($y, 1)
 	);
 	
 	call $sheet->drawSpriteLine(
-		"https://opengameart.org/content/ascii-bi",
-		$x, $y = &add($y, $line)
+		"https://opengameart.org/content/ascii-",
+		$x, $y = &add($y, 1)
 	);
 	call $sheet->drawSpriteLine(
-		"tmap-font-oldschool",
-		$x, $y = &add($y, $line)
+		"bitmap-font-oldschool",
+		$x, $y = &add($y, 1)
 	);
 	
 	call $sheet->drawSpriteLine(
 		"This is an example of how to use",
-		$x, $y = &add($y, $line, $line)
+		$x, $y = &add($y, 2)
 	);
 	call $sheet->drawSpriteLine(
 		"a spritesheet for text.",
-		$x, $y = &add($y, $line)
+		$x, $y = &add($y, 1)
 	);
 	
 	call $sheet->drawSpriteLine(
-		"Although it wasn't intended for this use",
-		$x, $y = &add($y, $line, $line)
+		"Although it wasn't intended for this",
+		$x, $y = &add($y, 3)
 	);
 	
 	call $sheet->drawSpriteLine(
-		"it works quite well for text!",
-		$x, $y = &add($y, $line)
+		"use it works quite well for text!",
+		$x, $y = &add($y, 1)
 	);
 	
 	call $sheet->drawSpriteLine(
 		"Printable ASCII table:",
-		$x, $y = &add($y, $line, $line)
+		$x, $y = &add($y, 3)
 	);
 	
-	$y = &add($y, $line, $line);
-	def &x($txt, $i) call $sheet->drawSpriteLine($txt, $x, &add($y, &prod($line, $i)));
+	$y = &add($y, 2);
+	def &x($txt, $i) call $sheet->drawSpriteLine($txt, $x, &add($y, $i));
 	
 	&array_map(&str_chunk(!PRINTABLE, 33), &x);
 }
 
 // $url, $width and $height of the sprites and a function
-call %c->createSpritesheet($url, 7, 9, &fn);
+call %c->createSpritesheet($url, 1, 1, &fn);
