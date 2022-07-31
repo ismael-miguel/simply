@@ -42,6 +42,88 @@
 	ctx.imageSmoothingEnabled = false;
 	ctx.imageSmoothingQuality = 'high';
 	
+	
+	// canvas coords mode
+	var COORD_MODE = {
+		grid_mode: {
+			x: 1, y: 1,
+			init: function(x, y){
+				this.x = x || 1;
+				this.y = y || 1;
+			},
+			reset: function(){
+				this.y = this.x = 1;
+			},
+			getX: function(x){
+				return x * this.x;
+			},
+			getY: function(y){
+				return y * this.y;
+			}
+		},
+		pixel_mode: {
+			init: function(){},
+			reset: function(){},
+			getX: function(x){
+				return x;
+			},
+			getY: function(y){
+				return y;
+			}
+		},
+		percent_mode: {
+			init: function(){},
+			reset: function(){},
+			getX: function(x){
+				return x * canvas.width;
+			},
+			getY: function(y){
+				return y * canvas.height;
+			}
+		},
+		
+		mode: 'pixel_mode',
+		reset: function(){
+			this.mode = 'pixel_mode';
+			this.getModes().forEach(function(mode){
+				this[mode + '_mode'].reset();
+			}, this);
+		},
+		setMode: function(mode, args){
+			mode = mode.toString() + '_mode';
+			if(!(mode in COORD_MODE))
+			{
+				return false;
+			}
+			
+			this.mode = mode;
+			this[mode].init.apply(this[mode], args);
+			
+			return true;
+		},
+		getModes: function(){
+			return Object.keys(this).filter(function(key){
+				return /_mode$/.test(key);
+			}).map(function(key){
+				return key.replace(/_mode$/, '');
+			});
+		},
+		getX: function(x){
+			return this[this.mode].getX(x) | 0;
+		},
+		getY: function(y){
+			return this[this.mode].getY(y) | 0;
+		},
+		getWidth: function(width){
+			return this[this.mode].getX(width) | 0;
+		},
+		getHeight: function(height){
+			return this[this.mode].getY(height) | 0;
+		}
+	};
+	
+	
+	
 	var SETTINGS = {};
 	var EXPORTED = {};
 	
@@ -471,7 +553,13 @@
 								return null;
 							}
 							
-							methods.drawImagePart(image, sprite.x, sprite.y, sprite.width, sprite.height, x, y);
+							methods.drawImagePart(
+								image,
+								sprite.x, sprite.y,
+								sprite.width, sprite.height,
+								COORD_MODE.getX(x),
+								COORD_MODE.getY(y)
+							);
 							
 							return true;
 						}, {
@@ -482,6 +570,10 @@
 					drawSpriteLine: {
 						value: Object.assign(function drawSprite(keys, x, y){
 							var sprites = [];
+							
+							x = COORD_MODE.getX(x);
+							y = COORD_MODE.getY(y);
+							
 							if(typeof keys === 'string')
 							{
 								Array.from(keys).forEach(function(key){
@@ -607,6 +699,8 @@
 				canvas.ontouchmove = null;
 				canvas.ontouchend = null;
 			}
+			
+			COORD_MODE.reset();
 		}
 	};
 	
@@ -723,10 +817,10 @@
 		
 		getRandomColor: {
 			value: Object.assign(function getRandomColor(){
-				return "rgb(" + (Math.floor(Math.random() * 256))
-					+ "," + (Math.floor(Math.random() * 256))
-					+ "," + (Math.floor(Math.random() * 256))
-				+ ")";
+				return 'rgb(' + (Math.floor(Math.random() * 256))
+					+ ',' + (Math.floor(Math.random() * 256))
+					+ ',' + (Math.floor(Math.random() * 256))
+				+ ')';
 			}, {
 				__doc__: 'Gets a random color, usable in many places'
 			}),
@@ -793,7 +887,13 @@
 		
 		fillRect: {
 			value: Object.assign(function fillRect(x, y, width, height, style){
-				return methods.fillRect(+x || 0, +y || 0, +width || 0, +height || 0, style ? style.toString() : null);
+				x = COORD_MODE.getX(x);
+				y = COORD_MODE.getY(y);
+				
+				width = COORD_MODE.getWidth(width);
+				height = COORD_MODE.getHeight(height);
+				
+				return methods.fillRect(x, y, width, height, style ? style.toString() : null);
 			}, {
 				__doc__: [
 					'Creates a rectangle at $x,$y with $width,$height',
@@ -806,9 +906,14 @@
 		drawText: {
 			value: Object.assign(function drawText(x, y, text, max_width, font, style, stroke){
 				// return methods.fillRect(+x || 0, +y || 0, +width || 0, +height || 0, style ? style.toString() : null);
+				x = COORD_MODE.getX(x);
+				y = COORD_MODE.getY(y);
+				
 				return methods.drawText(
-					+x || 0, +y || 0, text.toString(),
-					max_width ? max_width : undefined,
+					x, y, text.toString(),
+					max_width
+						? COORD_MODE.getWidth(max_width)
+						: undefined,
 					font ? font.toString() : null,
 					style ? style.toString() : null,
 					stroke ? stroke.toString() : null
@@ -884,10 +989,11 @@
 		
 		createSpritesheet: {
 			value: Object.assign(function createSpritesheet(url, width, height, fn){
+				width = COORD_MODE.getWidth(width < 1 ? 1 : width);
+				height = COORD_MODE.getHeight(height < 1 ? 1 : height);
+				
 				return methods.createSpritesheet(
-					url.toString(),
-					width < 1 ? 8 : width,
-					height < 1 ? 8 : height,
+					url.toString(), width, height,
 					fn && typeof fn === 'function' ? fn : function(){}
 				);
 			}, {
@@ -895,6 +1001,60 @@
 					'Loads an image from $url and creates a spritesheet of sprites with $width and $height',
 					'Pass a $function as the last argument, to be able to use the sprites after loaded'
 				]
+			}),
+			enumerable: true
+		},
+		
+		setCoordMode: {
+			value: Object.assign(function setCoordMode(mode, args){
+				return COORD_MODE.setMode(
+					mode.toString(),
+					Array.isArray(args)
+						? args
+						: (args ? [args, args] : [])
+				);
+			}, {
+				__doc__: 'Sets the coordinate mode'
+			}),
+			enumerable: true
+		},
+		getCoordModes: {
+			value: Object.assign(function getCoordModes(){
+				return COORD_MODE.getModes();
+			}, {
+				__doc__: 'Gets all available modes'
+			}),
+			enumerable: true
+		},
+		getCoordX: {
+			value: Object.assign(function getCoordX(x){
+				return COORD_MODE.getX(x);
+			}, {
+				__doc__: 'Calculates the $x coordinate, for the specified coodinate mode'
+			}),
+			enumerable: true
+		},
+		getCoordY: {
+			value: Object.assign(function getCoordY(y){
+				return COORD_MODE.getY(y);
+			}, {
+				__doc__: 'Calculates the $y coordinate, for the specified coodinate mode'
+			}),
+			enumerable: true
+		},
+		getCoordWidth: {
+			value: Object.assign(function getCoordWidth(width){
+				return COORD_MODE.getWidth(width);
+			}, {
+				__doc__: 'Calculates the $width, for the specified coodinate mode'
+			}),
+			enumerable: true
+		},
+		getCoordHeight: {
+			value: Object.assign(function getCoordHeight(height){
+				return COORD_MODE.getHeight(height);
+			}, {
+				__doc__: 'Calculates the $height, for the specified coodinate mode'
 			}),
 			enumerable: true
 		}
