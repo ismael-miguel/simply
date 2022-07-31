@@ -568,7 +568,7 @@
 						enumerable: true
 					},
 					drawSpriteLine: {
-						value: Object.assign(function drawSprite(keys, x, y){
+						value: Object.assign(function drawSpriteLine(keys, x, y){
 							var sprites = [];
 							
 							x = COORD_MODE.getX(x);
@@ -587,7 +587,7 @@
 							else
 							{
 								Object.keys(keys).forEach(function(key){
-									var sprite = data.getSprite(key);
+									var sprite = data.getSprite(keys[key]);
 									if(sprite)
 									{
 										sprites.push(sprite);
