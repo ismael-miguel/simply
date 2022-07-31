@@ -1,0 +1,52 @@
+/*
+	Commodore64 random maze example
+	Reimplements the following code:
+	10 PRINT CHR$(205.5+RND(1)); : GOTO 10
+	
+	However, only draws a single screen.
+	Click/tap on the canvas to regenerate the maze.
+	Please check other examples to understand how this works.
+*/
+
+unless !CANVAS then {
+	echo "❌ The canvas module is required for this example";
+	return;
+}
+
+$url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAIAQMAAACxnC8YAAAABlBMVEVgSe2ij/+XgPdPAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAMUlEQVQI1w3KMREAMAjAwL9jYEMBQiqrEpFSKWXJkERMDPnyUbcuffqwaFYUG5MdwwfzqAnxR+ME1wAAAABJRU5ErkJggg==";
+
+%fg = "rgb(162, 143, 255)";
+%bg = "rgb(96, 73, 237)";
+
+%c = call !CANVAS->init(384, 272, %fg);
+
+call %c->setCoordMode("grid", 8); //8x8
+call %c->fillRect(%x = 4, %y = 4.5, %width = 40, %height = 25, %bg);
+
+def &fn($sheet) {
+	if $sheet->error {
+		echo "❌ Failed to load the sprite sheet";
+		return;
+	}
+	
+	%sheet = $sheet;
+	%count = &sub($sheet->length, 1);
+	
+	def &draw {
+		def &y($_, $i){
+			def &rand_char($j) &rand(0, %count);
+		
+			call %sheet->drawSpriteLine(
+				&array_map(&range(1, %width), &rand_char),
+				%x, &add(%y, $i)
+			);
+		}
+		&array_map(&range(1, %height), &y);
+	}
+	
+	call %c->onup(&draw);
+	&draw();
+}
+
+// $url, $width and $height of the sprites and a function
+call %c->createSpritesheet($url, 1, 1, &fn);
