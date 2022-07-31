@@ -396,7 +396,7 @@
 			// open
 			[/^(?:(?:begin|open|start)(?![a-z\d])|\{)/i, 'SCOPE_OPEN'],
 			// close
-			[/^(?:(?:begin|close|end)(?![a-z\d])|\})/i, 'SCOPE_CLOSE'],
+			[/^(?:(?:end|close|finish(?:ed))(?![a-z\d])|\})/i, 'SCOPE_CLOSE'],
 			
 			// DECISION BLOCKS
 			// if/in case
