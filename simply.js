@@ -746,8 +746,8 @@
 			}, {
 				__doc__: 'Tries to flip the characters by 180º. (Example: "<hello>" will return ">hello<")'
 			}),
-			hello_world: Object.assign(function hello_world(flags){
-				var FLAG_LCASE_H = 0b10000;
+			hello_world: Object.assign(function hello_world(flags, negative){
+				var FLAG_LCASE_HG = 0b10000;
 				var FLAG_NO_COMMA = 0b1000;
 				var FLAG_NO_SPACE = 0b100;
 				var FLAG_LCASE_W = 0b10;
@@ -760,8 +760,10 @@
 						: 0
 					);
 				
-				return ['H', 'h'][(flags & FLAG_LCASE_H) >> 4]
-					+ 'ello'
+				return (negative
+						? ['G', 'g'][(flags & FLAG_LCASE_HG) >> 4] + 'oodbye'
+						: ['H', 'h'][(flags & FLAG_LCASE_HG) >> 4] + 'ello'
+					)
 					+ [',', ''][(flags & FLAG_NO_COMMA) >> 3]
 					+ [' ', ''][(flags & FLAG_NO_SPACE) >> 2]
 					+ ['W', 'w'][(flags & FLAG_LCASE_W) >> 1]
@@ -775,7 +777,8 @@
 					'2- Removes the comma',
 					'3- Removes the space after the comma',
 					'4- The "W" in "World" will be in lowercase instead: "world"',
-					'5- Removes the exclamation mark (!) at the end'
+					'5- Removes the exclamation mark (!) at the end',
+					'Psst! T̶r̶y̶ ̶p̶a̶s̶s̶i̶n̶g̶ ̶t̶r̶u̶e̶ ̶a̶s̶ ̶t̶h̶e̶ ̶2̶n̶d̶ ̶a̶r̶g̶u̶m̶e̶n̶t̶.'
 				]
 			}),
 			is_palindrome: Object.assign(function is_palindrome(str){
@@ -989,7 +992,7 @@
 					'Optionally takes a string or an array with all the characters to trim'
 				]
 			}),
-			str_contains: Object.assign(function array_contains(str, substr){
+			str_contains: Object.assign(function str_contains(str, substr){
 				str = str.toString();
 				substr = substr.toString();
 				
@@ -1006,6 +1009,91 @@
 				return String.fromCodePoint(codepoint);
 			}, {
 				__doc__: 'Returns an Unicode character corresponding to the codepoint provided'
+			}),
+			str_pad: Object.assign(function str_pad(str, len, chars){
+				str = str.toString();
+				
+				if(!len || len >= str.length)
+				{
+					return str;
+				}
+				
+				if(chars === null || chars === undefined)
+				{
+					chars = ' ';
+				}
+				else if(chars)
+				{
+					chars = Array.isArray(chars)
+						? chars.join('')
+						: chars.toString();
+				}
+				
+				var count = len - str.length;
+				
+				if(count === 1)
+				{
+					return str + chars[0];
+				}
+				
+				return str.padStart(count >> 1, chars).padEnd(count, chars);
+			}, {
+				__doc__: [
+					'Pads the $string to the $length using the optional $chars, or space',
+					'This function favors adding chars to the right, in case the $string xor $length is an odd number'
+				]
+			}),
+			str_lpad: Object.assign(function str_lpad(str, len, chars){
+				str = str.toString();
+				
+				if(!len || len >= str.length)
+				{
+					return str;
+				}
+				
+				if(chars === null || chars === undefined)
+				{
+					chars = ' ';
+				}
+				else if(chars)
+				{
+					chars = Array.isArray(chars)
+						? chars.join('')
+						: chars.toString();
+				}
+				
+				return str.padStart(len, chars);
+			}, {
+				__doc__: [
+					'Pads the $string to the $length using the optional $chars, or space',
+					'This function only on the left side of the $string'
+				]
+			}),
+			str_rpad: Object.assign(function str_rpad(str, len, chars){
+				str = str.toString();
+				
+				if(!len || len >= str.length)
+				{
+					return str;
+				}
+				
+				if(chars === null || chars === undefined)
+				{
+					chars = ' ';
+				}
+				else if(chars)
+				{
+					chars = Array.isArray(chars)
+						? chars.join('')
+						: chars.toString();
+				}
+				
+				return str.padEnd(len, chars);
+			}, {
+				__doc__: [
+					'Pads the $string to the $length using the optional $chars, or space',
+					'This function only on the right side of the $string'
+				]
 			}),
 			
 			// math-related
