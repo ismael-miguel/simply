@@ -57,39 +57,41 @@
 	// canvas coords mode
 	var COORD_MODE = {
 		grid_mode: {
-			x: 1, y: 1,
+			x: 1, y: 1, min: 0.1,
 			init: function(x, y){
-				this.x = x || 1;
-				this.y = y || 1;
+				this.x = x > 0 ? x|0 : 1;
+				this.y = y > 0 ? y|0 : 1;
 			},
 			reset: function(){
 				this.y = this.x = 1;
 			},
 			getX: function(x){
-				return x * this.x;
+				return (x * this.x)|0;
 			},
 			getY: function(y){
-				return y * this.y;
+				return (y * this.y)|0;
 			}
 		},
 		pixel_mode: {
+			min: 1,
 			init: function(){},
 			reset: function(){},
 			getX: function(x){
-				return x;
+				return x|0;
 			},
 			getY: function(y){
-				return y;
+				return y|0;
 			}
 		},
 		percent_mode: {
+			min: 0.1,
 			init: function(){},
 			reset: function(){},
 			getX: function(x){
-				return x * canvas.width;
+				return (x * canvas.width)|0;
 			},
 			getY: function(y){
-				return y * canvas.height;
+				return (y * canvas.height)|0;
 			}
 		},
 		
@@ -120,16 +122,16 @@
 			});
 		},
 		getX: function(x){
-			return this[this.mode].getX(x) | 0;
+			return this[this.mode].getX(x < 0 ? 0 : x)|0;
 		},
 		getY: function(y){
-			return this[this.mode].getY(y) | 0;
+			return this[this.mode].getY(y < 0 ? 0 : y)|0;
 		},
 		getWidth: function(width){
-			return this[this.mode].getX(width) | 0;
+			return this[this.mode].getX(width < this[this.mode].min ? this[this.mode] : width)|0;
 		},
 		getHeight: function(height){
-			return this[this.mode].getY(height) | 0;
+			return this[this.mode].getY(height < this[this.mode].min ? this[this.mode] : height)|0;
 		}
 	};
 	
@@ -199,8 +201,8 @@
 				{
 					canvas_ctx.drawImage(
 						buffer, 0, 0,
-						(buffer.width / window.devicePixelRatio) | 0,
-						(buffer.height / window.devicePixelRatio) | 0
+						(buffer.width / window.devicePixelRatio)|0,
+						(buffer.height / window.devicePixelRatio)|0
 					);
 				}
 				else
@@ -578,6 +580,20 @@
 		
 		onframe: function(fn){
 			RAF.handlers.push(fn);
+		},
+		
+		getImage: function(x, y, width, height){
+			var copy = document.createElement('canvas');
+			
+			copy.width = width;
+			copy.height = height;
+			
+			var copy_ctx = copy.getContext('2d');
+			copy_ctx.drawImage(buffer, x, y, width, height, 0, 0, width, height);
+			
+			copy_ctx = null;
+			
+			return copy;
 		},
 		
 		drawImage: function(image, x, y){
@@ -1176,8 +1192,8 @@
 		
 		createSpritesheet: {
 			value: Object.assign(function createSpritesheet(url, width, height, fn){
-				width = COORD_MODE.getWidth(width < 1 ? 1 : width);
-				height = COORD_MODE.getHeight(height < 1 ? 1 : height);
+				width = COORD_MODE.getWidth(width);
+				height = COORD_MODE.getHeight(height);
 				
 				return methods.createSpritesheet(
 					url.toString(), width, height,
@@ -1188,6 +1204,47 @@
 					'Loads an image from $url and creates a spritesheet of sprites with $width and $height',
 					'Pass a $function as the last argument, to be able to use the sprites after loaded'
 				]
+			}),
+			enumerable: true
+		},
+		
+		getImage: {
+			value: Object.assign(function getImage(x, y, width, height){
+				x = COORD_MODE.getX(x);
+				y = COORD_MODE.getY(y);
+				
+				width = COORD_MODE.getWidth(width);
+				height = COORD_MODE.getHeight(height);
+				
+				return methods.getImage(x, y, width, height);
+			}, {
+				__doc__: [
+					'Returns an image with the contents at $x,$y, and $width and $height',
+					'This function returns an actual image, to be used with !CANVAS->drawImage()'
+				]
+			}),
+			enumerable: true
+		},
+		
+		drawImage: {
+			value: Object.assign(function drawImage(image, x, y){
+				if(
+					!(image instanceof Image)
+					&& !(image.tagName === 'IMG')
+					&& !(image.tagName === 'CANVAS')
+				)
+				{
+					return false;
+				}
+				
+				x = COORD_MODE.getX(x);
+				y = COORD_MODE.getY(y);
+				
+				methods.drawImage(image, x, y);
+				
+				return true;
+			}, {
+				__doc__: 'Draws the $image at $x,$y'
 			}),
 			enumerable: true
 		},
