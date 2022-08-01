@@ -18,7 +18,8 @@
 	
 	
 	var SETTINGS_DEFAULT = {
-		frameskip: 0
+		frameskip: 0,
+		lowpower: false
 	};
 	/*var SETTINGS = Object.assign({}, SETTINGS_DEFAULT);*/
 	var SETTINGS = {};
@@ -43,14 +44,12 @@
 	div.id = 'm-canvas-holder';
 	div.setAttribute('data-showfps', 'false');
 	div.setAttribute('data-currfps', '--');
+	div.setAttribute('data-shownfps', '--');
 	
 	div.appendChild(canvas);
 	div.appendChild(text_measurer_holder);
 	// div.appendChild(buffer);
 	
-	
-	// ctx.globalCompositeOperation = 'destination-in';
-	// console.log(ctx.globalCompositeOperation);
 	ctx.imageSmoothingEnabled = false;
 	ctx.imageSmoothingQuality = 'high';
 	
@@ -139,15 +138,22 @@
 	var RAF = {
 		handlers: [],
 		id: null,
-		data: {
+		data_default: {
 			last: null,
 			now: null,
 			delta: 0,
-			fps: 0,
+			
 			changed: CHANGED,
+			
+			fps: 0,
+			fps_shown: 0,
+			
+			fps_updated: true,
 			fps_ellapsed: 0,
-			fps_count: 0
+			fps_count: 0,
+			fps_shown_count: 0
 		},
+		data: {},
 		fn: function(){
 			RAF.data.last = RAF.data.now;
 			RAF.data.now = performance.now();
@@ -158,12 +164,16 @@
 			if(RAF.data.fps_ellapsed < 999)
 			{
 				RAF.data.fps_count++;
+				RAF.data.fps_updated = false;
 			}
 			else
 			{
 				RAF.data.fps = RAF.data.fps_count;
 				RAF.data.fps_ellapsed = 0;
-				RAF.data.fps_count = 0;
+				RAF.data.fps_count = 1;
+				RAF.data.fps_shown = RAF.data.fps_shown_count;
+				RAF.data.fps_shown_count = 0;
+				RAF.data.fps_updated = true;
 			}
 			
 			var copy = {
@@ -171,6 +181,8 @@
 				now: RAF.data.now,
 				delta: RAF.data.delta,
 				fps: RAF.data.fps,
+				fps_shown: RAF.data.fps_shown,
+				fps_updated: RAF.data.fps_updated,
 				changed: RAF.data.changed
 			};
 			
@@ -183,7 +195,7 @@
 				|| !(RAF.data.fps_count % (SETTINGS.canvas.frameskip + 1))
 			))
 			{
-				if(window.devicePixelRatio && window.devicePixelRatio > 1)
+				if(window.devicePixelRatio > 1 && !SETTINGS.canvas.lowpower)
 				{
 					canvas_ctx.drawImage(
 						buffer, 0, 0,
@@ -197,6 +209,7 @@
 				}
 				
 				CHANGED = false;
+				RAF.data.fps_shown_count++;
 			}
 			
 			RAF.id = window.requestAnimationFrame(RAF.fn);
@@ -208,15 +221,7 @@
 			}
 			
 			RAF.handlers.length = 0;
-			RAF.data = {
-				last: null,
-				now: null,
-				delta: 0,
-				fps: 0,
-				fps_ellapsed: 0,
-				fps_count: 0,
-				changed: true
-			};
+			RAF.data = Object.assign({}, RAF.data_default);
 		}
 	};
 	
@@ -231,12 +236,12 @@
 		},
 		
 		getWidth: function(){
-			return window.devicePixelRatio > 1
+			return window.devicePixelRatio > 1 && !SETTINGS.canvas.lowpower
 				? (canvas.width / window.devicePixelRatio)|0
 				: canvas.width;
 		},
 		getHeight: function(){
-			return window.devicePixelRatio > 1
+			return window.devicePixelRatio > 1 && !SETTINGS.canvas.lowpower
 				? (canvas.height / window.devicePixelRatio)|0
 				: canvas.height;
 		},
@@ -341,7 +346,11 @@
 		},
 		
 		showFPSHandler: function(data){
-			div.setAttribute('data-currfps', data.fps || '--');
+			if(data.fps_updated)
+			{
+				div.setAttribute('data-currfps', data.fps || '--');
+				div.setAttribute('data-shownfps', data.fps ? data.fps_shown : '--');
+			}
 		},
 		showFPS: function(scale){
 			div.style.setProperty('--fps-scale', scale);
@@ -355,10 +364,12 @@
 			
 			div.setAttribute('data-showfps', 'true');
 			div.setAttribute('data-currfps', RAF.data.fps || '--');
+			div.setAttribute('data-shownfps', '--');
 		},
 		hideFPS: function(){
 			div.setAttribute('data-showfps', 'false');
 			div.setAttribute('data-currfps', '--');
+			div.setAttribute('data-shownfps', '--');
 			
 			div.style.setProperty('--fps-scale', '1');
 			
@@ -786,7 +797,6 @@
 			RAF.reset();
 			
 			CHANGED = true;
-			SETTINGS.canvas = Object.assign(SETTINGS.canvas || {}, SETTINGS_DEFAULT);
 			
 			if(methods.ontick_int)
 			{
@@ -958,7 +968,7 @@
 				__doc__: [
 					'Sets the number of frames to skip',
 					'All changes will be in a buffered canvas, outside the screen',
-					'Takes a value between 0 (no skip) and 10 (renders every 10 frames)'
+					'Takes a value between 0 (no skip) and 10 (renders every 11th frame, because it skips 10 frames)'
 				]
 			}),
 			enumerable: true
@@ -1146,7 +1156,10 @@
 					'Shows a rough FPS counter',
 					'Optionally, takes a scale value',
 					'Any value below 0.1 will be ignored',
-					'The FPS count won\'t be part of the generated canvas image'
+					'The FPS count won\'t be part of the generated canvas image',
+					'This will display the number of drawn frames and the number of frames per second for the browser',
+					'For example, a value of 0/60 means that 0 frames were drawn in the last second, but the code still ran 60 times a second',
+					'Frames are rendered only if they have changes or if they weren\'t skipped (set by !CANVAS->setFrameskip())'
 				]
 			}),
 			enumerable: true
@@ -1237,14 +1250,16 @@
 	simply.module_register('canvas', {
 		Exports: {
 			'version': '1.0',
-			'init': Object.assign(function canvas_init(width, height, bgcolor){
+			'init': Object.assign(function canvas_init(width, height, bgcolor, lowpower){
 				if(div.parentNode)
 				{
 					div.parentNode.removeChild(div);
 				}
 				
+				SETTINGS.canvas = Object.assign(SETTINGS.canvas || {}, SETTINGS_DEFAULT);
+				SETTINGS.canvas.lowpower = !!lowpower;
 				
-				if(window.devicePixelRatio > 1)
+				if(window.devicePixelRatio > 1 && !SETTINGS.canvas.lowpower)
 				{
 					canvas.width = (width * window.devicePixelRatio)|0;
 					canvas.height = (height * window.devicePixelRatio)|0;
@@ -1269,7 +1284,7 @@
 					
 				
 				methods.reset();
-				methods.clearEverything(bgcolor);
+				methods.clearEverything(bgcolor || "white");
 				
 				if(SETTINGS.output_element)
 				{
@@ -1286,6 +1301,11 @@
 				
 				EXPORTED = Object.assign({}, EXPORTS);
 				
+				if(lowpower)
+				{
+					EXPORTED.setFrameskip(+lowpower);
+				}
+				
 				Object.defineProperty(EXPORTED, '__doc__', {
 					value: canvas_init.__doc_export__
 				});
@@ -1297,7 +1317,9 @@
 				__doc__: [
 					'Initializes a canvas, inside the output area',
 					'It\'s required to pass a $width, $height and a $bgcolor',
-					'Returns a custom 2d context object'
+					'Returns a custom 2d context object',
+					'If $lowpower is set to true, it will ignore the devicePixelRatio and set a frameskip of 1',
+					'If $lowpower is set to a number, it will be used as the frameskip value'
 				],
 				__doc_export__: [
 					'Canvas module object',
@@ -1320,6 +1342,7 @@
 				'--fps-scale: 1;',
 				'position: relative;',
 				'transform: translate3d(0, 0, 0);',
+				'user-select: none;',
 			'}',
 			'#' + div.id + ':before {',
 				'content: "";',
@@ -1336,7 +1359,7 @@
 				'padding: 0 .5rem;',
 			'}',
 			'#' + div.id + '[data-showfps="true"]:before {',
-				'content: attr(data-currfps);',
+				'content: attr(data-shownfps) "/" attr(data-currfps);',
 				'display: block;',
 			'}',
 			'#' + div.id + ' canvas {display: block}',
