@@ -1109,7 +1109,7 @@
 					'Also takes an optional $font, which will be reset after drawing the text',
 					'Also takes an optional $style, which will be reset after drawing the text',
 					'Also takes an optional $stroke, which will be reset after drawing the text',
-					'If $stroke is true, it will use the stroke style set by !CANVAS->getStrokeStyle()'
+					'If $stroke is true, it will use the stroke style set by !CANVAS->setStrokeStyle()'
 				]
 			}),
 			enumerable: true
