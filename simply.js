@@ -2045,6 +2045,11 @@
 			// functions have a different definition handling
 			if(expression.type === 'FunctionExpression')
 			{
+				if(RDP.FNS.hasOwnProperty(expression.value))
+				{
+					throw new SyntaxError('Cannot redefine the function &' + expression.value);
+				}
+				
 				var result = this.DefineFunctionStatement();
 				
 				result.fn = expression;
@@ -4302,7 +4307,7 @@
 		
 		compileFunctionExpression: function(token, info){
 			return RDP.FNS.hasOwnProperty(token.value)
-				? '($FN[\'' + token.value + '\'] || $CONST.FN[\'' + token.value + '\'])'
+				? '$CONST.FN[\'' + token.value + '\']'
 				: '$FN[\'' + token.value + '\']';
 		},
 		
