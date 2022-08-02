@@ -13,13 +13,14 @@
 	{
 		throw new Error('Canvas support is required to use this module');
 	}
-	var ctx = buffer.getContext('2d');
-	var canvas_ctx = canvas.getContext('2d');
+	var ctx = buffer.getContext('2d', {alpha: false});
+	var canvas_ctx = canvas.getContext('2d', {alpha: false});
 	
 	
 	var SETTINGS_DEFAULT = {
 		frameskip: 0,
-		lowpower: false
+		lowpower: false,
+		can_update: true
 	};
 	/*var SETTINGS = Object.assign({}, SETTINGS_DEFAULT);*/
 	var SETTINGS = {};
@@ -132,6 +133,14 @@
 		},
 		getHeight: function(height){
 			return this[this.mode].getY(height < this[this.mode].min ? this[this.mode] : height)|0;
+		},
+		
+		getDebugInfo: function(){
+			return {
+				mode: this.mode.replace('_mode', ''),
+				x: this[this.mode].x,
+				y: this[this.mode].y
+			};
 		}
 	};
 	
@@ -149,6 +158,8 @@
 			
 			fps: 0,
 			fps_shown: 0,
+			fps_total: 0,
+			fps_shown_total: 0,
 			
 			fps_updated: true,
 			fps_ellapsed: 0,
@@ -163,17 +174,32 @@
 			RAF.data.fps_ellapsed += RAF.data.delta;
 			RAF.data.changed = CHANGED;
 			
-			if(RAF.data.fps_ellapsed < 999)
+			RAF.data.fps_total++;
+			
+			if(
+				RAF.data.fps_ellapsed < 999
+				&& RAF.data.delta < 999
+			)
 			{
 				RAF.data.fps_count++;
 				RAF.data.fps_updated = false;
 			}
 			else
 			{
-				RAF.data.fps = RAF.data.fps_count;
+				if(RAF.data.delta < 999)
+				{
+					
+					RAF.data.fps = RAF.data.fps_count;
+					RAF.data.fps_shown = RAF.data.fps_shown_count;
+				}
+				else
+				{
+					RAF.data.fps = 0;
+					RAF.data.fps_shown = 0;
+				}
+				
 				RAF.data.fps_ellapsed = 0;
 				RAF.data.fps_count = 1;
-				RAF.data.fps_shown = RAF.data.fps_shown_count;
 				RAF.data.fps_shown_count = 0;
 				RAF.data.fps_updated = true;
 			}
@@ -183,7 +209,9 @@
 				now: RAF.data.now,
 				delta: RAF.data.delta,
 				fps: RAF.data.fps,
+				fps_total: RAF.data.fps_total,
 				fps_shown: RAF.data.fps_shown,
+				fps_shown_total: RAF.data.fps_shown_total,
 				fps_updated: RAF.data.fps_updated,
 				changed: RAF.data.changed
 			};
@@ -212,6 +240,7 @@
 				
 				CHANGED = false;
 				RAF.data.fps_shown_count++;
+				RAF.data.fps_shown_total++;
 			}
 			
 			RAF.id = window.requestAnimationFrame(RAF.fn);
@@ -227,6 +256,82 @@
 		}
 	};
 	
+	
+	var DEBUG = {
+		holder: document.createElement('div'),
+		fps_elem: document.createElement('p'),
+		frameskip_elem: document.createElement('p'),
+		lowpower_elem: document.createElement('p'),
+		can_update_elem: document.createElement('p'),
+		coord_mode_elem: document.createElement('p'),
+		buffer_elem: document.createElement('p'),
+		buffer_info_elem: document.createElement('p'),
+		init: function(){
+			DEBUG.holder.id = 'm-canvas-debug';
+			DEBUG.holder.className = 'my-3';
+			DEBUG.holder.textContent = 'DEBUG INFO:';
+			
+			DEBUG.holder.appendChild(DEBUG.fps_elem);
+			DEBUG.holder.appendChild(DEBUG.frameskip_elem);
+			DEBUG.holder.appendChild(DEBUG.lowpower_elem);
+			DEBUG.holder.appendChild(DEBUG.can_update_elem);
+			DEBUG.holder.appendChild(DEBUG.coord_mode_elem);
+			DEBUG.holder.appendChild(DEBUG.buffer_elem);
+			DEBUG.holder.appendChild(DEBUG.buffer_info_elem);
+		},
+		reset: function(){
+			if(buffer.parentNode)
+			{
+				buffer.removeAttribute('style');
+				buffer.parentNode.removeChild(buffer);
+			}
+			
+			if(DEBUG.holder.parentNode)
+			{
+				DEBUG.holder.parentNode.removeChild(DEBUG.holder);
+			}
+		},
+		show: function(){
+			DEBUG.buffer_elem.textContent = 'Buffer size: ' + buffer.width + 'x' + buffer.height
+				+ ' (DPR: ' + window.devicePixelRatio + ')'
+				+ (window.devicePixelRatio > 1 && !SETTINGS.canvas.lowpower
+					? '\nOriginal size: '
+						+ (buffer.width / window.devicePixelRatio)
+						+ 'x'
+						+ (buffer.height / window.devicePixelRatio)
+					: ''
+				);
+			
+			buffer.setAttribute('style', canvas.getAttribute('style'));
+			
+			DEBUG.holder.appendChild(buffer);
+			div.appendChild(DEBUG.holder);
+			
+			RAF.handlers.push(DEBUG.update);
+		},
+		update: function(data){
+			DEBUG.fps_elem.textContent = 'Framerate: '
+				+ (data.fps ? data.fps_shown : '--') + '/' + (data.fps || '--')
+				+ ' (Total: ' + data.fps_shown_total + '/' + data.fps_total + ')';
+			
+			DEBUG.frameskip_elem.textContent = 'Frameskip: ' + SETTINGS.canvas.frameskip;
+			
+			DEBUG.lowpower_elem.textContent = 'Low power: ' + SETTINGS.canvas.lowpower;
+			DEBUG.can_update_elem.textContent = 'Updates suspended: ' + (!SETTINGS.canvas.can_update);
+			
+			var coord_debug_info = COORD_MODE.getDebugInfo();
+			DEBUG.coord_mode_elem.textContent = 'Coord mode: ' + coord_debug_info.mode + (
+				coord_debug_info.x
+					? ' - ' + coord_debug_info.x + 'x' + coord_debug_info.y
+					: ''
+			);
+			
+			DEBUG.buffer_info_elem.textContent = 'CTX info:\n'
+				+ 'font: ' + ctx.font + '\n'
+				+ 'fillStyle: ' + ctx.fillStyle + '\n'
+				+ 'strokeStyle: ' + ctx.strokeStyle;
+		}
+	};
 	
 	
 	var methods = {
@@ -268,7 +373,7 @@
 		},
 		
 		fillRect: function(x, y, width, height, style){
-			CHANGED = true;
+			CHANGED = SETTINGS.canvas.can_update;
 			
 			var old_style = ctx.fillStyle;
 			
@@ -282,7 +387,7 @@
 		},
 		
 		drawText: function(x, y, text, max_width, font, style, stroke){
-			CHANGED = true;
+			CHANGED = SETTINGS.canvas.can_update;
 			
 			var old_font = ctx.font;
 			var old_style = ctx.fillStyle;
@@ -335,8 +440,6 @@
 		},
 		
 		clearEverything: function(style){
-			CHANGED = true;
-			
 			if(style)
 			{
 				methods.fillRect(0, 0, canvas.width, canvas.height, style);
@@ -345,6 +448,8 @@
 			{
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 			}
+			
+			CHANGED = SETTINGS.canvas.can_update;
 		},
 		
 		showFPSHandler: function(data){
@@ -597,13 +702,13 @@
 		},
 		
 		drawImage: function(image, x, y){
-			CHANGED = true;
+			CHANGED = SETTINGS.canvas.can_update;
 			
 			return ctx.drawImage(image, x, y);
 		},
 		
 		drawImagePart: function(source_image, source_x, source_y, width, height, x, y){
-			CHANGED = true;
+			CHANGED = SETTINGS.canvas.can_update;
 			
 			return ctx.drawImage(source_image, source_x, source_y, width, height, x, y, width, height);
 		},
@@ -805,14 +910,25 @@
 			image.src = url;
 		},
 		
+		suspendUpdates: function(){
+			SETTINGS.canvas.can_update = false;
+		},
+		resumeUpdates: function(){
+			SETTINGS.canvas.can_update = true;
+			CHANGED = true;
+		},
+		
+		showDebug: function(){
+			DEBUG.show();
+		},
 		reset: function(){
-			CHANGED = false;
+			methods.suspendUpdates();
 			
 			methods.hideFPS();
 			
 			RAF.reset();
 			
-			CHANGED = true;
+			methods.resumeUpdates();
 			
 			if(methods.ontick_int)
 			{
@@ -841,10 +957,24 @@
 			}
 			
 			COORD_MODE.reset();
+			DEBUG.reset();
 		}
 	};
 	
 	var EXPORTS = Object.defineProperties(Object.create(null), {
+		showDebug: {
+			value: Object.assign(function showDebug(){
+				methods.showDebug();
+			}, {
+				__doc__: [
+					'Shows extra debug information',
+					'This can\'t be hidden, once shown'
+				]
+			}),
+			enumerable: true
+		},
+		
+		
 		onmove: {
 			value: Object.assign(function onmove(fn){
 				if(!fn || typeof fn !== 'function')
@@ -972,6 +1102,29 @@
 				__doc__: [
 					'Runs the $fn every frame',
 					'Multiple can be registered, and they will run from first to last'
+				]
+			}),
+			enumerable: true
+		},
+		
+		suspendUpdates: {
+			value: Object.assign(function suspendUpdates(){
+				return methods.suspendUpdates();
+			}, {
+				__doc__: [
+					'Stops updating the visible canvas',
+					'All drawing operations will be only done in the buffer'
+				]
+			}),
+			enumerable: true
+		},
+		resumeUpdates: {
+			value: Object.assign(function resumeUpdates(){
+				return methods.resumeUpdates();
+			}, {
+				__doc__: [
+					'Resumes updating the visible canvas',
+					'On the next frame available, the changes in the buffer will be displayed in the visible canvas'
 				]
 			}),
 			enumerable: true
@@ -1341,7 +1494,7 @@
 					
 				
 				methods.reset();
-				methods.clearEverything(bgcolor || "white");
+				methods.clearEverything(bgcolor || 'white');
 				
 				if(SETTINGS.output_element)
 				{
@@ -1393,6 +1546,8 @@
 		Init: function(settings){
 			Object.assign(SETTINGS, settings);
 			SETTINGS.canvas = Object.assign(SETTINGS.canvas || {}, SETTINGS_DEFAULT);
+			
+			DEBUG.init();
 		},
 		CSS: [
 			'#' + div.id + ' {',
@@ -1446,6 +1601,9 @@
 				// 'line-height: normal;',
 				'vertical-align: bottom;',
 				'text-align: left;',
+			'}',
+			'#m-canvas-debug > p {',
+				'margin-bottom: 0 !important;',
 			'}',
 		].join('\n')
 	});
