@@ -316,7 +316,12 @@
 			
 			DEBUG.frameskip_elem.textContent = 'Frameskip: ' + SETTINGS.canvas.frameskip;
 			
-			DEBUG.lowpower_elem.textContent = 'Low power: ' + SETTINGS.canvas.lowpower;
+			DEBUG.lowpower_elem.textContent = 'Low power: ' + SETTINGS.canvas.lowpower
+				+ (SETTINGS.canvas.lowpower && window.devicePixelRatio > 1
+					? '\n⚠️ All text may show blurry'
+					: ''
+				);
+			
 			DEBUG.can_update_elem.textContent = 'Updates suspended: ' + (!SETTINGS.canvas.can_update);
 			
 			var coord_debug_info = COORD_MODE.getDebugInfo();
