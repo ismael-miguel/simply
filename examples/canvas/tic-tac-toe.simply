@@ -1,0 +1,162 @@
+unless !CANVAS then {
+	echo "❌ The canvas module is required for this example";
+	return;
+}
+
+$url = &join([
+	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAA",
+	"AABgBAMAAAAnVGd6AAAAElBMVEUhJSncNUUZh1TuvsC8z8P///",
+	"+oQBJwAAAACXBIWXMAAA7DAAAOwwHHb6hkAAACGUlEQVRYw+2W",
+	"zXHEIAyF1YIPbsAzrsBDB6YA/9B/KwEhocch9ma0s4esddlYSB",
+	"8PhCCU9gQ2p3Tid5TfKRv612z1L0rTbP49R63Rvs9V3Gyzudk4",
+	"kHZE56BT0XWiaPmNIPl1kJBcIpWskaK/mumvJgomE8AKVlhpBA",
+	"Ey1WmAyHvQJFSWSQABs3BUQBROAZiEGmgSTMCsfBmPyo8ZkDDA",
+	"8lDAlUKyRFwjgPo9YjfsUQEkWyNKF87eV6lsMlYpUpPW17kJeA",
+	"XAuVjOkqsLuTtodHdUpx4wrT1gpdYrGNjOGU+KvTKtfa8IYO8E",
+	"iIT4B8BFu34I4F6CdxPdZfQeJPdR9jaTu529F4r7SvNequ5r/R",
+	"0Pi+9pcz+u/ud9w4ExpQO/g/wO2dC/ZFPAMJp/y1FLsO9jETfb",
+	"aG42DqQN0TnoUHSdKFh+I0h+HSQkl0gla6Tor2b6q4mCwQSwgg",
+	"VWGkCATHUYIPAeNAmVZRJAwCgcFRCEw1VoEmqgSTABo/JlPCg/",
+	"lHbGAMtDAVcKyRJxjQDq94jdsEf8/4GtEaULZ+urVDYZqxSoSe",
+	"vr3AS8AuBcLGfJ1YXcHTS6O6pDDxiWHrBQ6xUMbOeMJ8VeGZa+",
+	"VwSwdQJEQvgD4KJdPwRwL8G7ie4yeg+S+yh7m8ndzt4LxX2leS",
+	"9V97X+jofF97S5H1f/815/sqUL+338ATyA/wqgG3sA3wF4euEB",
+	"fCngB62mS1/uOAP/AAAAAElFTkSuQmCC"
+], '');
+
+%bg = "white";
+
+%player = 0;
+%ai = 1;
+%playing = 0;
+
+%score = [0, 0];
+%icons = ["🧍", "⌨️"];
+%players_symbols = [15, 15];
+%coords = [7, 13, 19];
+
+%colors = ["rgb(25, 135, 84)", "rgb(220, 53, 69)"];
+%grid = [15, 15, 15, 15, 15, 15, 15, 15, 15];
+%grid_filled = 0;
+%grid_img = null;
+%sheet = null;
+
+%c = call !CANVAS->init(256, 256, %bg);
+call %c->setCoordMode("grid", 8); // 32x32 grid of 8x8 cells
+call %c->setFontStyle("16px monospace");
+call %c->setFillStyle("rgb(33, 37, 41)");
+
+call %c->drawText(9, 1, "Loading...");
+
+call %c->showDebug();
+
+def &draw_info(){
+	call %c->drawText(9, 1, "Tic-tac-toe");
+	call %c->drawText(4, 29, &str_concat(%icons[%player], " ", %score[%player]));
+	call %c->drawText(22, 29, &str_concat(%icons[%ai], " ", %score[%ai]));
+}
+%draw_info = &draw_info;
+
+
+def &fn($sheet){
+	if $sheet->error {
+		echo "❌ Failed to load the sprite sheet";
+		return;
+	}
+	
+	call %c->suspendUpdates();
+	call %c->clear(%bg);
+	
+	def &predraw_grid($sheet){
+		// vertical bars
+		call $sheet->drawSprite(8, 4, 0);
+		call $sheet->drawSprite(8, 10, 0);
+		
+		// + bars
+		call $sheet->drawSprite(10, 4, 4);
+		call $sheet->drawSprite(10, 10, 4);
+		
+		// vertical bars
+		call $sheet->drawSprite(8, 4, 8);
+		call $sheet->drawSprite(8, 10, 8);
+		
+		// horizontal bars
+		call $sheet->drawSprite(9, 0, 4);
+		call $sheet->drawSprite(9, 7, 4);
+		call $sheet->drawSprite(9, 14, 4);
+		
+		// + bars
+		call $sheet->drawSprite(10, 4, 10);
+		call $sheet->drawSprite(10, 10, 10);
+		
+		// horizontal bars # 2
+		call $sheet->drawSprite(9, 0, 10);
+		call $sheet->drawSprite(9, 7, 10);
+		call $sheet->drawSprite(9, 14, 10);
+		
+		// vertical bars
+		call $sheet->drawSprite(8, 4, 14);
+		call $sheet->drawSprite(8, 10, 14);
+		
+		$img = call %c->getImage(0, 0, 18, 18);
+		
+		call %c->clear(%bg);
+		
+		return $img;
+	};
+	
+	%grid_img = &predraw_grid($sheet);
+	%sheet = $sheet;
+
+
+	def &draw_grid(){
+		call %c->suspendUpdates();
+		
+		call %c->drawImage(%grid_img, 7, 7);
+		
+		call %sheet->drawSprite(%grid[0], %coords[0], %coords[0]);
+		call %sheet->drawSprite(%grid[1], %coords[1], %coords[0]);
+		call %sheet->drawSprite(%grid[2], %coords[2], %coords[0]);
+		
+		call %sheet->drawSprite(%grid[3], %coords[0], %coords[1]);
+		call %sheet->drawSprite(%grid[4], %coords[1], %coords[1]);
+		call %sheet->drawSprite(%grid[5], %coords[2], %coords[1]);
+		
+		call %sheet->drawSprite(%grid[6], %coords[0], %coords[2]);
+		call %sheet->drawSprite(%grid[7], %coords[1], %coords[2]);
+		call %sheet->drawSprite(%grid[8], %coords[2], %coords[2]);
+		
+		call %c->resumeUpdates();
+	}
+	%draw_grid = &draw_grid;
+
+
+	def &new_game(){
+		%playing = &rand(0, 1);
+		
+		%players_symbols = [15, 15];
+		%grid = [15, 15, 15, 15, 15, 15, 15, 15, 15];
+		%grid_filled = 0;
+		
+		call %draw_info();
+		call %draw_grid();
+	}
+
+	def &play_at($x, $y){
+		$index = &add($x, &prod($y, 3));
+		
+		unless (call &compare(%grid[$index], 15)) return false;
+		
+		%grid[$index] = %players_symbols[%playing];
+		%grid_filled = &add(%grid_filled, 1);
+		
+		call %draw_grid();
+		return true;
+	}
+	
+	&new_game();
+	call %c->resumeUpdates();
+	
+	&play_at(2, 2);
+}
+call %c->createSpritesheet($url, 4, 4, &fn);
