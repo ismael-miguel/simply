@@ -4427,7 +4427,7 @@
 	};
 	
 	simply.prototype = {
-		version: 0.07,
+		version: 0.08,
 		
 		execute: function(code, argv){
 			this._clear_output();
