@@ -541,7 +541,7 @@
 				]
 			}),
 			json_decode: Object.assign(function json_decode(str){
-				return JSON.stringify(str.toString());
+				return JSON.parse(str.toString());
 			}, {
 				__doc__: 'Parses the $str as a JSON string'
 			}),
@@ -1005,7 +1005,7 @@
 			}, {
 				__doc__: 'Returns the Unicode Codepoint for the character'
 			}),
-			chr: Object.assign(function ord(codepoint){
+			chr: Object.assign(function chr(codepoint){
 				return String.fromCodePoint(codepoint);
 			}, {
 				__doc__: 'Returns an Unicode character corresponding to the codepoint provided'
@@ -1430,6 +1430,16 @@
 					87178291200, 1307674368000, 20922789888000,
 					355687428096000, 6402373705728000,
 					121645100408832000, 2432902008176640000
+				]
+			}),
+			round: Object.assign(function round(num, decimals){
+				var precision = Math.pow(10, decimals || 0);
+				return Math.round(num * precision) / precision;
+			}, {
+				__doc__: [
+					'Rounds the $number to the number of $decimals',
+					'Negative $decimals will round to the nearest 10*abs($decimals)',
+					'E.g.: round(123.45, -1) = 120, round(123.45) = 123, round(123.45, 1) = 123.5'
 				]
 			}),
 			
