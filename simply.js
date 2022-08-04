@@ -1095,6 +1095,33 @@
 					'This function only on the right side of the $string'
 				]
 			}),
+			toupper: Object.assign(function toupper(str){
+				return str.toString().toUpperCase();
+			}, {
+				__doc__: 'Converts the string to uppercase characters'
+			}),
+			tolower: Object.assign(function tolower(str){
+				return str.toString().toLowerCase();
+			}, {
+				__doc__: 'Converts the string to lowercase characters'
+			}),
+			ucfirst: Object.assign(function ucfirst(str){
+				return str.toString().toLowerCase().replace(/^./, function(_){
+					return _.toUpperCase();
+				});
+			}, {
+				__doc__: 'Converts the first character to uppercase'
+			}),
+			ucwords: Object.assign(function ucwords(str){
+				return str.toString().toLowerCase().replace(/(^.| .)/g, function(_){
+					return _.toUpperCase();
+				});
+			}, {
+				__doc__: [
+					'Converts All Words To Uppercase',
+					'A word is anything that is separated by a space'
+				]
+			}),
 			
 			// math-related
 			is_prime: Object.assign(function is_prime(number){
@@ -1314,6 +1341,11 @@
 				return array.reduce(function(value, total){
 					return value * total;
 				}, initial);
+			}, {
+				__doc__: 'Multiplies all values together'
+			}),
+			multi: Object.assign(function multi(){
+				return RDP.FNS.prod.call(RDP.FNS, Array.from(arguments));
 			}, {
 				__doc__: 'Multiplies all values together'
 			}),
@@ -3967,6 +3999,9 @@
 			'Object.defineProperty($CONST, \'ABCU\', { value: "ABCDEFGHIJKLMNOPQRSTUVWXYZ", writable: false, enumerable: true })',
 			'Object.defineProperty($CONST, \'NUMS\', { value: "0123456789", writable: false, enumerable: true })',
 			'Object.defineProperty($CONST, \'DIGITS\', { value: "0123456789", writable: false, enumerable: true })',
+			'Object.defineProperty($CONST, \'HEXDIGITS\', { value: "0123456789ABCDEFabcdef", writable: false, enumerable: true })',
+			'Object.defineProperty($CONST, \'HEXUDIGITS\', { value: "0123456789ABCDEF", writable: false, enumerable: true })',
+			'Object.defineProperty($CONST, \'HEXLDIGITS\', { value: "0123456789abcdef", writable: false, enumerable: true })',
 			'Object.defineProperty($CONST, \'PRINTABLE\', { value: " !\\\"#$%&\\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~", writable: false, enumerable: true })',
 			
 			'Object.defineProperty($CONST, \'FN\', { value: Object.assign({}, arguments[2]), writable: false, enumerable: true })',
