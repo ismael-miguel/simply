@@ -312,7 +312,8 @@
 		update: function(data){
 			DEBUG.fps_elem.textContent = 'Framerate: '
 				+ (data.fps ? data.fps_shown : '--') + '/' + (data.fps || '--')
-				+ ' (Total: ' + data.fps_shown_total + '/' + data.fps_total + ')';
+				+ ' (Total: ' + data.fps_shown_total + '/' + data.fps_total + ')\n'
+				+ 'Frametime: ' + data.delta.toFixed(1) + 'ms';
 			
 			DEBUG.frameskip_elem.textContent = 'Frameskip: ' + SETTINGS.canvas.frameskip;
 			
