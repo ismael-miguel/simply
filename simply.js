@@ -359,8 +359,8 @@
 			[/^[+\-]?(?:0x[\da-f]+(?:\.[\da-f]+)?|0b[01]+(?:\.[01]+)?|0*\.\d+|\d+(?:\.\d+)?)/i, 'NUMBER'],
 			
 			// STRINGS
-			[/^"(?:[^"]|\\(?:['0trnf]|x[0-9a-z]{2}|u[0-9a-z]{4}))*"/, 'STRING'],
-			[/^'(?:[^']|\\(?:['0trnf]|x[0-9a-z]{2}|u[0-9a-z]{4}))?'/, 'CHAR'],
+			[/^"(?:\\(?:["'0trnf]|x[0-9a-z]{2}|u[0-9a-z]{4})|[^"])*"/, 'STRING'],
+			[/^'(?:\\(?:["'0trnf]|x[0-9a-z]{2}|u[0-9a-z]{4})|[^'])?'/, 'CHAR'],
 			
 			// PARENTHESIS
 			[/^\(/, '('],
@@ -1412,6 +1412,26 @@
 					'That is, it returns the number without the negative sign'
 				]
 			}),
+			factorial: Object.assign(function factorial(num){
+				var negative = num < 0;
+				num = Math.abs(num);
+				
+				if(!factorial.result[num])
+				{
+					factorial.result[num] = RDP.FNS.prod.call(RDP.FNS, RDP.FNS.range(1, num, 1));
+				}
+				
+				return factorial.result[num] - negative;
+			}, {
+				__doc__: 'Calculates the factorial of $number',
+				results: [
+					1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880,
+					3628800, 39916800, 479001600, 6227020800,
+					87178291200, 1307674368000, 20922789888000,
+					355687428096000, 6402373705728000,
+					121645100408832000, 2432902008176640000
+				]
+			}),
 			
 			// type convertion and information
 			int: Object.assign(function int(any, radix){
@@ -2020,7 +2040,6 @@
 			var_exp.assign = result;
 			
 			return var_exp;
-			
 		},
 		
 		/**
@@ -4251,7 +4270,10 @@
 					
 				case 'StringLiteral':
 				case 'CharLiteral':
-					return JSON.stringify(token.value).replace(/\\\\/g, '\\');
+					// JSON.stringify(token.value).replace(/\\\\/g, '\\');
+					return '"' + token.value.replace(/(\r)?(\n)/g, function(_, r, n){
+						return (r ? '\\r' : '') + (n ? '\\n' : '');
+					}) + '"';
 				
 				case 'ArrayLiteral':
 					/*return 'Object.assign(Object.create(null), '
