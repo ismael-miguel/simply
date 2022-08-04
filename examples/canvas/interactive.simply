@@ -8,14 +8,15 @@ unless !CANVAS then {
 	return;
 }
 
-%settings = [];
-%settings->width = 300;
-%settings->height = 300;
-%settings->bgcolor = "lightblue";
-%settings->dotsize = "random";
-%settings->fontsize = 15;
-%settings->padding = 20;
-%settings->spacing = 5;
+%settings = &json_decode("{
+	\"width\": 300,
+	\"height\": 300,
+	\"bgcolor\": \"lightblue\",
+	\"dotsize\": \"random\",
+	\"fontsize\": 15,
+	\"padding\": 20,
+	\"spacing\": 5
+}");
 
 if $argv[0] then {
 	&array_update(%settings, $argv[0]);

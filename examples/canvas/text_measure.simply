@@ -8,16 +8,17 @@ unless !CANVAS then {
 	return;
 }
 
-%settings = [];
-%settings->width = 300;
-%settings->height = 300;
-%settings->bgcolor = "lightblue";
-%settings->fontsize = 10;
-%settings->fontfamily = "sans-serif";
-%settings->fontstyle = "";
-%settings->padding = 20;
-%settings->spacing = 5;
-%settings->text = &hello_world();
+%settings = &json_decode("{
+	\"width\": 300,
+	\"height\": 300,
+	\"bgcolor\": \"lightblue\",
+	\"fontsize\": 10,
+	\"fontfamily\": \"sans-serif\",
+	\"fontstyle\": \"\",
+	\"padding\": 10,
+	\"spacing\": 10,
+	\"text\": \"Hello, World!\"
+}");
 
 if $argv[0] then {
 	&array_update(%settings, $argv[0]);
