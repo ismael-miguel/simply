@@ -13,7 +13,13 @@ unless !CANVAS then {
 	return;
 }
 
-$url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAIAQMAAACxnC8YAAAABlBMVEVgSe2ij/+XgPdPAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAMUlEQVQI1w3KMREAMAjAwL9jYEMBQiqrEpFSKWXJkERMDPnyUbcuffqwaFYUG5MdwwfzqAnxR+ME1wAAAABJRU5ErkJggg==";
+$url = &join([
+	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgA",
+	"AAAIAQMAAACxnC8YAAAABlBMVEVgSe2ij/+XgPdPAAAACXBIWX",
+	"MAAA7DAAAOwwHHb6hkAAAAMUlEQVQI1w3KMREAMAjAwL9jYEMB",
+	"QiqrEpFSKWXJkERMDPnyUbcuffqwaFYUG5MdwwfzqAnxR+ME1w",
+	"AAAABJRU5ErkJggg=="
+], '');
 
 %fg = "rgb(162, 143, 255)";
 %bg = "rgb(96, 73, 237)";
@@ -23,6 +29,14 @@ $url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAIAQMAAACxnC8YAAAABl
 call %c->setCoordMode("grid", 8); //8x8
 call %c->fillRect(%x = 4, %y = 4.5, %width = 40, %height = 25, %bg);
 
+%width_range = &range(1, %width);
+%height_range = &range(1, %height);
+
+
+def &rand_char($j) &rand(0, %count);
+%rand_char = &rand_char;
+
+
 def &fn($sheet) {
 	if $sheet->error {
 		echo "❌ Failed to load the sprite sheet";
@@ -31,17 +45,26 @@ def &fn($sheet) {
 	
 	%sheet = $sheet;
 	%count = &sub($sheet->length, 1);
+	%drawing = false;
+	
+	def &y($_, $i){
+		call %sheet->drawSpriteLine(
+			&array_map(%width_range, %rand_char),
+			%x, &add(%y, $i)
+		);
+	}
+	%fn_y = &y;
 	
 	def &draw {
-		def &y($_, $i){
-			def &rand_char($j) &rand(0, %count);
+		if %drawing return;
 		
-			call %sheet->drawSpriteLine(
-				&array_map(&range(1, %width), &rand_char),
-				%x, &add(%y, $i)
-			);
-		}
-		&array_map(&range(1, %height), &y);
+		%drawing = true;
+		call %c->suspendUpdates();
+		
+		&array_map(%height_range, %fn_y);
+		
+		call %c->resumeUpdates();
+		%drawing = false;
 	}
 	
 	call %c->onup(&draw);
