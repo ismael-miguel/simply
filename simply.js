@@ -4544,7 +4544,8 @@
 		
 		compileDefineStatement: function(token, info){
 			return this.compileToken(token.value)
-				+ (token.assign ? this.compileToken(token.assign) : '');
+				+ (token.value.assign ? '' : ' = null');
+				// + (token.assign ? this.compileToken(token.assign) : '');
 		},
 		
 		compileDefineFunctionStatement: function(token, info){
