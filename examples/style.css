@@ -14,7 +14,7 @@ pre[data-wordwrap="true"] {
 }
 
 button.copy {
-	position: absolute;
+	position: fixed;
 	top: .25rem;
 	right: .25rem;
 }
