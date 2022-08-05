@@ -25,10 +25,13 @@
 		textArea.focus();
 		textArea.select();
 		
-		try{
+		try
+		{
 			var successful = document.execCommand('copy');
-		}catch (err){
-			console.error('Fallback: Oops, unable to copy', err);
+		}
+		catch(e)
+		{
+			console.error('Fallback: Oops, unable to copy', e);
 		}
 		
 		document.body.removeChild(textArea);
