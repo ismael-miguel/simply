@@ -2557,9 +2557,13 @@
 					
 					if(this._lookahead && this._lookahead.value !== 'BOOL_HAS')
 					{
+						this._jump('WORD');
 						result.loop.start = this.Expression();
+						
+						this._jump('WORD');
 						result.loop.end = this.Expression();
 						
+						this._jump('WORD');
 						if(this._lookahead && RDP.Utils.tokenIsExpression(this._lookahead))
 						{
 							result.loop.step = this.Expression();
@@ -2594,7 +2598,11 @@
 			{
 				// loop from <value> to <value> as <var>
 				
-				// TODO FINISH
+				result.loop.start = this.Expression();
+				this._jump('WORD');
+				result.loop.end = this.Expression();
+				this._jump('WORD');
+				result.loop.var = this.VariableExpression();
 			}
 			
 			// TODO: FINISH
