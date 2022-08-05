@@ -409,8 +409,14 @@
 			// RETURN
 			[/^(?:return|send|pass)(?![a-z\d])/i, 'RETURN'],
 			
+			// FOR LOOP
+			[/^(?:for|loop from)(?![a-z\d])/i, 'FOR_LOOP'],
+			
+			// FOREACH LOOP
+			//[/^(?:foreach|each|loop through)(?![a-z\d])/i, 'EACH_LOOP'],
+			
 			// OPERATORS
-			[/^(?:->|::|[\^\!\.~]|[><\-+\/\*\|]{1,2}|===?)/, 'OPERATOR'],
+			[/^(?:->|::|\.\.|[\^\!\.~]|[><\-+\/\*\|]{1,2}|===?)/, 'OPERATOR'],
 			
 			// ANY 'WORD'
 			[/^[a-z][a-z_]*/i, 'WORD'],
@@ -427,6 +433,7 @@
 			'ASSIGN': ['set', 'give', 'assign'],
 			// 'FUNCTION': ['fn', 'func', 'function', 'method', 'proc', 'procedure'],
 			'BOOL_HAS': ['contains', 'has', 'in'],
+			// 'KEYWORDS': ['from', 'to', 'step'],
 			'IGNORE': [
 				'var', 'variable', 'cons', 'constant', 'and', 'it', 'to', 'the', 'value', 'values',
 				'a', 'an', 'as', 'with', 'name', 'named', 'called', 'which', 'takes', 'that', 'this',
@@ -1777,11 +1784,14 @@
 				throw new SyntaxError('Unexpected end of input, expected ' + types, FILENAME, this._line);
 			}
 			
-			if(!~types.indexOf(token.type))
+			if(types[0] !== '*')
 			{
-				var message = 'Unexpected token ' + JSON.stringify(token.value) + ' of type ' + (token.type || 'UNKNOWN') + ', expected ' + types;
-				
-				throw new SyntaxError(message, FILENAME, token.line);
+				if(!~types.indexOf(token.type))
+				{
+					var message = 'Unexpected token ' + JSON.stringify(token.value) + ' of type ' + (token.type || 'UNKNOWN') + ', expected ' + types;
+					
+					throw new SyntaxError(message, FILENAME, token.line);
+				}
 			}
 			
 			if(!token.line)
@@ -1910,6 +1920,9 @@
 					return this.IfBlockStatement();
 				case 'ELSE_BLOCK':
 					return this.ElseBlockStatement();
+				
+				case 'FOR_LOOP':
+					return this.ForLoopBlockStatement();
 				
 				default:
 					return this.ExpressionStatement();
@@ -2489,6 +2502,114 @@
 		},
 		
 		/**
+		 *   ForLoopBlockStatement
+		 *     : FOR_BLOCK BodyGroup
+		 *     ;
+		 */
+		ForLoopBlockStatement: function(){
+			var token = this._eat('FOR_LOOP');
+			
+			var result = {
+				type: 'ForLoopBlockStatement',
+				loop: {
+					type: 'none',
+					var: null,
+					start: null,
+					end: null,
+					step: null
+				},
+				body: [],
+				line: token.line,
+				column: token.column
+			};
+			
+			if(!this._lookahead)
+			{
+				throw new SyntaxError('Unexpected end of the code');
+			}
+			
+			if(token.value.toLowerCase() === 'for')
+			{
+				/*if(this._lookahead.value === '(')
+				{
+					this._eat('(');
+					
+					// classic for(<var>; <cond>; <inc>)
+					result.loop.type = 'c-style';
+					
+					result.loop.start = this.AssignExpression();
+					this._eat(';');
+					result.loop.end = this.Expression();
+					this._eat(';');
+					result.loop.step = this.Expression();
+				
+					this._eat(')');
+				}
+				else */
+				if(this._lookahead.type === 'VARIABLE')
+				{
+				
+					result.loop.var = this.VariableExpression();
+					result.loop.start = null;
+					
+					// for <var> from <value> to <value> step <value>
+					result.loop.type = 'simple';
+					
+					if(this._lookahead && this._lookahead.value !== 'BOOL_HAS')
+					{
+						result.loop.start = this.Expression();
+						result.loop.end = this.Expression();
+						
+						if(this._lookahead && RDP.Utils.tokenIsExpression(this._lookahead))
+						{
+							result.loop.step = this.Expression();
+						}
+					}
+					else
+					{
+						// for <var> in <value>..<value>
+						result.loop.type = 'range';
+						
+						this._eat('WORD');
+						result.loop.start = this.Expression();
+						
+						var operator = this._eat('OPERATOR');
+						
+						if(operator.value !== '..')
+						{
+							throw new SyntaxError('Expected range operator (".."), got ' + JSON.stringify(operator.value));
+						}
+						
+						result.loop.end = this.Expression();
+					}
+				}
+				else
+				{
+					throw new SyntaxError('Invalid for loop definition. Expected a variable or an expression');
+				}
+				
+				this._jump(';');
+			}
+			else
+			{
+				// loop from <value> to <value> as <var>
+				
+				// TODO FINISH
+			}
+			
+			// TODO: FINISH
+			
+			if(!this._lookahead)
+			{
+				return result;
+			}
+			
+			result.body = this.BodyGroup();
+			
+			return result;
+		},
+		
+		/**
 		 * ParenthesizedExpression
 		 *   : '(' Expression ')'
 		 *   ;
@@ -2665,14 +2786,17 @@
 							throw new SyntaxError('Unexpected end of the code', FILENAME, this._line);
 						}
 						
-						var value = this._lookahead.value || this._lookahead.value_raw;
+						// var value = this._lookahead.value || this._lookahead.value_raw;
+						var value_token = this._eat('*');
+						
+						var value = value_token.value || value_token.value_raw;
 						
 						if(!/^[a-z_\d]+$/i.test(value))
 						{
 							throw new SyntaxError('Expected any word, got "' + value + '"', FILENAME, this._line);
 						}
 						
-						var value_token = this._eat(this._lookahead.type);
+						// var value_token = this._eat(this._lookahead.type);
 						
 						// Fakes a string literal to be easier to compile
 						token.value = {
@@ -3057,6 +3181,43 @@
 			}
 			
 			return result;
+		},
+		
+		/**
+		 * BodyGroup
+		 *   : SCOPE_OPEN [Statement]* SCOPE_CLOSE
+		 *   | Statement
+		 *   ;
+		 */
+		BodyGroup: function(){
+			var body = [];
+			
+			this._jump(';');
+			if(this._lookahead.type === 'SCOPE_OPEN')
+			{
+				this._eat('SCOPE_OPEN');
+				
+				while(this._lookahead && this._lookahead.type !== 'SCOPE_CLOSE')
+				{
+					var tokens = this.PrimaryExpression();
+					if(tokens)
+					{
+						body = body.concat(tokens);
+					}
+				}
+				
+				this._eat('SCOPE_CLOSE');
+			}
+			else
+			{
+				var tokens = this.PrimaryExpression();
+				if(tokens)
+				{
+					body = body.concat(tokens);
+				}
+			}
+			
+			return body;
 		}
 	};
 	
@@ -4224,6 +4385,9 @@
 				case 'ElseBlockStatement':
 					return this.compileElseBlockStatement(token, info);
 				
+				case 'ForLoopBlockStatement':
+					return this.compileForLoopBlockStatement(token, info);
+				
 				default:
 					return '// TODO: implement support for ' + token.type + '\n';
 			}
@@ -4480,6 +4644,74 @@
 				: 'else {\n' + this.compileBody(token.body, info) + '\n}';
 		},
 		
+		compileForLoopBlockStatement: function(token, info){
+			/*switch(token.loop.type)
+			{
+				case 'simple':
+				case 'range':
+					var var_token = this.compileToken(token.loop.var, info);
+					
+					return 'for(' + var_token
+						+ ' = ' + this.compileToken(token.loop.start, info)
+						+ '; ' + var_token + ' <= ' + this.compileToken(token.loop.end, info)
+						+ '; ' + var_token + ' += ' + (
+							token.loop.step
+								? this.compileToken(token.loop.step, info)
+								: '1'
+						)
+						+ '){\n' + this.compileBody(token.body, info) + '\n}';
+			}*/
+			
+			
+			var new_token = {
+				type: 'CallExpression',
+				value: {
+					type: 'FunctionExpression',
+					value: 'range',
+					index: null,
+					line: token.line,
+					column: token.column,
+					create: false
+				},
+				args: {
+					type: 'ArgumentsGroup',
+					value: [
+						token.loop.start,
+						token.loop.end,
+						token.loop.step
+					].filter(function(value){
+						return !!value;
+					}),
+					line: token.line,
+					column: token.column
+				},
+				line: token.line,
+				column: token.column
+			};
+			
+			var loop_var = this.compileToken({
+				type: 'VariableExpression',
+				value: 'loop',
+				line: token.line,
+				column: token.column,
+				global: false,
+				index: null,
+				create: false,
+				assign: null
+			}, info);
+			
+			return '(' + this.compileToken(new_token, info) + ' || []).forEach(function(value, index, arr){\n'
+					+ loop_var + ' = {'
+						+ 'first: !index,\n'
+						+ 'last: index === arr.length - 1,\n'
+						+ 'index: index,\n'
+						+ 'value: value,\n'
+					+ '};\n'
+					+ this.compileToken(token.loop.var, info) + ' = value;\n\n'
+					+ this.compileBody(token.body, info) + '\n'
+				+ '});\n' + loop_var + ' = null';
+		},
+		
 		compileParenthesizedExpression: function(token, info){
 			return '(' + this.compileToken(token.value, info) + ')';
 		}
@@ -4494,7 +4726,7 @@
 	};
 	
 	simply.prototype = {
-		version: 0.08,
+		version: 0.09,
 		
 		execute: function(code, argv){
 			this._clear_output();
