@@ -4663,6 +4663,20 @@
 						+ '){\n' + this.compileBody(token.body, info) + '\n}';
 			}*/
 			
+			if(!token.body.length)
+			{
+				// if the body is empty, skip to the last iteration
+				var loop_var = Object.assign({}, token.loop.var);
+				
+				loop_var.assign = {
+					type: 'AssignExpression',
+					value: Object.assign({}, token.loop.end),
+					line: token.line,
+					column: token.column,
+				};
+				
+				return this.compileToken(loop_var, info);
+			}
 			
 			var new_token = {
 				type: 'CallExpression',
@@ -4707,6 +4721,7 @@
 						+ 'last: index === arr.length - 1,\n'
 						+ 'index: index,\n'
 						+ 'value: value,\n'
+						+ 'length: arr.length,\n'
 					+ '};\n'
 					+ this.compileToken(token.loop.var, info) + ' = value;\n\n'
 					+ this.compileBody(token.body, info) + '\n'
