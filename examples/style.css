@@ -1,0 +1,20 @@
+body {
+	overflow: auto !important;
+}
+
+pre {
+	tab-size: 4;
+	user-select: text !important;
+	overflow: visible !important;
+}
+
+pre[data-wordwrap="true"] {
+	word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+button.copy {
+	position: absolute;
+	top: .25rem;
+	right: .25rem;
+}
