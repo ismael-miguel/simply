@@ -157,11 +157,11 @@ class ServerFakeFileHandler:
 		}
 	
 	@staticmethod
-	def root_simply_module_canvas_js(query):
+	def root_modules_canvas_js(query):
 		return {
 			"status_code": 200,
 			"content_type": "application/javascript",
-			"content": open(os.path.join(ROOT, "simply.module.canvas.js"), "rb").read()
+			"content": open(os.path.join(ROOT, "modules", "canvas.js"), "rb").read()
 		}
 	
 	
