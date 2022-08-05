@@ -5,6 +5,7 @@ import socket
 from urllib.parse import urlparse, parse_qs
 import os
 import html
+import getpass
 
 ROOT = os.path.abspath(os.path.pardir)
 
@@ -254,16 +255,33 @@ class ServerFakeFileHandler:
 PORT = 8888
 # IP = get_ip()
 IP = "localhost"
-server = socketserver.TCPServer((IP, PORT), HttpRequestHandler)
+
+
+# Dance necessary to stop stupid errors like:
+# ConnectionAbortedError: [WinError 10053]
+# https://stackoverflow.com/questions/20745352/creating-a-multithreaded-server-using-socketserver-framework-in-python
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+	pass
+
+
+server = ThreadedTCPServer((IP, PORT), HttpRequestHandler)
 
 server_thread = threading.Thread(target=server.serve_forever, daemon = True)
-server_thread.start()
 
-print(f"Running server: http://{IP}:{PORT}")
-print(f"Serving files from: {ROOT}")
-print("Press enter to exit")
+try:
+	server_thread.start()
 
-input()
-
-print("Exitting...")
-exit()
+	print(f"Running server: http://{IP}:{PORT}")
+	print(f"Serving files from: {ROOT}")
+	print("Press Enter to close the server.")
+	
+	try:
+		getpass.getpass(prompt="")
+	except:
+		input()
+	
+	print("Exitting...")
+	exit(0)
+except KeyboardInterrupt:
+	print("Exitting...")
+	exit(0)
