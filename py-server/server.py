@@ -252,8 +252,9 @@ class ServerFakeFileHandler:
 
 
 PORT = 8888
-IP = get_ip()
-server = socketserver.TCPServer(("localhost", PORT), HttpRequestHandler)
+# IP = get_ip()
+IP = "localhost"
+server = socketserver.TCPServer((IP, PORT), HttpRequestHandler)
 
 server_thread = threading.Thread(target=server.serve_forever, daemon = True)
 server_thread.start()
