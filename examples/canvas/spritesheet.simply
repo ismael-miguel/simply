@@ -4,10 +4,7 @@ unless !CANVAS then {
 }
 
 
-/*
-	Base-64 encoded 40x40 image URL.
-	Encoded using https://www.base64-image.de/
-*/
+// Base-64 encoded 128x64 image URL.
 $url = &join([
 	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAA",
 	"AABAAQMAAADoGO08AAAABlBMVEUAAAD///+l2Z/dAAAACXBIWX",
@@ -102,10 +99,13 @@ def &fn($sheet) {
 		$x, $y = &add($y, 3)
 	);
 	
-	$y = &add($y, 2);
-	def &x($txt, $i) call $sheet->drawSpriteLine($txt, $x, &add($y, $i));
+	$y = &add($y, 1);
 	
-	&array_map(&str_chunk(!PRINTABLE, 33), &x);
+	$chunks = &str_chunk(!PRINTABLE, 33);
+	for $i from 0 to call &len($chunks) {
+		$y = &add($y, 1);
+		call $sheet->drawSpriteLine($chunks[$i], $x, $y);
+	}
 }
 
 // $url, $width and $height of the sprites and a function
