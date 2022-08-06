@@ -1356,8 +1356,8 @@
 				
 				var initial = array.shift();
 				
-				return array.reduce(function(value, total){
-					return value * total;
+				return array.reduce(function(total, value){
+					return total * value;
 				}, initial);
 			}, {
 				__doc__: 'Multiplies all values together'
@@ -1366,6 +1366,26 @@
 				return RDP.FNS.prod.call(RDP.FNS, Array.from(arguments));
 			}, {
 				__doc__: 'Multiplies all values together'
+			}),
+			div: Object.assign(function div(){
+				var array = Array.from(arguments);
+				
+				if(array.length === 0)
+				{
+					return 0;
+				}
+				else if(array.length === 1)
+				{
+					return array[0];
+				}
+				
+				var initial = array.shift();
+				
+				return array.reduce(function(total, value){
+					return total / value;
+				}, initial);
+			}, {
+				__doc__: 'Divides the first value by all subsequent values'
 			}),
 			mod: Object.assign(function mod(num, divisor){
 				return num % divisor;
