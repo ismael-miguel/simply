@@ -1,0 +1,20 @@
+/*
+	For loop examples.
+	Outputs the multiplication table, from 1 to $mult.
+	Also shows an example of using the $loop variable.
+*/ 
+
+$mult = 10;
+
+for $i from 1 to $mult {
+	for $j in 1..$mult {
+		echo $j, "x", $i, "=",
+			&prod($i, $j),
+			&iff($loop->last, '', ' ');
+	}
+	echo !EOL;
+}
+
+loop from 1 to $mult as $i {
+	echo $i, &iff($loop->last, '', ' ');
+}

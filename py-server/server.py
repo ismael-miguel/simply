@@ -221,6 +221,10 @@ class ServerFakeFileHandler:
 	
 	
 	@staticmethod
+	def root_examples_advanced_for_loops_simply(query):
+		return ServerFakeFileHandler.handle_example("advanced", "for_loops")
+	
+	@staticmethod
 	def root_examples_advanced_quine_simply(query):
 		return ServerFakeFileHandler.handle_example("advanced", "quine")
 	
