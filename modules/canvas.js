@@ -69,8 +69,14 @@
 			getX: function(x){
 				return (x * this.x)|0;
 			},
+			getXFromPX: function(px){
+				return px / this.x;
+			},
 			getY: function(y){
 				return (y * this.y)|0;
+			},
+			getYFromPX: function(px){
+				return px / this.y;
 			}
 		},
 		pixel_mode: {
@@ -80,8 +86,14 @@
 			getX: function(x){
 				return x|0;
 			},
+			getXFromPX: function(px){
+				return px|0;
+			},
 			getY: function(y){
 				return y|0;
+			},
+			getYFromPX: function(px){
+				return px|0;
 			}
 		},
 		percent_mode: {
@@ -91,8 +103,14 @@
 			getX: function(x){
 				return (x * canvas.width)|0;
 			},
+			getXFromPX: function(x){
+				return x / canvas.width;
+			},
 			getY: function(y){
 				return (y * canvas.height)|0;
+			},
+			getYFromPX: function(y){
+				return y / canvas.height;
 			}
 		},
 		
@@ -122,25 +140,42 @@
 				return key.replace(/_mode$/, '');
 			});
 		},
-		getX: function(x){
-			return this[this.mode].getX(x < 0 ? 0 : x)|0;
-		},
-		getY: function(y){
-			return this[this.mode].getY(y < 0 ? 0 : y)|0;
-		},
-		getWidth: function(width){
-			return this[this.mode].getX(width < this[this.mode].min ? this[this.mode] : width)|0;
-		},
-		getHeight: function(height){
-			return this[this.mode].getY(height < this[this.mode].min ? this[this.mode] : height)|0;
-		},
-		
-		getDebugInfo: function(){
+		getMode: function(){
 			return {
 				mode: this.mode.replace('_mode', ''),
 				x: this[this.mode].x,
 				y: this[this.mode].y
 			};
+		},
+		
+		getX: function(x){
+			return this[this.mode].getX(x < 0 ? 0 : x)|0;
+		},
+		getXFromPX: function(x){
+			return this[this.mode].getXFromPX(x < 0 ? 0 : x);
+		},
+		getY: function(y){
+			return this[this.mode].getY(y < 0 ? 0 : y)|0;
+		},
+		getYFromPX: function(y){
+			return this[this.mode].getYFromPX(y < 0 ? 0 : y);
+		},
+		
+		getWidth: function(width){
+			return this[this.mode].getX(width < this[this.mode].min ? this[this.mode] : width)|0;
+		},
+		getWidthFromPX: function(width){
+			return this[this.mode].getXFromPX(width < 0 ? 0 : width);
+		},
+		getHeight: function(height){
+			return this[this.mode].getY(height < this[this.mode].min ? this[this.mode] : height)|0;
+		},
+		getHeightFromPX: function(height){
+			return this[this.mode].getYFromPX(height < 0 ? 0 : height);
+		},
+		
+		getDebugInfo: function(){
+			return this.getMode();
 		}
 	};
 	
@@ -266,6 +301,11 @@
 		coord_mode_elem: document.createElement('p'),
 		buffer_elem: document.createElement('p'),
 		buffer_info_elem: document.createElement('p'),
+		spsheets: {
+			data: [],
+			last_len: 0,
+			holder: document.createElement('div')
+		},
 		init: function(){
 			DEBUG.holder.id = 'm-canvas-debug';
 			DEBUG.holder.className = 'my-3';
@@ -290,6 +330,13 @@
 			{
 				DEBUG.holder.parentNode.removeChild(DEBUG.holder);
 			}
+			
+			DEBUG.spsheets.data.length = 0;
+			DEBUG.spsheets.last_len = 0;
+			while(DEBUG.spsheets.holder.firstChild)
+			{
+				DEBUG.spsheets.holder.removeChild(DEBUG.spsheets.holder.firstChild);
+			}
 		},
 		show: function(){
 			DEBUG.buffer_elem.textContent = 'Buffer size: ' + buffer.width + 'x' + buffer.height
@@ -305,6 +352,8 @@
 			buffer.setAttribute('style', canvas.getAttribute('style'));
 			
 			DEBUG.holder.appendChild(buffer);
+			DEBUG.holder.appendChild(DEBUG.spsheets.holder);
+			
 			div.appendChild(DEBUG.holder);
 			
 			RAF.handlers.push(DEBUG.update);
@@ -336,6 +385,60 @@
 				+ 'font: ' + ctx.font + '\n'
 				+ 'fillStyle: ' + ctx.fillStyle + '\n'
 				+ 'strokeStyle: ' + ctx.strokeStyle;
+			
+			// draw spritesheets
+			if(DEBUG.spsheets.data.length > DEBUG.spsheets.last_len)
+			{
+				var index = DEBUG.spsheets.data.length - 1;
+				var count = DEBUG.spsheets.data.length - DEBUG.spsheets.last_len;
+				
+				DEBUG.spsheets.last_len = DEBUG.spsheets.data.length;
+				
+				DEBUG.spsheets.data.slice(index, count).forEach(function(data){
+					// console.log(data);
+					
+					var details = document.createElement('details');
+					var summary = document.createElement('summary');
+					
+					details.appendChild(summary);
+					details.className = 'border border-secondary rounded my-2 p-1';
+					
+					var p = document.createElement('p');
+					details.appendChild(p);
+					
+					if(data.error)
+					{
+						summary.textContent = '❌ Spritesheet';
+						
+						p.textContent = 'Failed to load the URL:\n' + data.image.src;
+					}
+					else
+					{
+						summary.textContent = '✔️ Spritesheet (' + data.image.naturalWidth + 'x' + data.image.naturalHeight + ')';
+						
+						var img = document.createElement('img');
+						img.src = data.image.src;
+						
+						details.appendChild(img);
+						
+						var text = [
+							'Sprite size: ' + data.width + 'x' + data.height,
+							'Usable area: ' + data.widthSheet + 'x' + data.heightSheet,
+							'Number of sprites: ' + data.length,
+							'Sprites per column: ' + data.cols,
+							'Sprites per row: ' + data.rows
+						];
+						
+						p.textContent = text.join('\n');
+					}
+					
+					DEBUG.spsheets.holder.appendChild(details);
+				});
+			}
+		},
+		
+		addSpriteSheet: function(spritesheet){
+			DEBUG.spsheets.data.push(spritesheet);
 		}
 	};
 	
@@ -376,6 +479,12 @@
 		},
 		getFont: function(){
 			return ctx.font;
+		},
+		setLineWidth: function(width){
+			ctx.lineWidth = COORD_MODE.getWidth(width);
+		},
+		getLineWidth: function(){
+			return COORD_MODE.getWidthFromPX(ctx.lineWidth);
 		},
 		
 		fillRect: function(x, y, width, height, style){
@@ -444,6 +553,94 @@
 				translateY: size_holder.height - size.height
 			};
 		},
+		
+		
+		
+		drawLine: function(x1, y1, x2, y2, width, stroke){
+			var old_stroke = ctx.strokeStyle;
+			var old_linewidth = ctx.lineWidth;
+			
+			if(stroke)
+			{
+				ctx.strokeStyle = stroke;
+			}
+			
+			if(width)
+			{
+				ctx.lineWidth = width;
+			}
+			
+			
+			ctx.beginPath();
+			ctx.moveTo(x1, y1);
+			ctx.lineTo(x2, y2);
+			ctx.stroke();
+			
+			
+			ctx.strokeStyle = old_stroke;
+			ctx.lineWidth = old_linewidth;
+			
+			CHANGED = SETTINGS.canvas.can_update;
+		},
+		
+		drawArcRad: function(x, y, radius, startAngle, endAngle, counterclockwise, close, fill, stroke, strokeWidth){
+			var old_fill = ctx.fillStyle;
+			var old_stroke = ctx.strokeStyle;
+			var old_linewidth = ctx.lineWidth;
+			
+			if(fill && fill !== 'true')
+			{
+				ctx.fillStyle = fill;
+			}
+			
+			if(stroke && stroke !== 'true')
+			{
+				ctx.strokeStyle = stroke;
+				
+				if(strokeWidth)
+				{
+					ctx.lineWidth = strokeWidth;
+				}
+			}
+			
+			
+			ctx.beginPath();
+			ctx.arc(x, y, radius, startAngle, endAngle, counterclockwise);
+			
+			if(close)
+			{
+				ctx.closePath();
+			}
+			
+			if(fill)
+			{
+				ctx.fill();
+			}
+			
+			if(stroke || (!fill && !stroke))
+			{
+				ctx.stroke();
+			}
+			
+			
+			ctx.fillStyle = old_fill;
+			ctx.strokeStyle = old_stroke;
+			ctx.lineWidth = old_linewidth;
+			
+			CHANGED = SETTINGS.canvas.can_update;
+		},
+		
+		drawArcDeg: function(x, y, radius, startAngle, endAngle, counterclockwise, close, fill, stroke, strokeWidth){
+			// https://www.rapidtables.com/convert/number/degrees-to-radians.html
+			var ratio = 0.01745329252;
+			
+			return methods.drawArcRad(x, y, radius, startAngle * ratio, endAngle * ratio, counterclockwise, close, fill, stroke, strokeWidth);
+		},
+		
+		drawCircle: function(x, y, radius, fill, stroke, strokeWidth){
+			return methods.drawArcRad(x, y, radius, 0, 2 * Math.PI, false, false, fill, stroke, strokeWidth);
+		},
+		
 		
 		clearEverything: function(style){
 			if(style)
@@ -756,8 +953,16 @@
 						value: sprite_width,
 						enumerable: true
 					},
+					widthSheet: {
+						value: sprites_cols * sprite_width,
+						enumerable: true
+					},
 					height: {
 						value: sprite_height,
+						enumerable: true
+					},
+					heightSheet: {
+						value: sprites_rows * sprite_height,
 						enumerable: true
 					},
 					length: {
@@ -771,6 +976,14 @@
 					rows: {
 						value: sprites_rows,
 						enumerable: true
+					},
+					image: {
+						value: image,
+						enumerable: false
+					},
+					url: {
+						value: url,
+						enumerable: false
 					},
 					getSprite: {
 						value: Object.assign(function getSprite(key){
@@ -898,6 +1111,8 @@
 					}
 				});
 				
+				DEBUG.addSpriteSheet(data);
+				
 				if(fn)
 				{
 					fn(data, EXPORTED);
@@ -905,15 +1120,44 @@
 			};
 			
 			image.onerror = function(){
-				var data = Object.defineProperty(Object.create(null), "error", {
-					value: true,
-					enumerable: true
+				var data = Object.defineProperties(Object.create(null), {
+					error: {
+						value: true,
+						enumerable: true
+					},
+					image: {
+						value: image,
+						enumerable: false
+					},
+					url: {
+						value: url,
+						enumerable: false
+					}
 				});
 				
-				fn(data, EXPORTED);
+				DEBUG.addSpriteSheet(data);
+				
+				if(fn)
+				{
+					fn(data, EXPORTED);
+				}
 			};
 			
-			image.src = url;
+			if(
+				url instanceof Image
+				|| url.tagName === 'IMG'
+			)
+			{
+				image.src = url.src;
+			}
+			else if(url.tagName === 'CANVAS')
+			{
+				image.src = url.toDataURL('image/png');
+			}
+			else
+			{
+				image.src = url.toString();
+			}
 		},
 		
 		suspendUpdates: function(){
@@ -948,7 +1192,11 @@
 			
 			ctx.textAlign = 'left';
 			ctx.textBaseline = 'top';
+			
 			ctx.lineWidth = 1;
+			ctx.lineCap = 'butt';
+			ctx.lineDashOffset = 0;
+			ctx.lineJoin = 'miter';
 			
 			canvas.onclick = null;
 			canvas.onmousemove = null;
@@ -1244,6 +1492,29 @@
 			enumerable: true
 		},
 		
+		getLineWidth: {
+			value: Object.assign(function getLineWidth(){
+				return methods.getLineWidth();
+			}, {
+				__doc__: [
+					'Gets the width of the lines being drawn on the canvas',
+					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
+				]
+			}),
+			enumerable: true
+		},
+		setLineWidth: {
+			value: Object.assign(function setLineWidth(width){
+				methods.setLineWidth(width);
+			}, {
+				__doc__: [
+					'Sets the width of the lines being drawn on the canvas',
+					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
+				]
+			}),
+			enumerable: true
+		},
+		
 		fillRect: {
 			value: Object.assign(function fillRect(x, y, width, height, style){
 				x = COORD_MODE.getX(x);
@@ -1256,7 +1527,8 @@
 			}, {
 				__doc__: [
 					'Creates a rectangle at $x,$y with $width,$height',
-					'Takes an optional $style, which will be reset after drawing the rectangle'
+					'Takes an optional $style, which will be reset after drawing the rectangle',
+					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
 				]
 			}),
 			enumerable: true
@@ -1284,12 +1556,12 @@
 					'Also takes an optional $font, which will be reset after drawing the text',
 					'Also takes an optional $style, which will be reset after drawing the text',
 					'Also takes an optional $stroke, which will be reset after drawing the text',
-					'If $stroke is true, it will use the stroke style set by !CANVAS->setStrokeStyle()'
+					'If $stroke is true, it will use the stroke style set by !CANVAS->setStrokeStyle()',
+					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
 				]
 			}),
 			enumerable: true
 		},
-		
 		measureText: {
 			value: Object.assign(function measureText(text, font){
 				return methods.measureText(text.toString(), font ? font.toString() : null);
@@ -1310,6 +1582,112 @@
 			}),
 			enumerable: true
 		},
+		
+		
+		drawLine: {
+			value: Object.assign(function drawLine(x1, y1, x2, y2, width, stroke){
+				x1 = COORD_MODE.getX(x1);
+				y1 = COORD_MODE.getY(y1);
+				x2 = COORD_MODE.getX(x2);
+				y2 = COORD_MODE.getY(y2);
+				
+				return methods.drawLine(
+					x1, y1, x2, y2,
+					width ? COORD_MODE.getWidth(width) : null,
+					stroke ? stroke.toString() : null
+				);
+			}, {
+				__doc__: [
+					'Draws a line from ($x1,$y1) to ($x2,$y2)',
+					'Takes an optional $width, which will be reset after drawing',
+					'Also takes an optional $stroke, which will be reset after drawing',
+					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
+				]
+			}),
+			enumerable: true
+		},
+		
+		
+		drawArc: {
+			value: Object.assign(function drawArc(x, y, radius, start_angle, end_angle, ccw, close, fill, stroke, stroke_width){
+				x = COORD_MODE.getX(x);
+				y = COORD_MODE.getY(y);
+				radius = COORD_MODE.getWidth(radius);
+				
+				return methods.drawArcRad(
+					x, y, radius,
+					start_angle, end_angle,
+					!!ccw, !!close,
+					fill ? fill.toString() : null,
+					stroke ? stroke.toString() : null,
+					stroke_width ? COORD_MODE.getWidth(stroke_width) : null
+				);
+			}, {
+				__doc__: [
+					'Draws an arc centered at ($x,$y) with the specified $radius',
+					'The $start_angle and $end_angle are in RADIANS (for degrees, use !CANVAS->drawArcDeg)',
+					'Takes an optional $ccw, which when set to true, will draw the arc counter-clockwise',
+					'Also takes an optional $close, which when set to true, will close the arc',
+					'Also takes an optional $fill, which will be reset after drawing',
+					'Also takes an optional $stroke, which will be reset after drawing',
+					'Also takes an optional $stroke_width, which will be reset after drawing',
+					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
+				]
+			}),
+			enumerable: true
+		},
+		drawArcDeg: {
+			value: Object.assign(function drawArcDeg(x, y, radius, start_angle, end_angle, ccw, close, fill, stroke, stroke_width){
+				x = COORD_MODE.getX(x);
+				y = COORD_MODE.getY(y);
+				radius = COORD_MODE.getWidth(radius);
+				
+				return methods.drawArcDeg(
+					x, y, radius,
+					start_angle, end_angle,
+					!!ccw, !!close,
+					fill ? fill.toString() : null,
+					stroke ? stroke.toString() : null,
+					stroke_width ? COORD_MODE.getWidth(stroke_width) : null
+				);
+			}, {
+				__doc__: [
+					'Draws an arc centered at ($x,$y) with the specified $radius',
+					'The $start_angle and $end_angle are in DEGREES (for radians, use !CANVAS->drawArc)',
+					'Takes an optional $ccw, which when set to true, will draw the arc counter-clockwise',
+					'Also takes an optional $close, which when set to true, will close the arc',
+					'Also takes an optional $fill, which will be reset after drawing',
+					'Also takes an optional $stroke, which will be reset after drawing',
+					'Also takes an optional $stroke_width, which will be reset after drawing',
+					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
+				]
+			}),
+			enumerable: true
+		},
+		drawCircle: {
+			value: Object.assign(function drawCircle(x, y, radius, fill, stroke, stroke_width){
+				x = COORD_MODE.getX(x);
+				y = COORD_MODE.getY(y);
+				radius = COORD_MODE.getWidth(radius);
+				
+				return methods.drawCircle(
+					x, y, radius,
+					fill ? fill.toString() : null,
+					stroke ? stroke.toString() : null,
+					stroke_width ? COORD_MODE.getWidth(stroke_width) : null
+				);
+			}, {
+				__doc__: [
+					'Draws a circle centered at ($x,$y) with the specified $radius',
+					'Takes an optional $fill, which will be reset after drawing',
+					'Also takes an optional $stroke, which will be reset after drawing',
+					'Also takes an optional $stroke_width, which will be reset after drawing',
+					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
+				]
+			}),
+			enumerable: true
+		},
+		
 		
 		clear: {
 			value: Object.assign(function clear(style){
@@ -1355,13 +1733,14 @@
 				height = COORD_MODE.getHeight(height);
 				
 				return methods.createSpritesheet(
-					url.toString(), width, height,
+					url, width, height,
 					fn && typeof fn === 'function' ? fn : function(){}
 				);
 			}, {
 				__doc__: [
 					'Loads an image from $url and creates a spritesheet of sprites with $width and $height',
-					'Pass a $function as the last argument, to be able to use the sprites after loaded'
+					'Pass a $function as the last argument, to be able to use the sprites after loaded',
+					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
 				]
 			}),
 			enumerable: true
@@ -1379,7 +1758,8 @@
 			}, {
 				__doc__: [
 					'Returns an image with the contents at $x,$y, and $width and $height',
-					'This function returns an actual image, to be used with !CANVAS->drawImage()'
+					'This function returns an actual image, to be used with !CANVAS->drawImage()',
+					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
 				]
 			}),
 			enumerable: true
@@ -1403,7 +1783,10 @@
 				
 				return true;
 			}, {
-				__doc__: 'Draws the $image at $x,$y'
+				__doc__: [
+					'Draws the $image at $x,$y',
+					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
+				]
 			}),
 			enumerable: true
 		},
@@ -1429,9 +1812,20 @@
 			}),
 			enumerable: true
 		},
+		getCoordMode: {
+			value: Object.assign(function getCoordMode(){
+				return COORD_MODE.getMode();
+			}, {
+				__doc__: [
+					'Gets the current coordinate mode',
+					'Contains the mode name, x scale and y scale'
+				]
+			}),
+			enumerable: true
+		},
 		getCoordX: {
 			value: Object.assign(function getCoordX(x){
-				return COORD_MODE.getX(x);
+				return COORD_MODE.getXFromPX(x);
 			}, {
 				__doc__: 'Calculates the $x coordinate, for the specified coodinate mode'
 			}),
@@ -1439,7 +1833,7 @@
 		},
 		getCoordY: {
 			value: Object.assign(function getCoordY(y){
-				return COORD_MODE.getY(y);
+				return COORD_MODE.getYFromPX(y);
 			}, {
 				__doc__: 'Calculates the $y coordinate, for the specified coodinate mode'
 			}),
@@ -1447,7 +1841,7 @@
 		},
 		getCoordWidth: {
 			value: Object.assign(function getCoordWidth(width){
-				return COORD_MODE.getWidth(width);
+				return COORD_MODE.getWidthFromPX(width);
 			}, {
 				__doc__: 'Calculates the $width, for the specified coodinate mode'
 			}),
@@ -1455,9 +1849,26 @@
 		},
 		getCoordHeight: {
 			value: Object.assign(function getCoordHeight(height){
-				return COORD_MODE.getHeight(height);
+				return COORD_MODE.getHeightFromPX(height);
 			}, {
 				__doc__: 'Calculates the $height, for the specified coodinate mode'
+			}),
+			enumerable: true
+		},
+		
+		getCenter: {
+			value: Object.assign(function getCoordHeight(){
+				var center_width = methods.getWidth() >> 1;
+				var center_height = methods.getHeight() >> 1;
+				
+				return {
+					x: COORD_MODE.getWidthFromPX(center_width),
+					x_px: center_width,
+					y: COORD_MODE.getWidthFromPX(center_height),
+					y_px: center_height
+				};
+			}, {
+				__doc__: 'Returns the center coordinates of the canvas'
 			}),
 			enumerable: true
 		}
