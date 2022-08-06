@@ -9,7 +9,7 @@ $mult = 10;
 $settings = call !TABLE->getDefaultSettings();
 $settings->classHeader = &str_concat($settings->classHeader, " table-dark");
 $settings->classBodyCell = &str_concat(
-	settings->classBodyCell,
+	$settings->classBodyCell,
 	" text-center"
 );
 $settings->classBodyFirstCol = &str_concat(
