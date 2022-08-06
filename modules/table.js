@@ -7,7 +7,7 @@
 	}
 	
 	var SETTINGS_DEFAULT = {
-		classTable: 'table table-striped table-hover table-bordered font-sans-serif',
+		classTable: 'table table-striped table-hover table-bordered font-sans-serif caption-top',
 		classCaption: '',
 		classHeader: 'text-center fw-bold',
 		classHeaderItems: 'py-1',
