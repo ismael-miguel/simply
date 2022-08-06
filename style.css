@@ -1,3 +1,9 @@
+/* bootstrap is missing this, for SOME F💩CKING REASON */
+.font-sans-serif {
+	font-family: var(--bs-font-sans-serif, sans-serif);
+}
+
+
 pre {
 	tab-size: 4;
 	user-select: text !important;

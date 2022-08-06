@@ -1,0 +1,16 @@
+/*
+	Basic example that shows the basic usage.
+	This example simply shows all the keys and values in the $settings.
+*/
+
+$settings = call !TABLE->getDefaultSettings();
+$table = call !TABLE->create($settings);
+
+call $table->setCaption("All the default values in $settings");
+call $table->setHeader("Key", "Value");
+
+def &fn($key) call $table->addRow($key, &iff($settings[$key], $settings[$key], "<empty>"));
+
+&array_map(&array_keys($settings), &fn);
+
+call $table->show();

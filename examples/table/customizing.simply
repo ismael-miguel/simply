@@ -1,0 +1,33 @@
+/*
+	Customizing the look of the table.
+	You can set custom classes to change the way that data is displayed.
+	In this example, it displays the multiplication table between 1 and $mult
+*/
+
+$mult = 10;
+
+$settings = call !TABLE->getDefaultSettings();
+$settings->classHeader = &str_concat($settings->classHeader, " table-dark");
+$settings->classBodyCell = &str_concat(
+	settings->classBodyCell,
+	" text-center"
+);
+$settings->classBodyFirstCol = &str_concat(
+	$settings->classBodyFirstCol,
+	" text-center fw-bold table-dark"
+);
+
+$table = call !TABLE->create($settings);
+
+call $table->setCaption(&str_concat("Multiplication table from 1 to ", $mult));
+call $table->setHeader('×', &range(1, $mult));
+
+for $i in 1..$mult {
+	$data = [$i];
+	for $j in 1..$mult {
+		$data[$j] = &prod($i, $j);
+	}
+	call $table->addRow($data);
+}
+
+call $table->show();

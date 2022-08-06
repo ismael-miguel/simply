@@ -731,9 +731,20 @@
 				__doc__: 'Verifies if the $array contains the $value'
 			}),
 			array_map: Object.assign(function array_map(array, fn){
-				return Array.from(array).map(function(value, index){
+				var result = Array.isArray(array) ? [] : {};
+				
+				if(array)
+				{
+					Object.keys(array).forEach(function(key){
+						result[key] = fn(array[key], key);
+					});
+				}
+				
+				return result;
+				
+				/*return Array.from(array).map(function(value, index){
 					return fn(value, index);
-				});
+				});*/
 			}, {
 				__doc__: 'Runs the $fn for each element in the $array, returning a new copy with the new values'
 			}),

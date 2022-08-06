@@ -1,0 +1,57 @@
+/*
+	Shows an example of how to set the text and table colors.
+	Each column has a text color, and each row has a table color.
+	All values available on:
+	https://getbootstrap.com/docs/5.1/content/tables/#customizing
+	
+	This also shows how you can change the settings per row and cell.
+*/
+
+%defaults = call !TABLE->getDefaultSettings();
+%defaults->classBodyCell = &str_concat(%defaults->classBodyCell, " text-center");
+
+%table = call !TABLE->create(%defaults);
+
+%settings = call %table->getSettings();
+%colors = ["", "", "primary", "secondary", "success", "danger", "warning", "info", "light", "dark", "white"];
+
+def &fn_color($color) &ucfirst(&iff($color, $color, "default"));
+%names = &array_map(%colors, &fn_color);
+
+call %table->setCaption("Show all background and text colors");
+call %table->setHeader("BG / Text", %names);
+
+def &rows($color, $i) {
+	if $color {
+		%settings->classBodyRow = &str_concat(%settings->classBodyRow, " table-", $color);
+		
+		call %table->updateSettings(%settings);
+	}
+	
+	def &cols($color, $i){
+		if $color {
+			%settings->classBodyCell = &str_concat(%settings->classBodyCell, " text-", $color);
+		
+			call %table->updateSettings(%settings);
+		}
+		
+		call %table->addCell(%names[$i]);
+		
+		if $color {
+			%settings->classBodyCell = %defaults->classBodyCell;
+			call %table->updateSettings(%settings);
+		}
+	}
+	
+	call %table->addRow(%names[$i]);
+	
+	&array_map(%colors, &cols);
+
+	%settings->classBodyRow = %defaults->classBodyRow;
+	%settings->classBodyCell = %defaults->classBodyCell;
+	call %table->updateSettings(%settings);
+}
+
+&array_map(%colors, &rows);
+
+call %table->show();

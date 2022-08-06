@@ -164,6 +164,14 @@ class ServerFakeFileHandler:
 			"content": open(os.path.join(ROOT, "modules", "canvas.js"), "rb").read()
 		}
 	
+	@staticmethod
+	def root_modules_table_js(query):
+		return {
+			"status_code": 200,
+			"content_type": "application/javascript",
+			"content": open(os.path.join(ROOT, "modules", "table.js"), "rb").read()
+		}
+	
 	
 	# ========== EXAMPLES ==========
 	@staticmethod
@@ -253,6 +261,19 @@ class ServerFakeFileHandler:
 	@staticmethod
 	def root_examples_canvas_commodore64_maze_simply(query):
 		return ServerFakeFileHandler.handle_example("canvas", "commodore64_maze")
+	
+	
+	@staticmethod
+	def root_examples_table_basic_simply(query):
+		return ServerFakeFileHandler.handle_example("table", "basic")
+	
+	@staticmethod
+	def root_examples_table_customizing_simply(query):
+		return ServerFakeFileHandler.handle_example("table", "customizing")
+	
+	@staticmethod
+	def root_examples_table_text_and_bg_simply(query):
+		return ServerFakeFileHandler.handle_example("table", "text_and_bg")
 
 
 
