@@ -29,14 +29,6 @@ $url = &join([
 call %c->setCoordMode("grid", 8); //8x8
 call %c->fillRect(%x = 4, %y = 4.5, %width = 40, %height = 25, %bg);
 
-%width_range = &range(1, %width);
-%height_range = &range(1, %height);
-
-
-def &rand_char($j) &rand(0, %count);
-%rand_char = &rand_char;
-
-
 def &fn($sheet) {
 	if $sheet->error {
 		echo "❌ Failed to load the sprite sheet";
@@ -44,16 +36,7 @@ def &fn($sheet) {
 	}
 	
 	%sheet = $sheet;
-	%count = &sub($sheet->length, 1);
 	%drawing = false;
-	
-	def &y($_, $i){
-		call %sheet->drawSpriteLine(
-			&array_map(%width_range, %rand_char),
-			%x, &add(%y, $i)
-		);
-	}
-	%fn_y = &y;
 	
 	def &draw {
 		if %drawing return;
@@ -61,7 +44,16 @@ def &fn($sheet) {
 		%drawing = true;
 		call %c->suspendUpdates();
 		
-		&array_map(%height_range, %fn_y);
+		$array = [];
+		$count = &sub(%sheet->length, 1);
+
+		for $i in 1..%height {
+			for $j in 1..%width {
+				$array[$j] = &rand(0, $count);
+			}
+			
+			call %sheet->drawSpriteLine($array, %x, &add(%y, $i, -1));
+		}
 		
 		call %c->resumeUpdates();
 		%drawing = false;
