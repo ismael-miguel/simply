@@ -56,8 +56,19 @@ Classes bring a lot of complications, including but not limited to inheritance a
 |   ⚠️   |    Displaying<br> Values   | Works, but currently needs some work to improve on some aspects.                                                                     |
 |   ❌   |   Boolean<br> expressions  | These expressions haven't been implemented yet.                                                                                      |
 |   ❌   | Arithmetic<br> expressions | These haven't been implemented at all.                                                                                               |
-|   ⚠️   | Conditional<br> statements | The else block isn't implemented for "for" blocks                                                                                    |
-|   ❌   |            Loops           | Do ... while, while and for loops haven't been implemented.                                                                          |
+|   ⚠️   | Conditional<br> statements | The else block isn't implemented for "for each" blocks                                                                                    |
+|   ⚠️   |            Loops           | Do ... while, while and for each haven't been implemented.                                                                          |
 |   ❌   |        Syntax sugar        | Some "nice to have" syntax sugar, like a syntax for ranges.                                                                          |
 |   ⚠️   |           Modules          | Modules have been implemented, but not fully. Implement some ideas, like regular expressions and HTML.                               |
 
+---
+
+## How to use it?
+
+To use this, you need to download the repository.
+
+There are 3 options, after downloading:
+ 1. Open the file `index.html`
+ 2. If you have Python3 installed, go to `py-server` and run `server.cmd`
+ 3. Implement your own runtime by pointing directly to the script files.<br>
+   Please check the file `index.html` for an example.
