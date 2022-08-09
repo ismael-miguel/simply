@@ -1469,13 +1469,18 @@
 		},
 		
 		getRandomColor: {
-			value: Object.assign(function getRandomColor(){
-				return 'rgb(' + (Math.floor(Math.random() * 256))
+			value: Object.assign(function getRandomColor(alpha){
+				return 'rgb' + (alpha ? 'a' : '') + '(' + (Math.floor(Math.random() * 256))
 					+ ',' + (Math.floor(Math.random() * 256))
 					+ ',' + (Math.floor(Math.random() * 256))
+					+ (alpha ? ',' + Math.random() : '')
 				+ ')';
 			}, {
-				__doc__: 'Gets a random color, usable in many places'
+				__doc__: [
+					'Gets a random color, usable in many places',
+					'If the $alpha variable is set to true, returns a color with an alpha component',
+					'The alpha will be between 0 and 1 (excluded)'
+				]
 			}),
 			enumerable: true
 		},
