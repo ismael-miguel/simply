@@ -188,6 +188,7 @@
 			last: null,
 			now: null,
 			delta: 0,
+			delta_avg: 0,
 			
 			changed: CHANGED,
 			
@@ -199,7 +200,9 @@
 			fps_updated: true,
 			fps_ellapsed: 0,
 			fps_count: 0,
-			fps_shown_count: 0
+			fps_shown_count: 0,
+			
+			last_raf_time: 0
 		},
 		data: {},
 		fn: function(){
@@ -211,9 +214,12 @@
 			
 			RAF.data.fps_total++;
 			
+			// https://dsp.stackexchange.com/questions/811/determining-the-mean-and-standard-deviation-in-real-time#comment175756_1187
+			RAF.data.delta_avg = RAF.data.delta_avg + (RAF.data.delta - RAF.data.delta_avg) / (RAF.data.fps_total + 1);
+			
 			if(
-				RAF.data.fps_ellapsed < 999
-				&& RAF.data.delta < 999
+				RAF.data.fps_ellapsed <= 999
+				&& RAF.data.delta <= 999
 			)
 			{
 				RAF.data.fps_count++;
@@ -221,7 +227,7 @@
 			}
 			else
 			{
-				if(RAF.data.delta < 999)
+				if(RAF.data.delta <= 999)
 				{
 					
 					RAF.data.fps = RAF.data.fps_count;
@@ -243,12 +249,14 @@
 				last: RAF.data.last,
 				now: RAF.data.now,
 				delta: RAF.data.delta,
+				delta_avg: RAF.data.delta_avg,
 				fps: RAF.data.fps,
 				fps_total: RAF.data.fps_total,
 				fps_shown: RAF.data.fps_shown,
 				fps_shown_total: RAF.data.fps_shown_total,
 				fps_updated: RAF.data.fps_updated,
-				changed: RAF.data.changed
+				changed: RAF.data.changed,
+				last_raf_time: RAF.data.last_raf_time
 			};
 			
 			Array.from(RAF.handlers).forEach(function(fn){
@@ -278,6 +286,8 @@
 				RAF.data.fps_shown_total++;
 			}
 			
+			RAF.data.last_raf_time = performance.now() - RAF.data.now;
+			
 			RAF.id = window.requestAnimationFrame(RAF.fn);
 		},
 		reset: function(){
@@ -301,23 +311,50 @@
 		coord_mode_elem: document.createElement('p'),
 		buffer_elem: document.createElement('p'),
 		buffer_info_elem: document.createElement('p'),
+		
+		details_fps: document.createElement('details'),
+		summary_fps: document.createElement('summary'),
+		
+		details_ctx: document.createElement('details'),
+		summary_ctx: document.createElement('summary'),
+		
 		spsheets: {
 			data: [],
 			last_len: 0,
 			holder: document.createElement('div')
+		},
+		classes: {
+			details: 'border border-secondary rounded my-2 p-1'
 		},
 		init: function(){
 			DEBUG.holder.id = 'm-canvas-debug';
 			DEBUG.holder.className = 'my-3';
 			DEBUG.holder.textContent = 'DEBUG INFO:';
 			
-			DEBUG.holder.appendChild(DEBUG.fps_elem);
-			DEBUG.holder.appendChild(DEBUG.frameskip_elem);
-			DEBUG.holder.appendChild(DEBUG.lowpower_elem);
-			DEBUG.holder.appendChild(DEBUG.can_update_elem);
-			DEBUG.holder.appendChild(DEBUG.coord_mode_elem);
-			DEBUG.holder.appendChild(DEBUG.buffer_elem);
-			DEBUG.holder.appendChild(DEBUG.buffer_info_elem);
+			
+			DEBUG.summary_fps.textContent = 'FPS information';
+			DEBUG.details_fps.className = DEBUG.classes.details;
+			
+			DEBUG.details_fps.appendChild(DEBUG.summary_fps);
+			DEBUG.details_fps.appendChild(DEBUG.fps_elem);
+			DEBUG.details_fps.appendChild(DEBUG.frameskip_elem);
+			DEBUG.details_fps.appendChild(DEBUG.lowpower_elem);
+			DEBUG.details_fps.appendChild(DEBUG.can_update_elem);
+			
+			
+			
+			DEBUG.summary_ctx.textContent = 'Context information';
+			DEBUG.details_ctx.className = DEBUG.classes.details;
+			
+			DEBUG.details_ctx.appendChild(DEBUG.summary_ctx);
+			DEBUG.details_ctx.appendChild(DEBUG.coord_mode_elem);
+			DEBUG.details_ctx.appendChild(DEBUG.buffer_elem);
+			DEBUG.details_ctx.appendChild(DEBUG.buffer_info_elem);
+			
+			
+			
+			DEBUG.holder.appendChild(DEBUG.details_fps);
+			DEBUG.holder.appendChild(DEBUG.details_ctx);
 		},
 		reset: function(){
 			if(buffer.parentNode)
@@ -339,7 +376,11 @@
 			}
 		},
 		show: function(){
-			DEBUG.buffer_elem.textContent = 'Buffer size: ' + buffer.width + 'x' + buffer.height
+			var ctx_text = buffer.width + 'x' + buffer.height;
+			
+			DEBUG.summary_ctx.textContent = 'Context information (' + ctx_text + ')';
+			
+			DEBUG.buffer_elem.textContent = 'Buffer size: ' + ctx_text
 				+ ' (DPR: ' + window.devicePixelRatio + ')'
 				+ (window.devicePixelRatio > 1 && !SETTINGS.canvas.lowpower
 					? '\nOriginal size: '
@@ -351,7 +392,8 @@
 			
 			buffer.setAttribute('style', canvas.getAttribute('style'));
 			
-			DEBUG.holder.appendChild(buffer);
+			// DEBUG.holder.appendChild(buffer);
+			DEBUG.details_ctx.appendChild(buffer);
 			DEBUG.holder.appendChild(DEBUG.spsheets.holder);
 			
 			div.appendChild(DEBUG.holder);
@@ -359,10 +401,14 @@
 			RAF.handlers.push(DEBUG.update);
 		},
 		update: function(data){
+			var fps_text = (data.fps ? data.fps_shown : '--') + '/' + (data.fps || '--');
+			
+			DEBUG.summary_fps.textContent = 'FPS information (' + fps_text + ')';
+			
 			DEBUG.fps_elem.textContent = 'Framerate: '
-				+ (data.fps ? data.fps_shown : '--') + '/' + (data.fps || '--')
-				+ ' (Total: ' + data.fps_shown_total + '/' + data.fps_total + ')\n'
-				+ 'Frametime: ' + data.delta.toFixed(1) + 'ms';
+				+ fps_text + ' (Total: ' + data.fps_shown_total + '/' + data.fps_total + ')\n'
+				+ 'Frametime: ' + data.delta.toFixed(1) + 'ms (Avg: ' + data.delta_avg.toFixed(1) + 'ms)\n'
+				+ 'RAF time: ' + data.last_raf_time.toFixed(1) + 'ms';
 			
 			DEBUG.frameskip_elem.textContent = 'Frameskip: ' + SETTINGS.canvas.frameskip;
 			
@@ -401,7 +447,7 @@
 					var summary = document.createElement('summary');
 					
 					details.appendChild(summary);
-					details.className = 'border border-secondary rounded my-2 p-1';
+					details.className = DEBUG.classes.details;
 					
 					var p = document.createElement('p');
 					details.appendChild(p);
@@ -2019,8 +2065,13 @@
 				'vertical-align: bottom;',
 				'text-align: left;',
 			'}',
-			'#m-canvas-debug > p {',
+			'#m-canvas-debug p {',
 				'margin-bottom: 0 !important;',
+			'}',
+			'#m-canvas-debug details > img {',
+				'width: 100%;',
+				'max-width: 100%;',
+				'image-rendering: pixelated;',
 			'}',
 		].join('\n')
 	});
