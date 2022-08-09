@@ -387,7 +387,8 @@
 			[/^(?:call(?:ing)?|run(?:ning)?|exec(?:ute|uting)?)(?![a-z\d])/i, 'CALL'],
 			
 			// ASSING
-			[/^(?:set|give|assign|\:?=)(?![a-z\d=])/i, 'ASSIGN'],
+			[/^(?:set|give|assign)(?![a-z\d])/i, 'ASSIGN'],
+			[/^(?:\:?=)(?![=>])/, 'ASSIGN'],
 			
 			// DEFINE
 			[/^(?:def(?:ine)?|create|make)(?![a-z\d])/i, 'DEFINE'],
@@ -413,10 +414,10 @@
 			[/^(?:for|loop from)(?![a-z\d])/i, 'FOR_LOOP'],
 			
 			// FOREACH LOOP
-			//[/^(?:foreach|each|loop through)(?![a-z\d])/i, 'EACH_LOOP'],
+			[/^(?:(?:for)?each|loop through)(?![a-z\d])/i, 'EACH_LOOP'],
 			
 			// OPERATORS
-			[/^(?:->|::|\.\.|[\^\!\.~]|[><\-+\/\*\|]{1,2}|===?)/, 'OPERATOR'],
+			[/^(?:[=\-]>|::|\.\.|[\^\!\.~]|[><\-+\/\*\|]{1,2}|===?)/, 'OPERATOR'],
 			
 			// ANY 'WORD'
 			[/^[a-z][a-z_]*/i, 'WORD'],
@@ -447,7 +448,8 @@
 		Symbols: {
 			'BOOLEAN': [],
 			'COMPARE': ['==', '===', '<', '>', '>=', '<=', '=>', '=<', '!=', '!==', '<>'],
-			'INDEX': ['::', '->']
+			'INDEX': ['::', '->'],
+			'ARROW': ['=>']
 		},
 		
 		FNS: {
@@ -1955,6 +1957,9 @@
 				case 'FOR_LOOP':
 					return this.ForLoopBlockStatement();
 				
+				case 'EACH_LOOP':
+					return this.ForeachLoopBlockStatement();
+				
 				default:
 					return this.ExpressionStatement();
 			}
@@ -2534,7 +2539,7 @@
 		
 		/**
 		 *   ForLoopBlockStatement
-		 *     : FOR_BLOCK BodyGroup
+		 *     : FOR_LOOP BodyGroup
 		 *     ;
 		 */
 		ForLoopBlockStatement: function(){
@@ -2549,6 +2554,7 @@
 					end: null,
 					step: null
 				},
+				uses_loop_var: true,
 				body: [],
 				line: token.line,
 				column: token.column
@@ -2636,11 +2642,77 @@
 				result.loop.var = this.VariableExpression();
 			}
 			
-			// TODO: FINISH
-			
 			if(!this._lookahead)
 			{
 				return result;
+			}
+			
+			result.body = this.BodyGroup();
+			
+			return result;
+		},
+		
+		/**
+		 *   ForeachLoopBlockStatement
+		 *     : EACH_BLOCK BodyGroup
+		 *     ;
+		 */
+		 ForeachLoopBlockStatement: function(){
+			var token = this._eat('EACH_LOOP');
+			var types_exit = [';', 'SCOPE_OPEN'];
+			
+			var result = {
+				type: 'ForeachLoopBlockStatement',
+				loop: {
+					var: null, // variable to be looped
+					value: null, // variable with the value
+					key: null // variable with the key
+				},
+				uses_loop_var: true,
+				body: [],
+				line: token.line,
+				column: token.column
+			};
+			
+			this._jump('WORD');
+			
+			result.loop.var = this.ExpressionStatement();
+			
+			var word = this._jump('WORD');
+			
+			if(word && word.value === 'BOOL_HAS')
+			{
+				if(result.loop.var.type !== 'VariableExpression')
+				{
+					throw new SyntaxError('Invalid foreach loop signature. Expected a variable, got ' + result.loop.var.type);
+				}
+				
+				result.loop.value = result.loop.var;
+				result.loop.var = this.ExpressionStatement();
+			}
+			else if(this._lookahead && !~types_exit.indexOf(this._lookahead.type))
+			{
+				result.loop.value = this.VariableExpression();
+				
+				if(this._lookahead && !~types_exit.indexOf(this._lookahead.type))
+				{
+					var jumped = this._jump('WORD', 'OPERATOR');
+					
+					if(jumped && jumped.type === 'OPERATOR')
+					{
+						if(jumped.value !== '=>')
+						{
+							throw new SyntaxError('Unexpected operator ' + jumped.value + ' but expected =>');
+						}
+						
+						result.loop.key = result.loop.value;
+						result.loop.value = this.VariableExpression();
+					}
+					else
+					{
+						result.loop.key = this.VariableExpression();
+					}
+				}
 			}
 			
 			result.body = this.BodyGroup();
@@ -3081,7 +3153,7 @@
 			
 			return {
 				type: 'ConstantLiteral',
-				value: token.value,
+				value: token.value.toLowerCase(),
 				line: token.line,
 				column: token.column
 			};
@@ -3552,6 +3624,11 @@
 			}
 			
 			var handle_body = function handle_body(token){
+				if(!token)
+				{
+					return token;
+				}
+				
 				if(token.body && token.body.length)
 				{
 					// Read Note 1
@@ -3575,7 +3652,7 @@
 				return fn.call(this, token);
 			};
 			
-			return body.length
+			return body && body.length
 				// Read Note 1
 				? body.map(handle_body, this).filter(function(value){
 					return value;
@@ -3613,12 +3690,53 @@
 				return fn.call(this, token);
 			};
 			
-			return values.length
+			return values && values.length
 				// Read Note 1
 				? values.map(handle_values, this).filter(function(value){
 					return value;
 				})
 				: values;
+		},
+		
+		_handleArgs: function _handleArgs(token, types, fn){
+			if(!Array.isArray(types))
+			{
+				types = [types];
+			}
+			
+			var handle_args = function handle_args(token){
+				if(token.args)
+				{
+					if(Array.isArray(token.args) && token.args.length)
+					{
+						// Read Note 1
+						token.args = token.args.map(handle_args, this).filter(function(value){
+							return value;
+						});
+					}
+					else if(token.args.type === 'ArgumentsGroup' && token.args.value.length)
+					{
+						// Read Note 1
+						token.args.value = token.args.value.map(handle_args, this).filter(function(value){
+							return value;
+						});
+					}
+				}
+				
+				return fn.call(this, token);
+			};
+			
+			return token && token.args
+				// Read Note 1
+				? (Array.isArray(token.args)
+					? token.args.map(handle_args, this).filter(function(value){
+						return value;
+					})
+					: token.args.value.map(handle_args, this).filter(function(value){
+						return value;
+					})
+				)
+				: token;
 		},
 		
 		_getValues: function _getValues(values, types){
@@ -4075,6 +4193,59 @@
 				}
 			},
 			
+			/*skipLoopVarIfNotUsed: {
+				title: 'Skip the $loop variable',
+				desc: [
+					'Skips defining the $loop variable if it isn\'t being used.',
+					'If it is in use, the variable will be defined.',
+					'Otherwise, it is skipped and won\'t be created.'
+				],
+				types: ['bool'],
+				fn: function skipLoopVarIfNotUsed(body, settings){
+					var types_with_args = ['OutputStatement', 'CallExpression'];
+					
+					return this._handleBodyTokens(body, 'ForLoopBlockStatement', function(token){
+						token.uses_loop_var = false;
+						
+						var handle_var_token = function(var_token){
+							if(
+								token.uses_loop_var
+								|| (var_token.value === 'loop' && !var_token.value)
+							)
+							{
+								token.uses_loop_var = true;
+							}
+							
+							return var_token;
+						};
+						
+						
+						this._handleBodyTokens([token.start, token.end, token.var], 'VariableExpression', handle_var_token);
+						
+						
+						if(token.uses_loop_var)
+						{
+							return token;
+						}
+						
+						this._handleBodyTokens(token.body, 'VariableExpression', handle_var_token);
+						
+						
+						if(token.uses_loop_var)
+						{
+							return token;
+						}
+						
+						
+						this._handleBodyTokens(token.body, types_with_args, function(token){
+							this._handleArgs(token, 'VariableExpression', handle_var_token);
+						});
+						
+						return token;
+					});
+				}
+			},*/
+			
 			removeDeadCode: {
 				title: 'Remove dead code',
 				desc: [
@@ -4353,8 +4524,9 @@
 					info[token.type] = {};
 				}
 				
-				return this.compileToken(token, info[token.type])
-					+ (~this._no_semicollon.indexOf(token.type) ? '' : ';');
+				var code = this.compileToken(token, info[token.type]);
+				
+				return code ? code + (~this._no_semicollon.indexOf(token.type) ? '' : ';') : '';
 			}, this).join('\n\n');
 		},
 		
@@ -4426,6 +4598,9 @@
 				
 				case 'ForLoopBlockStatement':
 					return this.compileForLoopBlockStatement(token, info);
+				
+				case 'ForeachLoopBlockStatement':
+					return this.compileForeachLoopBlockStatement(token, info);
 				
 				default:
 					return '// TODO: implement support for ' + token.type + '\n';
@@ -4685,23 +4860,6 @@
 		},
 		
 		compileForLoopBlockStatement: function(token, info){
-			/*switch(token.loop.type)
-			{
-				case 'simple':
-				case 'range':
-					var var_token = this.compileToken(token.loop.var, info);
-					
-					return 'for(' + var_token
-						+ ' = ' + this.compileToken(token.loop.start, info)
-						+ '; ' + var_token + ' <= ' + this.compileToken(token.loop.end, info)
-						+ '; ' + var_token + ' += ' + (
-							token.loop.step
-								? this.compileToken(token.loop.step, info)
-								: '1'
-						)
-						+ '){\n' + this.compileBody(token.body, info) + '\n}';
-			}*/
-			
 			if(!token.body.length)
 			{
 				// if the body is empty, skip to the last iteration
@@ -4743,6 +4901,16 @@
 				column: token.column
 			};
 			
+			
+			if(!token.uses_loop_var)
+			{
+				return '(' + this.compileToken(new_token, info) + ' || []).forEach(function(value, index, arr){\n'
+					+ this.compileToken(token.loop.var, info) + ' = value;\n\n'
+					+ this.compileBody(token.body, info) + '\n'
+				+ '})';
+			}
+			
+			
 			var loop_var = this.compileToken({
 				type: 'VariableExpression',
 				value: 'loop',
@@ -4755,6 +4923,36 @@
 			}, info);
 			
 			return '(' + this.compileToken(new_token, info) + ' || []).forEach(function(value, index, arr){\n'
+				+ 'var old_loop_var = ' + loop_var + ';\n'
+				+ loop_var + ' = {'
+					+ 'first: !index,\n'
+					+ 'last: index === arr.length - 1,\n'
+					+ 'index: index,\n'
+					+ 'value: value,\n'
+					+ 'length: arr.length,\n'
+				+ '};\n'
+				+ this.compileToken(token.loop.var, info) + ' = value;\n\n'
+				+ this.compileBody(token.body, info) + '\n\n'
+				+ loop_var + ' = old_loop_var;\n'
+			+ '})';
+		},
+		
+		compileForeachLoopBlockStatement: function(token, info){
+			var loop_var = this.compileToken({
+				type: 'VariableExpression',
+				value: 'loop',
+				line: token.line,
+				column: token.column,
+				global: false,
+				index: null,
+				create: false,
+				assign: null
+			}, info);
+			
+			if(RDP.Utils.tokenIsLiteral(token.loop.var))
+			{
+				var loop_code = '.forEach(function(value, index, arr){\n'
+					+ 'var old_loop_var = ' + loop_var + ';\n'
 					+ loop_var + ' = {'
 						+ 'first: !index,\n'
 						+ 'last: index === arr.length - 1,\n'
@@ -4762,9 +4960,55 @@
 						+ 'value: value,\n'
 						+ 'length: arr.length,\n'
 					+ '};\n'
-					+ this.compileToken(token.loop.var, info) + ' = value;\n\n'
-					+ this.compileBody(token.body, info) + '\n'
-				+ '});\n' + loop_var + ' = null';
+					+ (token.loop.value ? this.compileToken(token.loop.value, info) + ' = value;\n' : '')
+					+ (token.loop.key ? this.compileToken(token.loop.key, info) + ' = index;\n' : '')
+					+ '\n' + this.compileBody(token.body, info) + '\n\n'
+					+ loop_var + ' = old_loop_var;\n'
+				+ '})';
+				
+				switch(token.loop.var.type)
+				{
+					case 'ArrayLiteral':
+						return this.compileToken(token.loop.var, info) + loop_code;
+					
+					case 'NumericLiteral':
+						return '[' + this.compileToken(token.loop.var, info) + ']' + loop_code;
+					
+					case 'CharLiteral':
+					case 'StringLiteral':
+						return 'Array.from(' + this.compileToken(token.loop.var, info) + ')' + loop_code;
+					
+					case 'ConstantLiteral':
+						return token.loop.var.value !== 'null'
+							? '[' + this.compileToken(token.loop.var, info) + ']' + loop_code
+							: '';
+					
+					default:
+						return '';
+				}
+			}
+			
+			// https://stackoverflow.com/questions/18884249/checking-whether-something-is-iterable
+			// have to check if it is an iterable, before making it iterable
+			
+			return '(function(og_value){\n'
+				+ 'if(og_value === null || og_value === undefined) return;\n'
+				+ 'og_value = (typeof og_value[Symbol.iterator] === \'function\') ? og_value : [og_value];\n'
+				+ 'Object.keys(og_value).forEach(function(value, index, arr){\n'
+					+ 'var old_loop_var = ' + loop_var + ';\n'
+					+ loop_var + ' = {'
+						+ 'first: !index,\n'
+						+ 'last: index === arr.length - 1,\n'
+						+ 'index: value,\n'
+						+ 'value: og_value[value],\n'
+						+ 'length: arr.length,\n'
+					+ '};\n'
+					+ (token.loop.value ? this.compileToken(token.loop.value, info) + ' = og_value[value];\n' : '')
+					+ (token.loop.key ? this.compileToken(token.loop.key, info) + ' = value;\n' : '')
+					+ '\n'+ this.compileBody(token.body, info) + '\n\n'
+					+ loop_var + ' = old_loop_var;\n'
+				+ '});\n'
+			+ '})(' + this.compileToken(token.loop.var, info) + ')';
 		},
 		
 		compileParenthesizedExpression: function(token, info){
