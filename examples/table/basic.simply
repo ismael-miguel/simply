@@ -9,8 +9,8 @@ $table = call !TABLE->create($settings);
 call $table->setCaption("All the default values in $settings");
 call $table->setHeader("Key", "Value");
 
-def &fn($key) call $table->addRow($key, &iff($settings[$key], $settings[$key], "<empty>"));
-
-&array_map(&array_keys($settings), &fn);
+foreach $settings as $key => $setting {
+	call $table->addRow($key, &iff($setting, $setting, "<empty>"));
+}
 
 call $table->show();
