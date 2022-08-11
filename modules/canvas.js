@@ -950,6 +950,21 @@
 			return copy;
 		},
 		
+		saveImage: function(name, x, y, width, height){
+			// https://stackoverflow.com/questions/10673122/how-to-save-canvas-as-an-image-with-canvas-todataurl
+			var copy = methods.getImage(x, y, width, height);
+			var a = document.createElement('a');
+			
+			a.href = copy.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+			
+			if(name)
+			{
+				a.download = name;
+			}
+			
+			a.click();
+		},
+		
 		drawImage: function(image, x, y){
 			CHANGED = SETTINGS.canvas.can_update;
 			
@@ -1810,6 +1825,47 @@
 				__doc__: [
 					'Returns an image with the contents at $x,$y, and $width and $height',
 					'This function returns an actual image, to be used with !CANVAS->drawImage()',
+					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
+				]
+			}),
+			enumerable: true
+		},
+		
+		saveImage: {
+			value: Object.assign(function saveImage(name, x, y, width, height){
+				var date = new Date();
+				var format_number = function(number){
+					return number < 10 ? '0' + number : number;
+				};
+				
+				name = name !== undefined && name !== null
+					? name.toString()
+					: date.getFullYear()
+						+ '-' + format_number(date.getMonth() + 1)
+						+ '-' + format_number(date.getDate())
+						+ '_' + format_number(date.getHours())
+						+ '_' + format_number(date.getMinutes())
+						+ '_' + format_number(date.getSeconds())
+						+ '.png';
+				
+				x = x !== undefined && x !== null ? COORD_MODE.getX(x) : 0;
+				y = y !== undefined && y !== null ? COORD_MODE.getY(y) : 0;
+				
+				width = width !== undefined && width !== null
+					? COORD_MODE.getWidth(width)
+					: methods.getWidth();
+				
+				height = height !== undefined && height !== null
+					? COORD_MODE.getHeight(height)
+					: methods.getHeight();
+				
+				return methods.saveImage(name, x, y, width, height);
+			}, {
+				__doc__: [
+					'Saves the canvas as a .png image file',
+					'Takes an optional $filename, used for the name of the file to save',
+					'If no $filename is provided, the local date and time will be used for the name',
+					'Takes an optional $x,$y, and an optional $width and $height',
 					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
 				]
 			}),
