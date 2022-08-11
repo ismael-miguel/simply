@@ -27,7 +27,20 @@
 	var EXPORTED = {};
 	var CHANGED = true;
 	
-	
+	var SAVED_STATES_DEFAULTS = {
+		font: '10px sans-serif',
+		fillStyle: '#000000',
+		strokeStyle: '#000000',
+		
+		textAlign: 'left',
+		textBaseline: 'top',
+		
+		lineWidth: 1,
+		lineCap: 'butt',
+		lineDashOffset: 0,
+		lineJoin: 'miter'
+	};
+	var SAVED_STATES = [];
 	
 	// text measurement element
 	var text_measurer = document.createElement('span');
@@ -1229,6 +1242,37 @@
 			CHANGED = true;
 		},
 		
+		saveState: function(){
+			var state = {};
+			
+			for(var key in SAVED_STATES_DEFAULTS)
+			{
+				state[key] = ctx[key];
+			}
+			
+			
+			SAVED_STATES.push(state);
+		},
+		restoreState: function(){
+			if(!SAVED_STATES.length)
+			{
+				return;
+			}
+			
+			var state = SAVED_STATES.shift();
+			
+			methods.setState(state);
+		},
+		setState: function(state){
+			for(var key in state)
+			{
+				if(state[key] !== ctx[key])
+				{
+					ctx[key] = state[key];
+				}
+			}
+		},
+		
 		showDebug: function(){
 			DEBUG.show();
 		},
@@ -1247,17 +1291,8 @@
 				methods.ontick_int = null;
 			}
 			
-			ctx.font = '10px sans-serif';
-			ctx.fillStyle = '#000000';
-			ctx.strokeStyle = '#000000';
-			
-			ctx.textAlign = 'left';
-			ctx.textBaseline = 'top';
-			
-			ctx.lineWidth = 1;
-			ctx.lineCap = 'butt';
-			ctx.lineDashOffset = 0;
-			ctx.lineJoin = 'miter';
+			SAVED_STATES.length = 0;
+			methods.setState(SAVED_STATES_DEFAULTS);
 			
 			canvas.onclick = null;
 			canvas.onmousemove = null;
@@ -1284,6 +1319,31 @@
 				__doc__: [
 					'Shows extra debug information',
 					'This can\'t be hidden, once shown'
+				]
+			}),
+			enumerable: true
+		},
+		
+		saveState: {
+			value: Object.assign(function saveState(){
+				methods.saveState();
+			}, {
+				__doc__: [
+					'Saves the state of the canvas',
+					'This includes the font, stroke, fill, line width and more',
+					'This does not affect some other settings, like frameskip and coordinate size'
+				]
+			}),
+			enumerable: true
+		},
+		restoreState: {
+			value: Object.assign(function restoreState(){
+				methods.restoreState();
+			}, {
+				__doc__: [
+					'Restores to a previously saved state of the canvas',
+					'This includes the font, stroke, fill, line width and more',
+					'This does not affect some other settings, like frameskip and coordinate size'
 				]
 			}),
 			enumerable: true
@@ -1519,9 +1579,9 @@
 			}),
 			enumerable: true
 		},
-		getStrokeStyle: {
-			value: Object.assign(function getStrokeStyle(str){
-				return methods.getStrokeStyle(str.toString());
+		setStrokeStyle: {
+			value: Object.assign(function setStrokeStyle(str){
+				return methods.setStrokeStyle(str.toString());
 			}, {
 				__doc__: [
 					'Sets the stroke style for the canvas',
@@ -1530,9 +1590,9 @@
 			}),
 			enumerable: true
 		},
-		setStrokeStyle: {
-			value: Object.assign(function setStrokeStyle(){
-				return methods.setStrokeStyle();
+		getStrokeStyle: {
+			value: Object.assign(function getStrokeStyle(){
+				return methods.getStrokeStyle();
 			}, {
 				__doc__: 'Gets the stroke style for the canvas'
 			}),
