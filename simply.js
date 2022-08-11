@@ -416,6 +416,12 @@
 			// FOREACH LOOP
 			[/^(?:(?:for)?each|loop through)(?![a-z\d])/i, 'EACH_LOOP'],
 			
+			// LOOP CONTROL
+			// break out of the loop
+			[/^(?:break)(?![a-z\d])/i, 'BREAK'],
+			// continue
+			[/^(?:continue)(?![a-z\d])/i, 'CONTINUE'],
+			
 			// OPERATORS
 			[/^(?:[=\-]>|::|\.\.|[\^\!\.~]|[><\-+\/\*\|]{1,2}|===?)/, 'OPERATOR'],
 			
@@ -1960,6 +1966,11 @@
 				case 'EACH_LOOP':
 					return this.ForeachLoopBlockStatement();
 				
+				case 'BREAK':
+					return this.BreakStatement();
+				case 'CONTINUE':
+					return this.ContinueStatement();
+				
 				default:
 					return this.ExpressionStatement();
 			}
@@ -2719,6 +2730,41 @@
 			
 			return result;
 		},
+		
+		/**
+		 * BreakStatement
+		 *   : BREAK
+		 *   ;
+		 */
+		BreakStatement: function(){
+			var token = this._eat('BREAK');
+			
+			var result = {
+				type: 'BreakStatement',
+				line: token.line,
+				column: token.column
+			};
+			
+			return result;
+		},
+		
+		/**
+		 * ContinueStatement
+		 *   : BREAK
+		 *   ;
+		 */
+		ContinueStatement: function(){
+			var token = this._eat('CONTINUE');
+			
+			var result = {
+				type: 'ContinueStatement',
+				line: token.line,
+				column: token.column
+			};
+			
+			return result;
+		},
+		
 		
 		/**
 		 * ParenthesizedExpression
@@ -4602,6 +4648,11 @@
 				case 'ForeachLoopBlockStatement':
 					return this.compileForeachLoopBlockStatement(token, info);
 				
+				case 'BreakStatement':
+					return this.compileBreakStatement(token, info);
+				case 'ContinueStatement':
+					return this.compileContinueStatement(token, info);
+				
 				default:
 					return '// TODO: implement support for ' + token.type + '\n';
 			}
@@ -4904,9 +4955,10 @@
 			
 			if(!token.uses_loop_var)
 			{
-				return '(' + this.compileToken(new_token, info) + ' || []).forEach(function(value, index, arr){\n'
+				return '(' + this.compileToken(new_token, info) + ' || []).every(function(value, index, arr){\n'
 					+ this.compileToken(token.loop.var, info) + ' = value;\n\n'
 					+ this.compileBody(token.body, info) + '\n'
+					+ 'return true;\n'
 				+ '})';
 			}
 			
@@ -4922,7 +4974,7 @@
 				assign: null
 			}, info);
 			
-			return '(' + this.compileToken(new_token, info) + ' || []).forEach(function(value, index, arr){\n'
+			return '(' + this.compileToken(new_token, info) + ' || []).every(function(value, index, arr){\n'
 				+ 'var old_loop_var = ' + loop_var + ';\n'
 				+ loop_var + ' = {'
 					+ 'first: !index,\n'
@@ -4934,6 +4986,7 @@
 				+ this.compileToken(token.loop.var, info) + ' = value;\n\n'
 				+ this.compileBody(token.body, info) + '\n\n'
 				+ loop_var + ' = old_loop_var;\n'
+				+ 'return true;\n'
 			+ '})';
 		},
 		
@@ -4951,7 +5004,7 @@
 			
 			if(RDP.Utils.tokenIsLiteral(token.loop.var))
 			{
-				var loop_code = '.forEach(function(value, index, arr){\n'
+				var loop_code = '.every(function(value, index, arr){\n'
 					+ 'var old_loop_var = ' + loop_var + ';\n'
 					+ loop_var + ' = {'
 						+ 'first: !index,\n'
@@ -4964,6 +5017,7 @@
 					+ (token.loop.key ? this.compileToken(token.loop.key, info) + ' = index;\n' : '')
 					+ '\n' + this.compileBody(token.body, info) + '\n\n'
 					+ loop_var + ' = old_loop_var;\n'
+					+ 'return true;\n'
 				+ '})';
 				
 				switch(token.loop.var.type)
@@ -4994,7 +5048,7 @@
 			return '(function(og_value){\n'
 				+ 'if(og_value === null || og_value === undefined) return;\n'
 				+ 'og_value = (typeof og_value === \'object\') || (typeof og_value[Symbol.iterator] === \'function\') ? og_value : [og_value];\n'
-				+ 'Object.keys(og_value).forEach(function(value, index, arr){\n'
+				+ 'Object.keys(og_value).every(function(value, index, arr){\n'
 					+ 'var old_loop_var = ' + loop_var + ';\n'
 					+ loop_var + ' = {'
 						+ 'first: !index,\n'
@@ -5007,8 +5061,17 @@
 					+ (token.loop.key ? this.compileToken(token.loop.key, info) + ' = value;\n' : '')
 					+ '\n'+ this.compileBody(token.body, info) + '\n\n'
 					+ loop_var + ' = old_loop_var;\n'
+					+ 'return true;\n'
 				+ '});\n'
 			+ '})(' + this.compileToken(token.loop.var, info) + ')';
+		},
+		
+		compileBreakStatement: function(token, info){
+			return 'return false';
+		},
+		
+		compileContinueStatement: function(token, info){
+			return 'return true';
 		},
 		
 		compileParenthesizedExpression: function(token, info){
