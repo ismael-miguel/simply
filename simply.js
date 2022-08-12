@@ -1488,6 +1488,16 @@
 					'E.g.: round(123.45, -1) = 120, round(123.45) = 123, round(123.45, 1) = 123.5'
 				]
 			}),
+			is_multiple_of: Object.assign(function is_multiple_of(multiple, number){
+				return (multiple % number) === 0;
+			}, {
+				__doc__: [
+					'Checks if $multiple is a multiple of $number',
+					'If it is a multiple, returns true',
+					'Otherwise, returns false',
+					'E.g.: is_multiple_of(1, 100) = false, is_multiple_of(123, 1230) = false, is_multiple_of(246, 123) = true'
+				]
+			}),
 			
 			// type convertion and information
 			int: Object.assign(function int(any, radix){
