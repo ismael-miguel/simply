@@ -218,17 +218,17 @@
 			last_raf_time: 0
 		},
 		data: {},
-		fn: function(){
-			RAF.data.last = RAF.data.now;
-			RAF.data.now = performance.now();
-			RAF.data.delta = RAF.data.now - RAF.data.last;
+		fn: function(timestamp){
+			RAF.data.last = RAF.data.now || performance.now();
+			RAF.data.now = timestamp || performance.now();
+			RAF.data.delta = Math.abs(RAF.data.now - RAF.data.last);
 			RAF.data.fps_ellapsed += RAF.data.delta;
 			RAF.data.changed = CHANGED;
 			
 			RAF.data.fps_total++;
 			
 			// https://dsp.stackexchange.com/questions/811/determining-the-mean-and-standard-deviation-in-real-time#comment175756_1187
-			RAF.data.delta_avg = RAF.data.delta_avg + (RAF.data.delta - RAF.data.delta_avg) / (RAF.data.fps_total + 1);
+			RAF.data.delta_avg += (RAF.data.delta - RAF.data.delta_avg) / RAF.data.fps_total;
 			
 			if(
 				RAF.data.fps_ellapsed <= 999
@@ -299,7 +299,7 @@
 				RAF.data.fps_shown_total++;
 			}
 			
-			RAF.data.last_raf_time = performance.now() - RAF.data.now;
+			RAF.data.last_raf_time = performance.now() - timestamp;
 			
 			RAF.id = window.requestAnimationFrame(RAF.fn);
 		},
@@ -1454,7 +1454,8 @@
 			}, {
 				__doc__: [
 					'Runs the $fn every frame',
-					'Multiple can be registered, and they will run from first to last'
+					'Multiple can be registered, and they will run from first to last',
+					'This relies on window.requestAnimationFrame() and '
 				]
 			}),
 			enumerable: true
@@ -1566,7 +1567,7 @@
 			}, {
 				__doc__: [
 					'Sets the fill style for the canvas',
-					'Default value: #000000'
+					'Default value: ' + SAVED_STATES_DEFAULTS.fillStyle
 				]
 			}),
 			enumerable: true
@@ -1585,7 +1586,7 @@
 			}, {
 				__doc__: [
 					'Sets the stroke style for the canvas',
-					'Default value: #000000'
+					'Default value: ' + SAVED_STATES_DEFAULTS.strokeStyle
 				]
 			}),
 			enumerable: true
@@ -1604,7 +1605,7 @@
 			}, {
 				__doc__: [
 					'Sets the font style for the canvas',
-					'Default value: 10px sans-serif'
+					'Default value: ' + SAVED_STATES_DEFAULTS.font
 				]
 			}),
 			enumerable: true
