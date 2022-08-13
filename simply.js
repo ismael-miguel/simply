@@ -3588,6 +3588,9 @@
 				/*case 'ElseBlockStatement': // <-- to fix!
 					return this.analyzeElseBlockStatement(token);*/
 				
+				case 'DefineFunctionStatement':
+					return this.analyzeDefineFunctionStatement(token);
+					
 				default:
 					return token;
 			}
@@ -3733,6 +3736,16 @@
 			}
 			
 			return new_token;
+		},
+		
+		
+		analyzeDefineFunctionStatement: function(token){
+			if(RDP.FNS.hasOwnProperty(token.fn.value))
+			{
+				throw new SyntaxError('Cannot redefine the function "' + token.fn.value + '". Please use a different name.');
+			}
+			
+			return token;
 		}
 	};
 	
