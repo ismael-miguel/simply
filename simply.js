@@ -1148,6 +1148,119 @@
 					'A word is anything that is separated by a space'
 				]
 			}),
+			str_repeat: Object.assign(function str_repeat(str, times){
+				times = +times;
+				str = str.toString();
+				
+				return times > 1
+					? str.repeat(times)
+					: (times === 1 ? str : '');
+			}, {
+				__doc__: [
+					'Repeats the $string up to $times',
+					'If $times is lower than 1, or isn\'t a number, returns an empty string'
+				]
+			}),
+			str_replace: Object.assign(function str_replace(str, search, replacement, count){
+				str = str.toString();
+				search = (search || '').toString();
+				replacement = (replacement || '').toString();
+				
+				count = count === undefined || count === null
+					? Number.MAX_SAFE_INTEGER
+					: Math.min(+count, Number.MAX_SAFE_INTEGER);
+				
+				
+				if(count < 1 || !str.length || search.length > str.length)
+				{
+					return '';
+				}
+				else if(str === search || !search.length)
+				{
+					return str;
+				}
+				
+				
+				var current = 0;
+				
+				return count === Number.MAX_SAFE_INTEGER
+					? str.replaceAll(search, replacement)
+					: str.replaceAll(search, function(search, index, str){
+						if(current >= count)
+						{
+							return search;
+						}
+						
+						current++;
+						
+						return replacement;
+					});
+			}, {
+				__doc__: [
+					'In $string, finds the $search and replaces with the $replacement, up to $count times',
+					'If $count is specified and is lower than 1, returns an empty string',
+					'The value of $count will be limited to ' + Number.MAX_SAFE_INTEGER
+				]
+			}),
+			str_replace_fn: Object.assign(function str_replace_fn(str, search, fn, count){
+				if(typeof fn !== 'function')
+				{
+					return null;
+				}
+				
+				str = str.toString();
+				search = (search || '').toString();
+				
+				count = count === undefined || count === null
+					? Number.MAX_SAFE_INTEGER
+					: Math.min(+count, Number.MAX_SAFE_INTEGER);
+				
+				// return str.replaceAll(search, fn);
+				
+				if(count < 1 || !str.length || search.length > str.length)
+				{
+					return '';
+				}
+				else if(str === search || !search.length)
+				{
+					return str;
+				}
+				
+				
+				var current = 0;
+				
+				return count === Number.MAX_SAFE_INTEGER
+					? str.replaceAll(search, function(search, index, str){
+						var result = fn(search, index, str);
+						
+						return result === null || result === undefined ? '' : result.toString();
+					})
+					: str.replaceAll(search, function(search, index, str){
+						if(current >= count)
+						{
+							return search;
+						}
+						
+						current++;
+						
+						var result = fn(search, index, str);
+						
+						return result === null || result === undefined ? '' : result.toString();
+					});
+			}, {
+				__doc__: [
+					'In $string, finds the $search and runs the $fn function, up to $count times',
+					'The function in $fn must return the value to replace',
+					'If $fn isn\'t a function, returns null',
+					'The function will have the following arguments:',
+					' • $match		The value that was found, should be equal to $search',
+					' • $index		The 0-based index where $search was found',
+					' • $string		The original string value',
+					'The $fn should return a string, but, if no value is passed, it replaces with an empty string',
+					'If $count is specified and is lower than 1, returns an empty string',
+					'The value of $count will be limited to ' + Number.MAX_SAFE_INTEGER
+				]
+			}),
 			
 			// math-related
 			is_prime: Object.assign(function is_prime(number){
@@ -1496,6 +1609,17 @@
 					'If it is a multiple, returns true',
 					'Otherwise, returns false',
 					'E.g.: is_multiple_of(1, 100) = false, is_multiple_of(123, 1230) = false, is_multiple_of(246, 123) = true'
+				]
+			}),
+			between: Object.assign(function between(min, max, number, exclusive){
+				return exclusive
+					? number > min && max > number
+					: number >= min && max >= number;
+			}, {
+				__doc__: [
+					'Checks if $number is between $max and $min',
+					'If $exclusive is set to true, will return false in case the $number is equal to $max or $min',
+					'E.g.: between(1, 10, 5) = true, between(1, 10, 1) = true, between(1, 10, 1, true) = false'
 				]
 			}),
 			
