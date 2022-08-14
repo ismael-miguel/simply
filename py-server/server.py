@@ -268,6 +268,10 @@ class ServerFakeFileHandler:
 		return ServerFakeFileHandler.handle_example("table", "basic")
 	
 	@staticmethod
+	def root_examples_table_multiple_simply(query):
+		return ServerFakeFileHandler.handle_example("table", "multiple")
+	
+	@staticmethod
 	def root_examples_table_customizing_simply(query):
 		return ServerFakeFileHandler.handle_example("table", "customizing")
 	
