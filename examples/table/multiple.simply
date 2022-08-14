@@ -1,0 +1,17 @@
+/*
+	Basic example that shows the usage to create multiple tables.
+	This example simply shows all the keys and values in the $loop variable.
+*/
+
+foreach $x in [1, 2, 3] {
+	$table = call !TABLE->create();
+	
+	call $table->setCaption("All the values in the $loop variable");
+	call $table->setHeader("Key", "Value");
+	
+	foreach $loop as $key => $value {
+		call $table->addRow($key, $value);
+	}
+
+	call $table->show();
+}
