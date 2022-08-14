@@ -478,6 +478,189 @@
 			
 			<hr>
 			
+			<div id="doc-loops">
+				<h2 class="h4">Loops</h2>
+				
+				<p>There are several loops, to allow you to execute repeated actions.</p>
+				
+				<div>
+					<h3 class="h5">For loop</h3>
+				
+					<div class="keywords">
+						Keywords:
+						<ul>
+							<li>for</li>
+							<li>loop from</li>
+						</ul>
+					</div>
+					
+					<p>
+						A for loop will run a set number of times, assigning a new value to a specified variable.<br>
+						In the absence of a scope opening, the first expression after the for loop will be executed.
+					</p>
+					
+					<p>There are a few acceptable signatures:</p>
+					<ul>
+						<li>
+							<p>
+								<b>for <code>$var</code> from <code>&lt;value&gt;</code> to <code>&lt;value&gt;</code> [step <code>&lt;value&gt;</code>]</b>
+							</p>
+							<p>
+								The step value is optional.
+							</p>
+						</li>
+						<li>
+							<b>for <code>$var</code> in <code>&lt;value&gt;</code>..<code>&lt;value&gt;</code></b>
+						</li>
+						<li>
+							<b>loop from <code>&lt;value&gt;</code> to <code>&lt;value&gt;</code> as <code>$var</code></b>
+						</li>
+					</ul>
+					
+					<p>
+						The variable can either the a global variable or a local variable.<br>
+						All values can be any statement which produces an integer.<br>
+						In case the values are the result of function calls, the function will be executed <b>ONCE</b> before the loop.
+					</p>
+					
+					<p>Here are a few examples:</p>
+					<pre><code>For $i from 0 to 10 step 2 { /* code */ }</code></pre>
+					<pre><code>Loop from 0 to 10 as $j { /* code */ }</code></pre>
+				</div>
+				
+				<div>
+					<h3 class="h5">Foreach loop</h3>
+				
+					<div class="keywords">
+						Keywords:
+						<ul>
+							<li>each</li>
+							<li>foreach</li>
+							<li>loop through</li>
+						</ul>
+					</div>
+					
+					<p>
+						A foreach loop will go through all values in an array, and assign the key and value to a variable.<br>
+						In the absence of a scope opening, the first expression after the for loop will be executed.
+					</p>
+					
+					<p>There are a few acceptable signatures:</p>
+					<ul>
+						<li>
+							<b>foreach <code>$value</code> in <code>&lt;array&gt;</code></b>
+						</li>
+						<li>
+							<p>
+								<b>foreach <code>&lt;array&gt;</code> as [value] <code>$value</code> [key <code>$key</code>]</b>
+							</p>
+							<p>
+								The key is optional.
+							</p>
+						</li>
+						<li>
+							<b>foreach <code>&lt;array&gt;</code> as <code>$value</code> => <code>$key</code></b>
+						</li>
+					</ul>
+					
+					<p>
+						The variables can either the a global variable or a local variable.<br>
+						All values can be any statement which produces an array.<br>
+						In case the values are the result of function calls, the function will be executed <b>ONCE</b> before the loop.
+					</p>
+					
+					<p>Here are a few examples:</p>
+					<pre><code>Foreach $number in [1, 2, 3, 4, 5] { /* code */ }</code></pre>
+					<pre><code>Loop through the result of calling &range(1, 10) as $number { /* code */ }</code></pre>
+				</div>
+				
+				<hr>
+				
+				<h3 class="h4">Loop control</h3>
+				
+				<p>You can control if a loop continues or stops with the following:</p>
+				
+				<div>
+					<h4 class="h6">Continue</h4>
+				
+					<div class="keywords">
+						Keywords:
+						<ul>
+							<li>continue</li>
+						</ul>
+					</div>
+					
+					<p>
+						This statement will tell the loop to go to the next iteration.
+					</p>
+					
+					<p>Example:</p>
+					<pre><code>Foreach $number in [1, 2, 3, 4, 5] {<br>	If call &is_even($number) then continue.<br>	Show $number.<br>}<br>// Expected output: 1 3 5</code></pre>
+				</div>
+				
+				<div>
+					<h4 class="h6">Break</h4>
+				
+					<div class="keywords">
+						Keywords:
+						<ul>
+							<li>break</li>
+						</ul>
+					</div>
+					
+					<p>
+						This statement will break out of the loop.<br>
+						There won't be any new iterations after this statement is executed.
+					</p>
+					
+					<p>Example:</p>
+					<pre><code>Foreach $number in [1, 2, 3, 4, 5] {<br>	If call &is_even($number) then break.<br>	Show $number.<br>}<br>// Expected output: 1</code></pre>
+				</div>
+				
+				<hr>
+				
+				<h3 class="h4"><code>$loop</code> variable</h4>
+				
+				<p>This variable will automatically be created for each loop.</p>
+				
+				<div class="table-responsive">
+					<table class="table table-striped table-hover table-bordered caption-top">
+						<caption>All the values in the $loop variable</caption>
+						<thead class="text-center fw-bold">
+							<tr>
+								<th class="py-1">Key</th>
+								<th class="py-1">Description</th>
+							</tr>
+						</thead>
+						<tbody class="fw-normal fst-normal">
+							<tr>
+								<td class="py-1"><code>first</code></td>
+								<td class="py-1">Will be <code>true</code> if it is the <b>first</b> iteration</td>
+							</tr>
+							<tr>
+								<td class="py-1"><code>last</code></td>
+								<td class="py-1">Will be <code>true</code> if it is the <b>last</b> iteration</td>
+							</tr>
+							<tr>
+								<td class="py-1"><code>index</code></td>
+								<td class="py-1">Contains the current iteration index</td>
+							</tr>
+							<tr>
+								<td class="py-1"><code>value</code></td>
+								<td class="py-1">Contains the current value for the iteration</td>
+							</tr>
+							<tr>
+								<td class="py-1"><code>length</code></td>
+								<td class="py-1">Contains the number of iteration that could occurr</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				
+			</div>
+			
+			<hr>
+			
 			<div id="doc-functions">
 				<h2 class="h4">Functions</h2>
 				
@@ -795,26 +978,6 @@
 					<p><b>Examples:</b></p>
 					<pre><code>def &fn($foo)<br>{<br>&#9;return call &is_palindrome($foo);<br>}</code></pre>
 					
-				</div>
-			</div>
-			
-			<hr>
-			
-			<div id="doc-examples">
-				<h2 class="h4">Examples</h2>
-				
-				<div>
-					<h3 class="h5">A quine</h3>
-					
-					<p>A <a href="https://en.wikipedia.org/wiki/Quine_(computing)" target="_blank">quine</a> is a program that outputs it's own source code, without receiving any input from anywhere.</p>
-					
-					<pre><code>Set $code to "Set $code to %c%s%c
-Display the format string $code with the values 34, $code, 34"
-Display the format string $code with the values 34, $code, 34</code></pre>
-					
-					<p>A much smaller version:</p>
-					
-					<pre><code>$f="$f=%c%s%c;echof$f,34,$f,34";echof$f,34,$f,34</code></pre>
 				</div>
 			</div>
 			
