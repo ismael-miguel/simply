@@ -2825,6 +2825,7 @@
 			
 			var word = this._jump('WORD');
 			
+			// foreach $var in $array
 			if(word && word.value === 'BOOL_HAS')
 			{
 				if(result.loop.var.type !== 'VariableExpression')
@@ -2837,12 +2838,14 @@
 			}
 			else if(this._lookahead && !~types_exit.indexOf(this._lookahead.type))
 			{
+				// foreach $array as $value
 				result.loop.value = this.VariableExpression();
 				
 				if(this._lookahead && !~types_exit.indexOf(this._lookahead.type))
 				{
 					var jumped = this._jump('WORD', 'OPERATOR');
 					
+					// foreach $array as $key=>$value
 					if(jumped && jumped.type === 'OPERATOR')
 					{
 						if(jumped.value !== '=>')
@@ -2855,6 +2858,7 @@
 					}
 					else
 					{
+						// foreach $array as value $value key $key
 						result.loop.key = this.VariableExpression();
 					}
 				}
