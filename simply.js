@@ -560,6 +560,49 @@
 			}, {
 				__doc__: 'Parses the $str as a JSON string'
 			}),
+			call: Object.assign(function call(name){
+				if(!name || !RDP.FNS.hasOwnProperty(name))
+				{
+					return null;
+				}
+				
+				var args = Array.from(arguments).slice(1);
+				
+				return RDP.FNS[name].apply(RDP.FNS, args);
+			}, {
+				__doc__: [
+					'Calls the function from the name',
+					'Takes any amount the arguments, after the function name',
+					'Does NOT work for functions created in the code'
+				]
+			}),
+			call_array: Object.assign(function call_array(name, args){
+				if(!name || !RDP.FNS.hasOwnProperty(name))
+				{
+					return null;
+				}
+				
+				if(!Array.isArray(args))
+				{
+					args = [args];
+				}
+				
+				return RDP.FNS[name].apply(RDP.FNS, args);
+			}, {
+				__doc__: [
+					'Calls the function from the name',
+					'Takes a single array with all the arguments',
+					'Does NOT work for functions created in the code'
+				]
+			}),
+			func_exists: Object.assign(function func_exists(name){
+				return RDP.FNS.hasOwnProperty(name);
+			}, {
+				__doc__: [
+					'Checks if the function name exists',
+					'Does NOT work for functions created in the code'
+				]
+			}),
 			
 			// array related
 			join: Object.assign(function join(array, str){
@@ -1484,7 +1527,7 @@
 				__doc__: 'Multiplies all values together'
 			}),
 			multi: Object.assign(function multi(){
-				return RDP.FNS.prod.call(RDP.FNS, Array.from(arguments));
+				return RDP.FNS.prod.apply(RDP.FNS, Array.from(arguments));
 			}, {
 				__doc__: 'Multiplies all values together'
 			}),
