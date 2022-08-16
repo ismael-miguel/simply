@@ -1938,8 +1938,9 @@
 				);
 			}, {
 				__doc__: [
-					'Loads an image from $url and creates a spritesheet of sprites with $width and $height',
+					'Loads an image from $url and creates a spritesheet of sprites with $width and $height each',
 					'Pass a $function as the last argument, to be able to use the sprites after loaded',
+					'If the first argument is an image made by !CANVAS->getImage(), then you don\'t need to pass a function',
 					'This method respects the coordinates mode set in !CANVAS->setCoordMode()'
 				]
 			}),
