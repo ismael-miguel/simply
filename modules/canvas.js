@@ -603,14 +603,36 @@
 			var size = text_measurer.getBoundingClientRect();
 			var size_holder = text_measurer_holder.getBoundingClientRect();
 			
-			return {
+			var width = Math.ceil(size.width);
+			var height = Math.ceil(size.height);
+			
+			var holder_height = Math.ceil(size_holder.height);
+			
+			var translateY = holder_height - height;
+			
+			var result = {
 				length: text.length,
-				width: size.width,
-				height: size_holder.height,
+				width: COORD_MODE.getWidthFromPX(width),
+				width_px: width,
+				height: COORD_MODE.getHeightFromPX(holder_height),
+				height_px: holder_height,
 				font: font,
 				translateX: 0,
-				translateY: size_holder.height - size.height
+				translateX_px: 0,
+				translateY: COORD_MODE.getYFromPX(translateY),
+				translateY_px: translateY,
+				centerX: 0,
+				centerX_px: 0,
+				centerY: 0,
+				centerY_px: 0
 			};
+			
+			result.centerX = result.width / 2;
+			result.centerX_px = result.width >> 1;
+			result.centerY = result.height / 2;
+			result.centerY_px = result.height >> 1;
+			
+			return result;
 		},
 		
 		
