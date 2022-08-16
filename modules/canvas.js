@@ -469,14 +469,14 @@
 					{
 						summary.textContent = '❌ Spritesheet';
 						
-						p.textContent = 'Failed to load the URL:\n' + data.image.src;
+						p.textContent = 'Failed to load the URL:\n' + data.url;
 					}
 					else
 					{
-						summary.textContent = '✔️ Spritesheet (' + data.image.naturalWidth + 'x' + data.image.naturalHeight + ')';
+						summary.textContent = '✔️ Spritesheet (' + data.image.width + 'x' + data.image.height + ')';
 						
 						var img = document.createElement('img');
-						img.src = data.image.src;
+						img.src = data.url;
 						
 						details.appendChild(img);
 						
@@ -1013,13 +1013,15 @@
 		},
 		
 		createSpritesheet: function(url, sprite_width, sprite_height, fn){
-			var image = new Image();
+			var image_canvas = document.createElement('canvas');
+			var image_ctx = image_canvas.getContext('2d');
+			
 			var sprites = [];
 			var sprites_map = Object.create(null);
 			
-			image.onload = function(){
-				var sprites_cols = (image.naturalWidth / sprite_width) | 0;
-				var sprites_rows = (image.naturalHeight / sprite_height) | 0;
+			var onload = function onload(){
+				var sprites_cols = (image_canvas.width / sprite_width) | 0;
+				var sprites_rows = (image_canvas.height / sprite_height) | 0;
 				
 				if(sprites_cols && sprites_rows)
 				{
@@ -1074,11 +1076,11 @@
 						enumerable: true
 					},
 					image: {
-						value: image,
+						value: image_canvas,
 						enumerable: false
 					},
 					url: {
-						value: url,
+						value: (typeof url === 'string' ? url : image_canvas.toDataURL('image/png')),
 						enumerable: false
 					},
 					getSprite: {
@@ -1108,7 +1110,7 @@
 							}
 							
 							methods.drawImagePart(
-								image,
+								image_canvas,
 								sprite.x, sprite.y,
 								sprite.width, sprite.height,
 								COORD_MODE.getX(x),
@@ -1151,7 +1153,7 @@
 							
 							sprites.forEach(function(sprite, i){
 								methods.drawImagePart(
-									image,
+									image_canvas,
 									sprite.x, sprite.y,
 									sprite.width, sprite.height,
 									x + (i * sprite.width), y
@@ -1213,9 +1215,11 @@
 				{
 					fn(data, EXPORTED);
 				}
+				
+				return data;
 			};
 			
-			image.onerror = function(){
+			var onerror = function onerror(e){
 				var data = Object.defineProperties(Object.create(null), {
 					error: {
 						value: true,
@@ -1228,6 +1232,10 @@
 					url: {
 						value: url,
 						enumerable: false
+					},
+					exception: {
+						value: e,
+						enumerable: true
 					}
 				});
 				
@@ -1237,9 +1245,52 @@
 				{
 					fn(data, EXPORTED);
 				}
+				
+				return error;
 			};
 			
+			
 			if(
+				url instanceof Image
+				|| url.tagName === 'IMG'
+				|| url.tagName === 'CANVAS'
+			)
+			{
+				image_canvas.width = url.naturalWidth || url.width;
+				image_canvas.height = url.naturalHeight || url.height;
+				
+				try
+				{
+					image_ctx.drawImage(url, 0, 0);
+					
+					return onload();
+				}
+				catch(e)
+				{
+					return onerror(e);
+				}
+			}
+			else
+			{
+				var image = new Image();
+				
+				image.onload = function(){
+					image_canvas.width = image.naturalWidth || image.width;
+					image_canvas.height = image.naturalHeight || image.height;
+					
+					image_ctx.drawImage(image, 0, 0);
+					
+					onload();
+				};
+				
+				image.onerror = function(){
+					onerror(null);
+				};
+				
+				image.src = url.toString();
+			}
+			
+			/*if(
 				url instanceof Image
 				|| url.tagName === 'IMG'
 			)
@@ -1253,7 +1304,7 @@
 			else
 			{
 				image.src = url.toString();
-			}
+			}*/
 		},
 		
 		suspendUpdates: function(){
