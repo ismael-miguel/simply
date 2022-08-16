@@ -5241,7 +5241,8 @@
 			
 			return '(function(og_value){\n'
 				+ 'if(og_value === null || og_value === undefined) return;\n'
-				+ 'og_value = (typeof og_value === \'object\') || (typeof og_value[Symbol.iterator] === \'function\') ? og_value : [og_value];\n'
+				// + 'og_value = (typeof og_value === \'object\') || (typeof og_value[Symbol.iterator] === \'function\') ? og_value : [og_value];\n'
+				+ 'og_value = typeof og_value === \'object\' ? og_value : (typeof og_value === \'string\' ? Array.from(og_value) : [og_value]);\n'
 				+ 'Object.keys(og_value).every(function(value, index, arr){\n'
 					+ 'var old_loop_var = ' + loop_var + ';\n'
 					+ loop_var + ' = {'
