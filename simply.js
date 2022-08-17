@@ -361,6 +361,7 @@
 			// STRINGS
 			[/^"(?:\\(?:["'0trnf]|x[0-9a-z]{2}|u[0-9a-z]{4})|[^"])*"/, 'STRING'],
 			[/^'(?:\\(?:["'0trnf]|x[0-9a-z]{2}|u[0-9a-z]{4})|[^'])?'/, 'CHAR'],
+			[/^<<<(["'])?(\w+)\1(?:\r?\n|\r).*(?:\r?\n|\r)\2/s, 'HEREDOC'],
 			
 			// PARENTHESIS
 			[/^\(/, '('],
@@ -1826,11 +1827,12 @@
 			},
 			
 			tokenIsLiteral: function tokenIsLiteral(token){
-				return !!~[
+				return token && !!~[
 					'[',
 					'NUMBER',
 					'STRING',
 					'CHAR',
+					'HEREDOC',
 					'VARIABLE',
 					'FUNCTION',
 					'CONSTANT',
@@ -1844,7 +1846,8 @@
 			},
 			
 			tokenIsExpression: function tokenIsExpression(token){
-				return this.tokenIsLiteral(token)
+				return token && (
+					this.tokenIsLiteral(token)
 					|| !!~[
 						'VariableExpression',
 						'ConstantExpression',
@@ -1852,28 +1855,33 @@
 						'CALL',
 						'(',
 						'ParenthesizedExpression'
-					].indexOf(token.type);
+					].indexOf(token.type)
+				);
 			},
 			
 			tokenOpensArguments: function tokenOpensArguments(token){
-				return (
-					token.type === '('
-				) || (
-					token.type === 'WORD'
-					&& ~RDP.Words.ARGS.indexOf(token.value.toLowerCase())
+				return token && (
+					(
+						token.type === '('
+					) || (
+						token.type === 'WORD'
+						&& ~RDP.Words.ARGS.indexOf(token.value.toLowerCase())
+					)
 				);
 			},
 			
 			tokenClosesArguments: function tokenClosesArguments(token){
-				return token.type === '(' || token.type === ';';
+				return token && (token.type === '(' || token.type === ';');
 			},
 			
 			tokenOpensIndexing: function tokenOpensIndexing(token){
-				return (
-					token.type === '['
-				) || (
-					token.type === 'OPERATOR'
-					&& ~RDP.Symbols.INDEX.indexOf(token.value)
+				return token && (
+					(
+						token.type === '['
+					) || (
+						token.type === 'OPERATOR'
+						&& ~RDP.Symbols.INDEX.indexOf(token.value)
+					)
 				);
 			}
 		}
@@ -3268,12 +3276,19 @@
 			{
 				case 'NUMBER':
 					return this.NumericLiteral();
+				
 				case 'STRING':
 					return this.StringLiteral();
+				
 				case 'CHAR':
 					return this.CharLiteral();
+				
+				case 'HEREDOC':
+					return this.HeredocLiteral();
+				
 				case '[': // array
 					return this.ArrayLiteral();
+				
 				case 'CONSTANT_VAL': // array
 					return this.ConstantLiteral();
 				
@@ -3325,6 +3340,24 @@
 			return {
 				type: 'CharLiteral',
 				value: token.value.slice(1, -1),
+				line: token.line,
+				column: token.column
+			};
+		},
+		
+		/**
+		 * HeredocLiteral
+		 *   : HEREDOC
+		 *   ;
+		 */
+		HeredocLiteral: function(){
+			var token = this._eat('HEREDOC');
+			
+			return {
+				type: 'StringLiteral',
+				value: token.value
+					.replace(/^<<<[^\r\n]+(?:\r?\n|\r)|(?:\r?\n|\r)[^\r\n]+$/g, '')
+					.replace(/(?<!\\)"/g, '\\\"'),
 				line: token.line,
 				column: token.column
 			};
