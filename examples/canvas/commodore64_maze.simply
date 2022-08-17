@@ -5,7 +5,6 @@
 	
 	However, only draws a single screen.
 	Click/tap on the canvas to regenerate the maze.
-	Please check other examples to understand how this works.
 */
 
 unless !CANVAS then {
@@ -13,55 +12,59 @@ unless !CANVAS then {
 	return;
 }
 
-$url = &join([
-	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgA",
-	"AAAIAQMAAACxnC8YAAAABlBMVEVgSe2ij/+XgPdPAAAACXBIWX",
-	"MAAA7DAAAOwwHHb6hkAAAAMUlEQVQI1w3KMREAMAjAwL9jYEMB",
-	"QiqrEpFSKWXJkERMDPnyUbcuffqwaFYUG5MdwwfzqAnxR+ME1w",
-	"AAAABJRU5ErkJggg=="
-], '');
-
 %fg = "rgb(162, 143, 255)";
 %bg = "rgb(96, 73, 237)";
 
-%c = call !CANVAS->init(384, 272, %fg);
+%c = call !CANVAS->init(384, 272, %bg);
 
 call %c->setCoordMode("grid", 8); //8x8
-call %c->fillRect(%x = 4, %y = 4.5, %width = 40, %height = 25, %bg);
+call %c->setFillStyle(%fg);
 
-def &fn($sheet) {
-	if $sheet->error {
-		echo "❌ Failed to load the sprite sheet";
-		return;
-	}
-	
-	%sheet = $sheet;
-	%drawing = false;
-	
-	def &draw {
-		if %drawing return;
-		
-		%drawing = true;
-		call %c->suspendUpdates();
-		
-		$array = [];
-		$count = &sub(%sheet->length, 1);
 
-		for $i in 1..%height {
-			for $j in 1..%width {
-				$array[$j] = &rand(0, $count);
-			}
-			
-			call %sheet->drawSpriteLine($array, %x, &add(%y, $i, -1));
-		}
-		
-		call %c->resumeUpdates();
-		%drawing = false;
-	}
+// Generate the 4 sprites
+for $i from 0 to .75 step .125 {
+	call %c->fillRect($i, &sub(.75, $i), .25, .25);
+	call %c->fillRect(&add(2, $i), &sub(.75, $i), .25, .25);
 	
-	call %c->onup(&draw);
-	&draw();
+	call %c->fillRect(&add(1, $i), $i, .25, .25);
+	call %c->fillRect(&add(3, $i), $i, .25, .25);
 }
 
-// $url, $width and $height of the sprites and a function
-call %c->createSpritesheet($url, 1, 1, &fn);
+// $image, $width and $height of the sprites
+%sheet = call %c->createSpritesheet(call %c->getImage(0, 0, 5, 1), 1, 1);
+
+
+// Clear everything and generate what we pretend to show
+call %c->clear(%fg);
+
+call %c->fillRect(%x = 4, %y = 4.5, %width = 40, %height = 25, %bg);
+
+
+// Keep track if the function &draw was called
+%drawing = false;
+
+def &draw() {
+	// Leave if we are already drawing
+	if %drawing return;
+	
+	%drawing = true;
+	call %c->suspendUpdates();
+	
+	$array = [];
+	$count = &sub(%sheet->length, 1);
+
+	for $i from 1 to %height {
+		for $j from 1 to %width {
+			$array[$j] = &rand(0, $count);
+		}
+		
+		call %sheet->drawSpriteLine($array, %x, &add(%y, $i, -1));
+	}
+	
+	call %c->resumeUpdates();
+	%drawing = false;
+}
+
+// Handles the mouse down/screen tap
+call %c->onup(&draw);
+&draw();
