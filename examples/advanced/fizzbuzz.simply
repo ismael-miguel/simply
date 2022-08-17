@@ -1,0 +1,32 @@
+/*
+	Fizz Buzz example.
+	https://en.wikipedia.org/wiki/Fizz_buzz
+	
+	The heredoc contains a JSON string.
+	https://www.json.org/json-en.html
+	This lets us create an object with the keys we want.
+	Each key is used to check as a multiple.
+	New ones can be added.
+*/
+
+$multiples = &json_decode(<<<JSON
+{
+	"3": "Fizz",
+	"5": "Buzz"
+}
+JSON);
+
+for $i from 1 to 100 {
+	// Initializes the value to empty
+	$output = "";
+	
+	// Adds $text to $output, if $i is a multiple of $mult
+	each $multiples as $mult=>$text {
+		if call &is_multiple_of($i, $mult) {
+			$output = &str_concat($output, $text);
+		}
+	}
+	
+	// Shows $output if it isn't empty, otherwise shows $i
+	echo &iff($output, $output, $i), !EOL;
+}

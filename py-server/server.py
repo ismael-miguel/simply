@@ -236,6 +236,10 @@ class ServerFakeFileHandler:
 	def root_examples_advanced_quine_simply(query):
 		return ServerFakeFileHandler.handle_example("advanced", "quine")
 	
+	@staticmethod
+	def root_examples_advanced_fizzbuzz_simply(query):
+		return ServerFakeFileHandler.handle_example("advanced", "fizzbuzz")
+	
 	
 	
 	@staticmethod
