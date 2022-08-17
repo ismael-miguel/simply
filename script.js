@@ -15,9 +15,9 @@
 		var $settings_form = $('#settings-drop-form');
 		
 		var beautify_settings = {
-			'indent_with_tabs': true,
-			'preserve_newlines': true,
-			'brace_style': 'end-expand,preserve-inline'
+			indent_with_tabs: true,
+			preserve_newlines: true,
+			brace_style: 'end-expand,preserve-inline'
 		};
 		
 		var optimize_settings = {
