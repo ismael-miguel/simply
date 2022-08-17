@@ -4668,13 +4668,14 @@
 			
 			'Object.defineProperty($CONST, \'EOL\', { value: $CONST.ENV.EOL, writable: false, enumerable: true })',
 			
+			'Object.defineProperty($CONST, \'ABC\', { value: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", writable: false, enumerable: true })',
 			'Object.defineProperty($CONST, \'ABCL\', { value: "abcdefghijklmnopqrstuvwxyz", writable: false, enumerable: true })',
 			'Object.defineProperty($CONST, \'ABCU\', { value: "ABCDEFGHIJKLMNOPQRSTUVWXYZ", writable: false, enumerable: true })',
 			'Object.defineProperty($CONST, \'NUMS\', { value: "0123456789", writable: false, enumerable: true })',
 			'Object.defineProperty($CONST, \'DIGITS\', { value: "0123456789", writable: false, enumerable: true })',
-			'Object.defineProperty($CONST, \'HEXDIGITS\', { value: "0123456789ABCDEFabcdef", writable: false, enumerable: true })',
-			'Object.defineProperty($CONST, \'HEXUDIGITS\', { value: "0123456789ABCDEF", writable: false, enumerable: true })',
-			'Object.defineProperty($CONST, \'HEXLDIGITS\', { value: "0123456789abcdef", writable: false, enumerable: true })',
+			'Object.defineProperty($CONST, \'HEX\', { value: "0123456789ABCDEFabcdef", writable: false, enumerable: true })',
+			'Object.defineProperty($CONST, \'HEXU\', { value: "0123456789ABCDEF", writable: false, enumerable: true })',
+			'Object.defineProperty($CONST, \'HEXL\', { value: "0123456789abcdef", writable: false, enumerable: true })',
 			'Object.defineProperty($CONST, \'PRINTABLE\', { value: " !\\\"#$%&\\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~", writable: false, enumerable: true })',
 			
 			'Object.defineProperty($CONST, \'FN\', { value: Object.assign({}, arguments[2]), writable: false, enumerable: true })',
