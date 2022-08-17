@@ -144,6 +144,7 @@
 							An heredoc starts with <code>&lt;&lt;&lt;</code>, then a word and a newline.<br>
 							It is terminated by repeating that word, with the exact spelling and capitalization, on a new line.<br>
 							The same word can be used multiple times.<br>
+							You can read more on <a href="https://en.wikipedia.org/wiki/Here_document" target="_blank">https://en.wikipedia.org/wiki/Here_document</a><br>
 							Example:
 						</p>
 						<pre><code>Echo &lt;&lt;&lt;WORD<br>This is a heredoc<br>WORD;</code></pre>
@@ -252,6 +253,17 @@
 									<td colspan="2">Environment functions and information, including the version number.</td>
 								</tr>
 								<tr>
+									<td><code>!EOL</code></td>
+									<td>Environment newline</td>
+									<td><code>'\n'</code></td>
+								</tr>
+								
+								<tr>
+									<td><code>!ABC</code></td>
+									<td>Alphabet</td>
+									<td><code>"ABCDE<wbr>FGHIJ<wbr>KLMNO<wbr>PQRST<wbr>UVWXYZ<wbr>abcde<wbr>fghij<wbr>klmno<wbr>pqrst<wbr>uvwxyz"</code></td>
+								</tr>
+								<tr>
 									<td><code>!ABCL</code></td>
 									<td>Alphabet in lowecase</td>
 									<td><code>"abcdefghijklmnopqrstuvwxyz"</code></td>
@@ -261,23 +273,37 @@
 									<td>Alphabet in uppercase</td>
 									<td><code>"ABCDEFGHIJKLMNOPQRSTUVWXYZ"</code></td>
 								</tr>
+								
 								<tr>
-									<td><code>!DIGITS</code></td>
+									<td><code>!DIGITS</code><wbr> or <code>!NUMS</code></td>
 									<td><a href="https://en.wikipedia.org/wiki/Arabic_numerals" target="_blank">Arabic numerals</a></td>
 									<td><code>"0123456789"</code></td>
 								</tr>
 								<tr>
-									<td><code>!EOL</code></td>
-									<td>Environent newline</td>
-									<td><code>'\r'</code> or <code>'\n'</code> or <code>"\r\n"</code></td>
+									<td><code>!HEX</code></td>
+									<td><a href="https://en.wikipedia.org/wiki/Hexadecimal" target="_blank">Hexadecimal digits</a></td>
+									<td><code>"0123456789ABCDEFabcdef"</code></td>
 								</tr>
+								<tr>
+									<td><code>!HEXU</code></td>
+									<td><a href="https://en.wikipedia.org/wiki/Hexadecimal" target="_blank">Hexadecimal digits</a> - Uppercase</td>
+									<td><code>"0123456789ABCDEF"</code></td>
+								</tr>
+								<tr>
+									<td><code>!HEXL</code></td>
+									<td><a href="https://en.wikipedia.org/wiki/Hexadecimal" target="_blank">Hexadecimal digits</a> - Lowercase</td>
+									<td><code>"0123456789abcdef"</code></td>
+								</tr>
+								
+								<tr>
+									<td><code>!PRINTABLE</code></td>
+									<td><a href="https://en.wikipedia.org/wiki/ASCII#Printable_characters" target="_blank">All printable ASCII characters</a></td>
+									<td><code>" !\"#$%&\'()*+,-./<wbr>0123456789<wbr>:;&lt;=&gt;<wbr>?@ABCDEFGHIJKLM<wbr>NOPQRSTUVWXYZ<wbr>[\\]^_`<wbr>abcdefghijklmn<wbr>opqrstuvwxyz<wbr>{|}~"</code></td>
+								</tr>
+								
 								<tr>
 									<td><code>!FN</code></td>
 									<td colspan="2">Predefined functions for the language. Please check <a href="#doc-functions">"Available functions"</a>.</td>
-								</tr>
-								<tr>
-									<td><code>!NUMS</code></td>
-									<td colspan="2">Please check <code>!DIGITS</code> for information.</td>
 								</tr>
 							</tbody>
 						</table>
