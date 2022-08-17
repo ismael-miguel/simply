@@ -14,7 +14,15 @@ unless !CANVAS then {
 	Base-64 encoded 40x40 image URL.
 	Try using other 8x8 font sprites.
 */
-$spritesheet_url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoAQMAAAC2MCouAAAABlBMVEVgSe2ij/+XgPdPAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAiElEQVQIHQXBIU4FQRRFwaNaEfQVhDUgETes5SU/OYYROFpM+i8dqsjdfaheg47DuceNjoN6Dd7dBwA49VEm169M9lN2fr5lsh8yuR4y9VEA4O5RNIoT5W4se8VwmQabBABIu0r0VT7Xeh/y8uZNPtZTMi45p6sAQAugAlqgX3+Aq4AaaAkA8A/d6DKyduTF+gAAAABJRU5ErkJggg==";
+$url = &str_concat(
+	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgA",
+	"AAAoAQMAAAC2MCouAAAABlBMVEVgSe2ij/+XgPdPAAAACXBIWX",
+	"MAAA7DAAAOwwHHb6hkAAAAiElEQVQIHQXBIU4FQRRFwaNaEfQV",
+	"hDUgETes5SU/OYYROFpM+i8dqsjdfaheg47DuceNjoN6Dd7dBw",
+	"A49VEm169M9lN2fr5lsh8yuR4y9VEA4O5RNIoT5W4se8VwmQab",
+	"BABIu0r0VT7Xeh/y8uZNPtZTMi45p6sAQAugAlqgX3+Aq4AaaA",
+	"kA8A/d6DKyduTF+gAAAABJRU5ErkJggg=="
+);
 
 
 // Colors extracted from the image
