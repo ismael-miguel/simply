@@ -1,0 +1,126 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Simply",
+	"patterns": [
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#invalid"
+		},
+		{
+			"include": "#functions"
+		},
+		{
+			"include": "#variables"
+		},
+		{
+			"include": "#constants"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#words"
+		}
+	],
+	"repository": {
+		"strings": {
+			"patterns": [{
+				"name": "string.unquoted.heredoc.simply",
+				"begin": "<<<([\"']?)(\\w+)\\1\\s",
+				"end": "^\\2"
+			}, {
+				"name": "string.quoted.double.simply",
+				"begin": "\"",
+				"end": "\"",
+				"patterns": [
+					{
+						"name": "constant.character.escape.simply",
+						"match": "\\\\."
+					}
+				]
+			}, {
+				"name": "string.quoted.single.simply",
+				"begin": "'",
+				"end": "'",
+				"patterns": [
+					{
+						"name": "constant.character.escape.simply",
+						"match": "\\\\."
+					}
+				]
+			}]
+		},
+		"comments": {
+			"patterns": [{
+				"name": "comment.block.simply",
+				"begin": "\\/\\*",
+				"end": "\\*\\/"
+			}, {
+				"name": "comment.line.double-slash.simply",
+				"begin": "\\/\\/",
+				"end": "\\n"
+			}]
+		},
+		"functions": {
+			"patterns": [{
+				"name": "entity.name.function.simply",
+				"match": "(&[a-zA-Z_][a-zA-Z\\d_]*)"
+			}, {
+				"name": "entity.name.function.simply",
+				"match": "(?<=(?:->|::))([a-zA-Z_][a-zA-Z\\d_]*)"
+			}]
+		},
+		"variables": {
+			"patterns": [{
+				"name": "variable.simply",
+				"match": "([\\$%][a-zA-Z_][a-zA-Z\\d_]*)"
+			}]
+		},
+		"constants": {
+			"patterns": [{
+				"name": "variable.simply",
+				"match": "(![A-Z_][A-Z\\d_]*)"
+			}, {
+				"name": "constant.language.simply",
+				"match": "(?i)\\b(true|false|null|infinit[ey]|nan)\\b"
+			}, {
+				"name": "constant.numeric.simply",
+				"match": "(?i)([+\\-]?(?:0x[\\da-f]+(?:\\.[\\da-f]+)?|0b[01]+(?:\\.[01]+)?|0*\\.\\d+|\\d+(?:\\.\\d+)?))"
+			}]
+		},
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.simply",
+				"match": "(?i)\\b(if|in case|else|otherwise|unless|for|loop from|each|foreach|loop through|return|send|pass|break|continue)\\b"
+			}, {
+				"name": "keyword.other.simply",
+				"match": "(?i)\\b(echof?|printf?|out(?:put)?f?|showf?|displayf?|writef?|tellf?|call(?:ing)?|run(?:ning)?|exec(?:ute|uting)?|set|give|assign|def(?:ine)?|create|make)\\b"
+			}, {
+				"name": "keyword.other.simply",
+				"match": "(?i)\\b(arg|argument|args|arguments|param|params|parameter|parameters)\\b"
+			}, {
+				"name": "keyword.other.simply",
+				"match": "(?i)\\b(format|formatted|in|has|from|to|step|as|key)\\b"
+			}]
+		},
+		"words": {
+			"patterns": [{
+				"name": "comment.simply",
+				"match": "\\b([a-zA-Z]+)\\b"
+			}]
+		},
+		"invalid": {
+			"patterns": [{
+				"comment": "Constants must be uppercase",
+				"name": "invalid.simply",
+				"match": "(![a-z_][a-z\\d_]*)"
+			}]
+		}
+	},
+	"scopeName": "source.simply"
+}

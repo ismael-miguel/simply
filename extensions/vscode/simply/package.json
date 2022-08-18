@@ -1,0 +1,25 @@
+{
+  "name": "simply",
+  "displayName": "SIMPLY",
+  "description": "Simply script file",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "simply",
+      "aliases": ["Simply", "simply"],
+      "extensions": [".simply"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "simply",
+      "scopeName": "source.simply",
+      "path": "./syntaxes/simply.tmLanguage.json"
+    }]
+  }
+}
