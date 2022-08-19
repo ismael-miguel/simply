@@ -20,6 +20,199 @@
 	
 	var SETTINGS = {};
 	
+	
+	
+	function TableChild(child){
+		Object.defineProperties(this, {
+			child: {
+				value: child
+			},
+			__doc__: {
+				value: [
+					'TableChild object, from the Table module',
+					'All functions available: ' + Object.keys(TableChild.prototype).join('(), ') + '()'
+				]
+			}
+		});
+	};
+	
+	Object.defineProperties(TableChild.prototype, {
+		setText: {
+			value: Object.assign(function setText(text){
+				this.child.textContent = text === null || text === undefined ? '' : text.toString();
+			}, {
+				__doc__: 'Sets a new text'
+			}),
+			enumerable: true
+		},
+		addText: {
+			value: Object.assign(function addText(text){
+				if(text === null || text === undefined)
+				{
+					return;
+				}
+				
+				this.child.textContent += text.toString();
+			}, {
+				__doc__: 'Adds text'
+			}),
+			enumerable: true
+		},
+		getText: {
+			value: Object.assign(function getText(){
+				return this.child.textContent;
+			}, {
+				__doc__: 'Gets the text'
+			}),
+			enumerable: true
+		},
+		
+		setClasses: {
+			value: Object.assign(function setClasses(names){
+				this.child.className = names === null || names === undefined ? '' : names.toString();
+			}, {
+				__doc__: 'Sets all the classes, separated by a space'
+			}),
+			enumerable: true
+		},
+		getClasses: {
+			value: Object.assign(function getClasses(){
+				return this.child.className;
+			}, {
+				__doc__: 'Gets all the classes, separated by a space'
+			}),
+			enumerable: true
+		},
+		addClass: {
+			value: Object.assign(function addClass(name){
+				return this.child.classList.add(name);
+			}, {
+				__doc__: 'Adds a single class'
+			}),
+			enumerable: true
+		},
+		removeClass: {
+			value: Object.assign(function removeClass(name){
+				return this.child.classList.remove(name);
+			}, {
+				__doc__: 'Removes a single class'
+			}),
+			enumerable: true
+		},
+		
+		remove: {
+			value: Object.assign(function remove(){
+				if(!this.child.parentNode)
+				{
+					return;
+				}
+				
+				this.child.parentNode.removeChild(this.child);
+			}, {
+				__doc__: 'Removes the element'
+			}),
+			enumerable: true
+		}
+	});
+	
+	
+	
+	function TableCell(cell){
+		Object.defineProperties(this, {
+			child: {
+				value: cell
+			},
+			__doc__: {
+				value: [
+					'TableCell object, from the Table module',
+					'All functions available: ' + Object.keys(TableCell.prototype).join('(), ') + '()'
+				]
+			}
+		});
+	}
+	
+	TableCell.prototype = Object.create(TableChild.prototype, {
+		isFirstCol: {
+			value: Object.assign(function isFirstCol(){
+				return this.child.parentNode
+					? this.child.parentNode.firstChild === this.child
+					: null;
+			}, {
+				__doc__: 'Checks if the cell is in the first column'
+			}),
+			enumerable: true
+		},
+		isLastCol: {
+			value: Object.assign(function isLastCol(){
+				return this.child.parentNode
+					? this.child.parentNode.lastChild === this.child
+					: null;
+			}, {
+				__doc__: 'Checks if the cell is in the last column'
+			}),
+			enumerable: true
+		},
+		getColumn: {
+			value: Object.assign(function getColumn(){
+				return this.child.parentNode
+					? Array.from(this.child.parentNode.children).indexOf(this.child)
+					: null;
+			}, {
+				__doc__: [
+					'Gets the column number where the cell is',
+					'The value is 0-based, which means, the first cell is on column 0'
+				]
+			}),
+			enumerable: true
+		},
+		getRow: {
+			value: Object.assign(function getRow(){
+				return this.child.parentNode && this.child.parentNode.parentNode
+					? Array.from(this.child.parentNode.parentNode.children).indexOf(this.child.parentNode)
+					: null;
+			}, {
+				__doc__: [
+					'Gets the row number where the cell is',
+					'The value is 0-based, which means, the first cell is on row 0'
+				]
+			}),
+			enumerable: true
+		}
+	});
+	
+	
+	
+	
+	function TableHeaderCell(cell){
+		Object.defineProperties(this, {
+			child: {
+				value: cell
+			},
+			__doc__: {
+				value: [
+					'TableHeaderCell object, from the Table module',
+					'All functions available: ' + Object.keys(TableHeaderCell.prototype).join('(), ') + '()'
+				]
+			}
+		});
+	}
+	
+	TableHeaderCell.prototype = Object.create(TableCell.prototype, {
+		getRow: {
+			value: Object.assign(function getRow(){
+				return 0;
+			}, {
+				__doc__: [
+					'Gets the row number where the cell is',
+					'The value is 0-based, which means, the first cell is on row 0'
+				]
+			}),
+			enumerable: true
+		}
+	});
+	
+	
+	
 	function TableGenerator(settings){
 		Object.defineProperties(this, {
 			settings: {
@@ -74,6 +267,22 @@
 			}),
 			enumerable: true
 		},
+		removeCaption: {
+			value: Object.assign(function removeCaption(){
+				if(this.caption.parentNode)
+				{
+					this.caption.parentNode.removeChild(this.caption);
+				}
+				
+				this.caption.textContent = '';
+			}, {
+				__doc__: [
+					'Removes the caption text for the table',
+					'All contents previously set will be deleted'
+				]
+			}),
+			enumerable: true
+		},
 		
 		setHeader: {
 			value: Object.assign(function setHeader(){
@@ -117,9 +326,27 @@
 				}, this);
 			}, {
 				__doc__: [
-					'Adds all the passed arguments and adds them to the header',
+					'Takes all the passed arguments and adds them to the header',
 					'All contents previously set will be kept'
 				]
+			}),
+			enumerable: true
+		},
+		getHeader: {
+			value: Object.assign(function getHeader(column){
+				column = +column;
+				
+				if(
+					!this.header.firstChild
+					&& !this.header.firstChild.children[column]
+				)
+				{
+					return null;
+				}
+				
+				return new TableHeaderCell(this.header.firstChild.children[column]);
+			}, {
+				__doc__: 'Gets the cell at $row, $column'
 			}),
 			enumerable: true
 		},
@@ -189,6 +416,29 @@
 				}, this);
 			}, {
 				__doc__: 'Adds multiple cells to the last row'
+			}),
+			enumerable: true
+		},
+		getCell: {
+			value: Object.assign(function getCell(row, column){
+				row = +row;
+				column = +column;
+				
+				var tr = this.body.children[row];
+				
+				if(!tr)
+				{
+					return null;
+				}
+				
+				if(!tr.children[column])
+				{
+					return null;
+				}
+				
+				return new TableCell(tr.children[column]);
+			}, {
+				__doc__: 'Gets the cell at $row, $column'
 			}),
 			enumerable: true
 		},
