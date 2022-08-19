@@ -99,6 +99,14 @@
 			}),
 			enumerable: true
 		},
+		hasClass: {
+			value: Object.assign(function hasClass(name){
+				return this.child.classList.contains(name);
+			}, {
+				__doc__: 'Verifies if contains the specified class'
+			}),
+			enumerable: true
+		},
 		
 		remove: {
 			value: Object.assign(function remove(){
@@ -355,8 +363,6 @@
 			value: Object.assign(function addRow(){
 				var tr = document.createElement('tr');
 				
-				console.log(this.settings.classBodyRow);
-				
 				Array.from(arguments).flat(2).forEach(function(value, i){
 					var td = document.createElement('td');
 					td.textContent = value;
@@ -483,6 +489,100 @@
 				{
 					this.holder.parentNode.removeChild(this.table);
 				}
+			}, {
+				__doc__: 'Hides the table, if shown'
+			}),
+			enumerable: true
+		},
+		
+		onclick: {
+			value: Object.assign(function onclick(fn){
+				var me = this;
+				
+				if(fn === null)
+				{
+					me.body.onclick = null;
+					return;
+				}
+				
+				if(!fn || (typeof fn !== 'function'))
+				{
+					return false;
+				}
+				
+				var handle_click = function(e){
+					var td = e.target;
+					
+					var data = {
+						trusted: e.isTrusted,
+						button: e.button,
+						alt: e.altKey,
+						meta: e.metaKey,
+						shift: e.shiftKey,
+						ctrl: e.ctrlKey,
+						column: Array.from(td.parentNode.children).indexOf(td),
+						row: Array.from(td.parentNode.parentNode.children).indexOf(td.parentNode)
+					};
+					
+					fn(data, me);
+				};
+				
+				me.body.onclick = function(e){
+					if(e.target && e.target.tagName !== 'TD')
+					{
+						return;
+					}
+					
+					handle_click(e);
+				};
+				
+				/*if('ontouchstart' in me.body && 'ontouchend' in me.body && 'ontouchmove' in me.body)
+				{
+					var start_touch = null;
+						
+					var do_cleanup = function(){
+						start_touch = null;
+						
+						me.body.ontouchend = null;
+						me.body.ontouchmove = null;
+					};
+					
+					me.body.ontouchstart = function(e){
+						if(start_touch)
+						{
+							return;
+						}
+						
+						start_touch = e.touches[0] || e.changedTouches[0];
+						
+						var handle_stop = function(e){
+							var touch = e.touches[0] || e.changedTouches[0];
+							
+							if(touch.screenX !== start_touch.screenX || touch.screenY !== start_touch.screenY)
+							{
+								return;
+							}
+							
+							do_cleanup();
+							
+							handle_click(e);
+						};
+						
+						var handle_move = function(e){
+							var touch = e.touches[0] || e.changedTouches[0];
+							
+							if(touch.screenX !== start_touch.screenX || touch.screenY !== start_touch.screenY)
+							{
+								do_cleanup();
+							}
+						};
+						
+						me.body.ontouchend = handle_stop;
+						me.body.ontouchmove = handle_move;
+					};
+				}*/
+				
+				return true;
 			}, {
 				__doc__: 'Hides the table, if shown'
 			}),
