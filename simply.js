@@ -1305,6 +1305,26 @@
 					'The value of $count will be limited to ' + Number.MAX_SAFE_INTEGER
 				]
 			}),
+			format: Object.assign(function format(){
+				if(!arguments.length)
+				{
+					return '';
+				}
+				
+				var format = arguments[0].toString();
+				
+				if(!format.length)
+				{
+					return length;
+				}
+				
+				return sprintf.apply(window, Array.from(arguments));
+			}, {
+				__doc__: [
+					'Returns a string based on the format provided in the first argument',
+					'Works the same as https://www.php.net/manual/en/function.sprintf.php'
+				]
+			}),
 			
 			// math-related
 			is_prime: Object.assign(function is_prime(number){
