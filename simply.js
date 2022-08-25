@@ -800,6 +800,18 @@
 			}, {
 				__doc__: 'Runs the $fn for each element in the $array, returning a new copy with the new values'
 			}),
+			array_search: Object.assign(function array_search(array, value){
+				array = Array.from(array);
+				var keys = RDP.FNS.array_keys(array);
+				
+				var indexes = keys.filter(function(key){
+					return array[key] === value;
+				});
+				
+				return indexes.length ? indexes[0] : null;
+			}, {
+				__doc__: 'Searches the $array and gives the first key that contains $value'
+			}),
 			
 			// string related
 			mirror_text: Object.assign(function mirror_text(str){
@@ -1325,6 +1337,78 @@
 					'Works the same as https://www.php.net/manual/en/function.sprintf.php'
 				]
 			}),
+			base64_encode: Object.assign(function base64_encode(str){
+				str = str.toString();
+				
+				if(!str.length)
+				{
+					return '';
+				}
+				
+				/*if(!/[^\x00-\xff]/u.test(str))
+				{
+					return window.btoa(str);
+				}*/
+				
+				// https://developer.mozilla.org/en-US/docs/Web/API/btoa#unicode_strings
+				var units = new Uint16Array(str.length);
+				for (var i = 0, l = units.length; i < l; i++)
+				{
+					units[i] = str.charCodeAt(i);
+				}
+				var codes = new Uint8Array(units.buffer);
+				var result = '';
+				for (var i = 0, l = codes.byteLength; i < l; i++)
+				{
+					result += String.fromCharCode(codes[i]);
+				}
+				
+				return window.btoa(result);
+			}, {
+				__doc__: [
+					'Converts a string to base64',
+					'If you pass an UTF-8 string, it will be slower, and the output may not correspond to the expected',
+					'Due to how strings are represented internally, the output will probably be invalid for other applications'
+				]
+			}),
+			base64_decode: Object.assign(function base64_decode(str){
+				str = str.toString();
+				
+				if(!str.length)
+				{
+					return '';
+				}
+				
+				str = window.atob(str);
+				
+				// https://developer.mozilla.org/en-US/docs/Web/API/btoa#unicode_strings
+				var bytes = new Uint8Array(str.length);
+				for (var i = 0, l = bytes.length; i < l; i++)
+				{
+					bytes[i] = str.charCodeAt(i);
+				}
+				
+				var chars = new Uint16Array(bytes.buffer);
+				var result = '';
+				for (var i = 0, l = chars.length; i < l; i++)
+				{
+					result += String.fromCharCode(chars[i]);
+				}
+				
+				return result;
+			}, {
+				__doc__: [
+					'Converts a base64 string to a regular string',
+					'Due to how strings are represented internally, the output will probably be invalid, if it was made by other applications'
+				]
+			}),
+			str_search: Object.assign(function str_search(str, value){
+				var index = str.toString().indexOf(value.toString());
+				
+				return index === -1 ? null : index;
+			}, {
+				__doc__: 'Searches the $str and gives the first key that contains $value'
+			}),
 			
 			// math-related
 			is_prime: Object.assign(function is_prime(number){
@@ -1685,6 +1769,69 @@
 					'If $exclusive is set to true, will return false in case the $number is equal to $max or $min',
 					'E.g.: between(1, 10, 5) = true, between(1, 10, 1) = true, between(1, 10, 1, true) = false'
 				]
+			}),
+			tobase: Object.assign(function tobase(number, base){
+				number = +number | 0;
+				base = +base;
+				
+				if(base < 1 || base > 36)
+				{
+					return null;
+				}
+				else if(base === 1)
+				{
+					return (number < 0 ? '-' : '') + '1'.repeat(Math.abs(number));
+				}
+				
+				return (+number).toString(base);
+			}, {
+				__doc__: [
+					'Converts the integer $number to the $base',
+					'The $base must be between 1 and 36, otherwise, returns null',
+					'E.g.: tobase(10, 10) = "10", tobase(10, 2) = "1010", tobase(10, 1) = "1111111111"'
+				]
+			}),
+			tb: Object.assign(function tb(number, base){
+				return RDP.FNS.tobase(number, base);
+			}, {
+				__doc__: 'Alias to &tobase'
+			}),
+			convert_base: Object.assign(function convert_base(number, from_base, to_base){
+				number = number.toString();
+				from_base = +from_base;
+				to_base = +to_base;
+				
+				
+				if(from_base === to_base)
+				{
+					return number;
+				}
+				
+				if(from_base < 1 || from_base > 36)
+				{
+					return null;
+				}
+				else if(from_base === 1)
+				{
+					number = number.length.toString();
+				}
+				else
+				{
+					number = parseInt(number, from_base);
+				}
+				
+				return RDP.FNS.tobase(number, to_base);
+			}, {
+				__doc__: [
+					'Converts the integer $number from one base to another base',
+					'The bases must be between 1 and 36, otherwise, returns null',
+					'E.g.: convert_base(10, 10, 10) = "10", convert_base(10, 10, 2) = "1010", tobase("1111111111", 1, 10) = "10"'
+				]
+			}),
+			cb: Object.assign(function cb(number, from_base, to_base){
+				return RDP.FNS.convert_base(number, from_base, to_base);
+			}, {
+				__doc__: 'Alias to &convert_base'
 			}),
 			
 			// type convertion and information
