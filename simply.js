@@ -812,6 +812,22 @@
 			}, {
 				__doc__: 'Searches the $array and gives the first key that contains $value'
 			}),
+			array_fill: Object.assign(function array_fill(value, length){
+				length = Math.abs(+length);
+				
+				if(length < 1)
+				{
+					return [];
+				}
+				else if(length === 1)
+				{
+					return [value];
+				}
+				
+				return new Array(length).fill(value);
+			}, {
+				__doc__: 'Creates an array with $length, filled with $value'
+			}),
 			
 			// string related
 			mirror_text: Object.assign(function mirror_text(str){
