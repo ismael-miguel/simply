@@ -111,7 +111,7 @@
 		"words": {
 			"patterns": [{
 				"name": "comment.simply",
-				"match": "\\b([a-zA-Z]+)\\b"
+				"match": "(?i)\\b(?!begin|end|open|close|start|finish)([a-z]+)\\b"
 			}]
 		},
 		"invalid": {
