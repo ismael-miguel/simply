@@ -601,7 +601,45 @@
 			}, {
 				__doc__: [
 					'Checks if the function name exists',
-					'Does NOT work for functions created in the code'
+					'Does NOT work for functions created in the code',
+					'Alternatively, check if the function is null'
+				]
+			}),
+			random_bytes: Object.assign(function random_bytes(length, use_crypto){
+				length = +length;
+				
+				if(!length || length < 1)
+				{
+					return null;
+				}
+				// https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues#exceptions
+				else if(length > 65536)
+				{
+					length = 65536;
+				}
+				
+				if(!use_crypto)
+				{
+					return new Array(length).fill(0).map(function(){
+						return Math.floor(Math.random() * 255);
+					});
+				}
+				
+				if(!window.crypto)
+				{
+					return null;
+				}
+				
+				var array = new Uint8Array(length);
+				
+				window.crypto.getRandomValues(array);
+				
+				return array;
+			}, {
+				__doc__: [
+					'Generates an array of size $length (from 1 to 65536), filled with random values',
+					'If $use_crypto is set to true, then the function will attempt to use the browser crypto module',
+					'Returns null in case the $length is invalid or the crypto module isn\'t available when requested'
 				]
 			}),
 			
@@ -827,6 +865,24 @@
 				return new Array(length).fill(value);
 			}, {
 				__doc__: 'Creates an array with $length, filled with $value'
+			}),
+			array_rand: Object.assign(function array_rand(array){
+				if(!array || !array.length || (typeof array !== 'object'))
+				{
+					return null;
+				}
+				
+				var keys = Object.keys(array);
+				
+				var index = Math.floor(Math.random() * keys.length);
+				
+				return array[keys[index]];
+				
+			}, {
+				__doc__: [
+					'Returns a random element from the $array, if there is any',
+					'⚠️ THIS FUNCTION IS NOT CRYPTOGRAPHICALLY SECURE'
+				]
 			}),
 			
 			// string related
@@ -1425,6 +1481,27 @@
 			}, {
 				__doc__: 'Searches the $str and gives the first key that contains $value'
 			}),
+			str_shuffle: Object.assign(function str_shuffle(str){
+				str = str.toString();
+				var length = str.length;
+				var array = Object.keys(new Array(length).fill(0));
+				var result = '';
+				
+				for(var i = 0; i < length; i++)
+				{
+					var index = Math.floor(Math.random() * array.length);
+					
+					result += str[array[index]];
+					array.splice(index, 1);
+				}
+				
+				return result;
+			}, {
+				__doc__: [
+					'Shuffles the characters in the $string, randomly',
+					'⚠️ THIS FUNCTION IS NOT CRYPTOGRAPHICALLY SECURE'
+				]
+			}),
 			
 			// math-related
 			is_prime: Object.assign(function is_prime(number){
@@ -1590,7 +1667,8 @@
 			}, {
 				__doc__: [
 					'Returns a random integer number between $min and $max',
-					'If not set, $min will be ' + Number.MIN_SAFE_INTEGER + ' and $max will be ' + Number.MAX_SAFE_INTEGER
+					'If not set, $min will be ' + Number.MIN_SAFE_INTEGER + ' and $max will be ' + Number.MAX_SAFE_INTEGER,
+					'⚠️ THIS FUNCTION IS NOT CRYPTOGRAPHICALLY SECURE'
 				]
 			}),
 			add: Object.assign(function add(){
@@ -1906,6 +1984,17 @@
 				return null;
 			}, {
 				__doc__: 'Returns a string with the type of the value'
+			}),
+			
+			is_null: Object.assign(function is_null(any){
+				return any === null || any === undefined;
+			}, {
+				__doc__: 'Checks if the $value is null'
+			}),
+			is_array: Object.assign(function is_array(any){
+				return any !== null && any !== undefined && (typeof any === 'object');
+			}, {
+				__doc__: 'Checks if the $value is null'
 			})
 		},
 		
