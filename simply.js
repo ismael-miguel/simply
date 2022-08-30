@@ -3,82 +3,6 @@
 (function(window, undefined){
 	'use strict';
 	
-	/*const RE = /\$?[a-z][_a-z\d]*|0(?:x[\da-f]+|b[01]+)|\d+(?:\.\d+)?(?:e\d+)?|->|\/[\*\/]|\*\/|[ \t]+|\r?\n|[,\[\]]|"[^"]*"/gmiud;
-	const token_types = {
-		decision: ['if', 'case', 'switch', 'else', 'elseif'],
-		loop: ['while', 'for', 'each'],
-		comment: ['//', '/*', '* /'],
-		open_scope: ['then', 'begin', 'do'],
-		assign: ['store', 'set', 'define', 'create'],
-		output: ['say', 'show', 'display', 'echo'],
-	};
-	
-	const parser = {
-		tokenizer: function(text){
-			
-		}
-	};*/
-	
-	
-	/* a test of 55*44.0 2e2
-	
-	set $a to ["a","b","c","d","e"]
-
-	create function abcd[$a, $b default "", $c] begin
-		if $s is equal to 44 then
-		else if $b is equal to 55 begin
-		end
-
-		switch $a begin
-			case "a" then
-				say "hello
-	world"
-			end
-		end
-	end
-	*/
-	
-	/*
-		# example code
-		define a function called &fn with arguments ($a, $b, $c)
-		begin
-			create variable $x and set it to 5
-			return $x
-		end
-
-		create a constant !ABC and set the value 5 into it
-
-		in case the constant !ABC is not set
-		begin
-			echo "Please define the constant !ABC"
-		end
-
-		for each value in $a as key $key and value $value
-		begin
-			if the $key is 5
-				echo $key
-		end
-	*/
-	
-	/*
-		> Note 1:
-		
-		IMPORTANT: JavaScript's type checking screws up boolean verification
-		
-		It is hard to detect if a value is really falsy, due to this.
-		For example, the values "new Boolean(false)" and "[]" can both be true and false.
-		
-		When verifying with double negation, both values return true (!![] === true)
-		When checking if it is equal to false, both values also return true ([] == false)
-		
-		To make sure we detect all falsy values properly, we need to check them like this:
-			!!value || value == false;
-		
-		And to detect all truthy values, we need to check like this:
-			value;
-	*/
-	
-	
 	// https://github.com/hirak/phpjs/blob/master/functions/strings/sprintf.js
 	var sprintf = function sprintf() {
 		//  discuss at: http://phpjs.org/functions/sprintf/
@@ -272,6 +196,7 @@
 	};
 	
 	
+	const VERSION = 0.11;
 	
 	// used only for error reporting
 	const FILENAME = 'simply';
@@ -416,6 +341,14 @@
 			
 			// FOREACH LOOP
 			[/^(?:(?:for)?each|loop through)(?![a-z\d])/i, 'EACH_LOOP'],
+			
+			// REPEATING LOOPS
+			// while loop
+			[/^(?:while)(?![a-z\d])/i, 'WHILE_LOOP'],
+			// until loop - or while(!(condition))
+			[/^(?:until)(?![a-z\d])/i, 'UNTIL_LOOP'],
+			// do ... <WHILE|UNTIL> loop
+			[/^(?:do|loop)(?![a-z\d])/i, 'DO_LOOP'],
 			
 			// LOOP CONTROL
 			// break out of the loop
@@ -2350,7 +2283,7 @@
 			
 			while(!this._tokenizer.isEOF() || this._lookahead)
 			{
-				var token = this.PrimaryExpression();
+				var token = this.PrimaryStatement();
 				if(token)
 				{
 					if(token.type === 'WordStatement' && token.value === 'IGNORE')
@@ -2379,7 +2312,7 @@
 		 *   | SymbolStatement
 		 *   ;
 		 */
-		PrimaryExpression: function(){
+		PrimaryStatement: function(){
 			switch(this._lookahead.type)
 			{
 				case ';':
@@ -2422,6 +2355,15 @@
 				
 				case 'EACH_LOOP':
 					return this.ForeachLoopBlockStatement();
+				
+				case 'WHILE_LOOP':
+					return this.WhileLoopBlockStatement();
+				
+				case 'UNTIL_LOOP':
+					return this.UntilLoopBlockStatement();
+				
+				case 'DO_LOOP':
+					return this.DoLoopBlockStatement();
 				
 				case 'BREAK':
 					return this.BreakStatement();
@@ -3193,6 +3135,78 @@
 		},
 		
 		/**
+		 * WhileLoopBlockStatement
+		 *   : WHILE_LOOP Statement [DO_LOOP] BodyGroup
+		 *   ;
+		 */
+		WhileLoopBlockStatement: function(){
+			var token = this._eat('WHILE_LOOP');
+			
+			var result = {
+				type: 'WhileLoopBlockStatement',
+				line: token.line,
+				column: token.column,
+				condition: this.ExpressionStatement(),
+				body: []
+			};
+			
+			this._jump('DO_LOOP');
+			
+			result.body = this.BodyGroup();
+			
+			return result;
+		},
+		
+		/**
+		 * UntilLoopBlockStatement
+		 *   : UNTIL_LOOP Statement [DO_LOOP] BodyGroup
+		 *   ;
+		 */
+		UntilLoopBlockStatement: function(){
+			var token = this._eat('UNTIL_LOOP');
+			
+			var result = {
+				type: 'UntilLoopBlockStatement',
+				line: token.line,
+				column: token.column,
+				condition: this.ExpressionStatement(),
+				body: []
+			};
+			
+			this._jump('DO_LOOP');
+			
+			result.body = this.BodyGroup();
+			
+			return result;
+		},
+		
+		/**
+		 * DoLoopStatement
+		 *   : DO_LOOP BodyGroup (WHILE_LOOP | UNTIL_LOOP) Statement
+		 *   ;
+		 */
+		DoLoopBlockStatement: function(){
+			var token = this._eat('DO_LOOP');
+			
+			var result = {
+				type: 'DoLoopBlockStatement',
+				line: token.line,
+				column: token.column,
+				loop_type: null,
+				condition: null,
+				body: []
+			};
+			
+			result.body = this.BodyGroup();
+			
+			result.loop_type = this._eat('WHILE_LOOP', 'UNTIL_LOOP');
+			
+			result.condition = this.ExpressionStatement();
+			
+			return result;
+		},
+		
+		/**
 		 * BreakStatement
 		 *   : BREAK
 		 *   ;
@@ -3842,7 +3856,7 @@
 				
 				while(this._lookahead && this._lookahead.type !== 'SCOPE_CLOSE')
 				{
-					var tokens = this.PrimaryExpression();
+					var tokens = this.PrimaryStatement();
 					if(tokens)
 					{
 						body = body.concat(tokens);
@@ -3853,7 +3867,7 @@
 			}
 			else
 			{
-				var tokens = this.PrimaryExpression();
+				var tokens = this.PrimaryStatement();
 				if(tokens)
 				{
 					body = body.concat(tokens);
@@ -4984,7 +4998,11 @@
 		_no_semicollon: [
 			'CommentStatement',
 			'IfBlockStatement',
-			'ElseBlockStatement'
+			'ElseBlockStatement',
+			'ForLoopBlockStatement',
+			'ForeachLoopBlockStatement',
+			'WhileLoopBlockStatement',
+			'UntilLoopBlockStatement'
 		],
 		
 		init: function(abs){
@@ -5077,6 +5095,11 @@
 		},
 		
 		compileToken: function(token, info){
+			if(!token)
+			{
+				return '';
+			}
+			
 			switch(token.type)
 			{
 				case 'LiteralJSCode':
@@ -5147,6 +5170,15 @@
 				
 				case 'ForeachLoopBlockStatement':
 					return this.compileForeachLoopBlockStatement(token, info);
+				
+				case 'WhileLoopBlockStatement':
+					return this.compileWhileLoopBlockStatement(token, info);
+				
+				case 'UntilLoopBlockStatement':
+					return this.compileUntilLoopBlockStatement(token, info);
+				
+				case 'DoLoopBlockStatement':
+					return this.compileDoLoopBlockStatement(token, info);
 				
 				case 'BreakStatement':
 					return this.compileBreakStatement(token, info);
@@ -5399,7 +5431,7 @@
 				+ (token.unless ? '!(' : '')
 					+ this.compileToken(token.condition, info)
 				+ (token.unless ? ')' : '')
-			+ '){\n'
+			+ ') {\n'
 				+ this.compileBody(token.body, info)
 			+ '\n}';
 		},
@@ -5455,7 +5487,7 @@
 			
 			if(!token.uses_loop_var)
 			{
-				return '(' + this.compileToken(new_token, info) + ' || []).every(function(value, index, arr){\n'
+				return '(' + this.compileToken(new_token, info) + ' || []).every(function(value, index, arr) {\n'
 					+ this.compileToken(token.loop.var, info) + ' = value;\n\n'
 					+ this.compileBody(token.body, info) + '\n'
 					+ 'return true;\n'
@@ -5474,7 +5506,7 @@
 				assign: null
 			}, info);
 			
-			return '(' + this.compileToken(new_token, info) + ' || []).every(function(value, index, arr){\n'
+			return '(' + this.compileToken(new_token, info) + ' || []).every(function(value, index, arr) {\n'
 				+ 'var old_loop_var = ' + loop_var + ';\n'
 				+ loop_var + ' = {'
 					+ 'first: !index,\n'
@@ -5504,7 +5536,7 @@
 			
 			if(RDP.Utils.tokenIsLiteral(token.loop.var))
 			{
-				var loop_code = '.every(function(value, index, arr){\n'
+				var loop_code = '.every(function(value, index, arr) {\n'
 					+ 'var old_loop_var = ' + loop_var + ';\n'
 					+ loop_var + ' = {'
 						+ 'first: !index,\n'
@@ -5545,11 +5577,11 @@
 			// https://stackoverflow.com/questions/18884249/checking-whether-something-is-iterable
 			// have to check if it is an iterable, before making it iterable
 			
-			return '(function(og_value){\n'
+			return '(function(og_value) {\n'
 				+ 'if(og_value === null || og_value === undefined) return;\n'
 				// + 'og_value = (typeof og_value === \'object\') || (typeof og_value[Symbol.iterator] === \'function\') ? og_value : [og_value];\n'
 				+ 'og_value = typeof og_value === \'object\' ? og_value : (typeof og_value === \'string\' ? Array.from(og_value) : [og_value]);\n'
-				+ 'Object.keys(og_value).every(function(value, index, arr){\n'
+				+ 'Object.keys(og_value).every(function(value, index, arr) {\n'
 					+ 'var old_loop_var = ' + loop_var + ';\n'
 					+ loop_var + ' = {'
 						+ 'first: !index,\n'
@@ -5565,6 +5597,25 @@
 					+ 'return true;\n'
 				+ '});\n'
 			+ '})(' + this.compileToken(token.loop.var, info) + ')';
+		},
+		
+		compileWhileLoopBlockStatement: function(token, info){
+			return 'while(' + this.compileToken(token.condition) + ') {\n'
+				+ this.compileBody(token.body) + '\n}';
+		},
+		
+		compileUntilLoopBlockStatement: function(token, info){
+			return 'while(!(' + this.compileToken(token.condition) + ')) {\n'
+				+ this.compileBody(token.body) + '\n}';
+		},
+		
+		compileDoLoopBlockStatement: function(token, info){
+			var until_loop = token.loop_type.value === 'until';
+			
+			return 'do {\n' + this.compileBody(token.body)
+				+ '\n} while(' + (until_loop ? '!(' : '')
+					+ this.compileToken(token.condition)
+				+ (until_loop ? ')' : '') + ')';
 		},
 		
 		compileBreakStatement: function(token, info){
@@ -5589,7 +5640,7 @@
 	};
 	
 	simply.prototype = {
-		version: 0.10,
+		version: VERSION,
 		
 		execute: function(code, argv){
 			this._clear_output();
@@ -5740,7 +5791,7 @@
 			var result = null;
 			
 			var ENV = {
-				version: me.version,
+				version: VERSION,
 				EOL: '\n',
 				eol: '\n',
 				dump: function(){
