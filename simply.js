@@ -387,9 +387,10 @@
 		},
 		Symbols: {
 			'BOOLEAN': [],
-			'COMPARE': ['==', '===', '<', '>', '>=', '<=', '=>', '=<', '!=', '!==', '<>'],
+			'COMPARE': ['==', '===', '<', '>', '>=', '<=', '=<', '!=', '!==', '<>'],
 			'INDEX': ['::', '->'],
-			'ARROW': ['=>']
+			'ARROW': ['=>'],
+			'RANGE': ['..']
 		},
 		
 		FNS: {
@@ -2081,13 +2082,30 @@
 			
 			tokenOpensIndexing: function tokenOpensIndexing(token){
 				return token && (
-					(
-						token.type === '['
-					) || (
-						token.type === 'OPERATOR'
-						&& ~RDP.Symbols.INDEX.indexOf(token.value)
-					)
+					token.type === '['
+					|| RDP.Utils.tokenIsOperatorOfType(token, 'index')
 				);
+			},
+			
+			tokenIsOperator: function tokenIsOperator(token){
+				return token && (
+					token.type === 'OPERATOR'
+					|| token.type === 'SYMBOL'
+				);
+			},
+			
+			tokenIsOperatorOfType: function tokenIsOperatorOfType(token, op_type){
+				if(!op_type)
+				{
+					return false;
+				}
+				
+				op_type = op_type.toString().toUpperCase();
+				
+				return token
+					&& RDP.Utils.tokenIsOperator(token)
+					&& ~RDP.Symbols[op_type]
+					&& ~RDP.Symbols[op_type].indexOf(token.value);
 			}
 		}
 	};
@@ -2272,7 +2290,7 @@
 		 * Main entry point for the code
 		 * 
 		 * Program
-		 *   : PrimaryExpression
+		 *   : PrimaryStatement [PrimaryStatement]*
 		 *   ;
 		 */
 		Program: function(){
@@ -2303,7 +2321,7 @@
 		},
 		
 		/**
-		 * PrimaryExpression
+		 * PrimaryStatement
 		 *   : ExpressionStatement
 		 *   | ParenthesizedExpression
 		 *   | CommentStatement
@@ -2669,7 +2687,7 @@
 				
 				while(this._lookahead && this._lookahead.type !== 'SCOPE_CLOSE')
 				{
-					var tokens = this.PrimaryExpression();
+					var tokens = this.PrimaryStatement();
 					if(tokens)
 					{
 						result.body = result.body.concat(tokens);
@@ -2682,7 +2700,7 @@
 			{
 				result.arrow = true;
 				
-				var tokens = this.PrimaryExpression();
+				var tokens = this.PrimaryStatement();
 				if(tokens)
 				{
 					result.body = result.body.concat(tokens);
@@ -2875,7 +2893,7 @@
 				
 				while(this._lookahead && this._lookahead.type !== 'SCOPE_CLOSE')
 				{
-					var tokens = this.PrimaryExpression();
+					var tokens = this.PrimaryStatement();
 					if(tokens)
 					{
 						result.body = result.body.concat(tokens);
@@ -2886,7 +2904,7 @@
 			}
 			else
 			{
-				var tokens = this.PrimaryExpression();
+				var tokens = this.PrimaryStatement();
 				if(tokens)
 				{
 					result.body = result.body.concat(tokens);
@@ -2925,7 +2943,7 @@
 				
 				while(this._lookahead && this._lookahead.type !== 'SCOPE_CLOSE')
 				{
-					var tokens = this.PrimaryExpression();
+					var tokens = this.PrimaryStatement();
 					if(tokens)
 					{
 						result.body = result.body.concat(tokens);
@@ -2936,7 +2954,7 @@
 			}
 			else
 			{
-				var tokens = this.PrimaryExpression();
+				var tokens = this.PrimaryStatement();
 				if(tokens)
 				{
 					result.body = result.body.concat(tokens);
@@ -3026,7 +3044,7 @@
 						
 						var operator = this._eat('OPERATOR');
 						
-						if(operator.value !== '..')
+						if(!RDP.Utils.tokenIsOperatorOfType(operator, 'range'))
 						{
 							throw new SyntaxError('Expected range operator (".."), got ' + JSON.stringify(operator.value));
 						}
