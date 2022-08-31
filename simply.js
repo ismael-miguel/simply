@@ -2043,6 +2043,7 @@
 					'HEREDOC',
 					'VARIABLE',
 					'FUNCTION',
+					'ANON_FUNCTION',
 					'CONSTANT',
 					'CONSTANT_VAL',
 					'ArrayLiteral',
