@@ -301,6 +301,8 @@
 			[/^[\$%][a-z_][a-z\d_]*/i, 'VARIABLE'],
 			// function
 			[/^&[a-z_][a-z\d_]*/i, 'FUNCTION'],
+			// anonymous function
+			[/^(?:(?:fn|lambda)(?=\s*[\(\$\{])|anon(?:ymous)?)(?![a-z\d])/i, 'ANON_FUNCTION'],
 			// constant
 			[/^![A-Z_][A-Z\d_]*/, 'CONSTANT'],
 			// constant values
@@ -3356,6 +3358,9 @@
 				case 'FUNCTION':
 					return this.FunctionExpression();
 				
+				case 'ANON_FUNCTION':
+					return this.AnonFunctionExpression();
+				
 				case 'CONSTANT':
 					return this.ConstantExpression();
 				
@@ -3563,6 +3568,83 @@
 				column: token.column,
 				create: false
 			};
+		},
+		
+		/**
+		 * AnonFunctionExpression
+		 *   : FUNCTION
+		 *   ;
+		 */
+		AnonFunctionExpression: function(){
+			var token = this._eat('ANON_FUNCTION');
+			
+			if(!this._lookahead)
+			{
+				throw new SyntaxError('Unexpected end of the code, expecting an argument list', FILENAME, this._line);
+			}
+			
+			/*return {
+				type: 'AnonFunctionExpression',
+				value: token.value.slice(1),
+				index: null,
+				line: token.line,
+				column: token.column,
+				create: false
+			};*/
+			
+			/*var result = {
+				type: 'AnonFunctionExpression',
+				args: [],
+				body: [],
+				line: token.line,
+				column: token.column,
+				arrow: false
+			};
+			
+			result.args = this.ArgumentsGroup().value;*/
+			
+			// DefineFunctionStatement
+			
+			var result = {
+				type: 'AnonFunctionExpression',
+				args: [],
+				body: [],
+				line: token.line,
+				column: token.column,
+				arrow: false
+			};
+			
+			// handle word(args)
+			var args = this.ArgumentsGroup().value;
+			args.forEach(function(arg){
+				if(arg.type !== 'VariableExpression')
+				{
+					throw new SyntaxError('Expected a variable, got "' + arg.type + '"', FILENAME, arg.line);
+				}
+			});
+			
+			result.args = args;
+			
+			
+			// handles word(args) => statement(s)
+			var arrow = this._jump('OPERATOR');
+			if(arrow && !RDP.Utils.tokenIsOperatorOfType(arrow, 'arrow'))
+			{
+				throw new SyntaxError('Expected an arrow ("=>"), got "' + arrow.value + '"', FILENAME, this._line)
+			}
+			
+			
+			this._jump(';');
+			
+			
+			if(this._lookahead && this._lookahead.type !== 'SCOPE_OPEN')
+			{
+				result.arrow = true;
+			}
+			
+			result.body = this.BodyGroup();
+			
+			return result;
 		},
 		
 		
@@ -5160,6 +5242,9 @@
 				case 'DefineFunctionStatement':
 					return this.compileDefineFunctionStatement(token, info);
 				
+				case 'AnonFunctionExpression':
+					return this.compileAnonFunctionExpression(token, info);
+				
 				case 'AssignExpression':
 					return this.compileAssignExpression(token, info);
 				
@@ -5363,7 +5448,7 @@
 				// + (token.assign ? this.compileToken(token.assign) : '');
 		},
 		
-		compileDefineFunctionStatement: function(token, info){
+		compileFunctionTokenStatement: function(token, info){
 			var body = '';
 			
 			if(token.body.length)
@@ -5416,7 +5501,15 @@
 				}
 			}
 			
-			return 'Object.defineProperty($FN, \'' + token.fn.value + '\', { value: function(){\n' + body + '\n}, writable: false, enumerable: true })';
+			return 'function(){\n' + body + '\n}';
+		},
+		
+		compileDefineFunctionStatement: function(token, info){
+			return 'Object.defineProperty($FN, \'' + token.fn.value + '\', { value: ' + this.compileFunctionTokenStatement(token) + ', writable: false, enumerable: true })';
+		},
+		
+		compileAnonFunctionExpression: function(token, info){
+			return this.compileFunctionTokenStatement(token);
 		},
 		
 		compileAssignExpression: function(token, info){
