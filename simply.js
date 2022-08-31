@@ -5788,7 +5788,9 @@
 		_parse: function(code){
 			if(this._settings.onbeforeparse)
 			{
-				try {this._settings.onbeforeparse.call(this, {abs: null});} catch(e) {}
+				try {
+					this._settings.onbeforeparse.call(this, {abs: null});
+				} catch(e) {}
 			}
 			
 			var now = performance.now();
@@ -5803,7 +5805,18 @@
 			{
 				if(this._settings.onerror)
 				{
-					try {this._settings.onerror.call(this, {step: 'parse', type: e.name, message: e.message, token: this._rdp.getLastToken()});} catch(_) {}
+					try {
+						var token = this._rdp.getLastToken();
+						var code_line = code.match(new RegExp('(?:.*\\r?\\n){' + (token.line - 1) + '}(.*)(?:\\r?\\n|$)'));
+						
+						this._settings.onerror.call(this, {
+							step: 'parse',
+							type: e.name,
+							message: e.message,
+							token: token,
+							code: code_line ? code_line[1] : undefined
+						});
+					} catch(_) {}
 				}
 				else
 				{
@@ -5818,7 +5831,9 @@
 			
 			if(this._settings.onafterparse)
 			{
-				try {this._settings.onafterparse.call(this, {abs: abs, time: time});} catch(_) {}
+				try {
+					this._settings.onafterparse.call(this, {abs: abs, time: time});
+				} catch(_) {}
 			}
 			
 			return abs;
@@ -5833,7 +5848,9 @@
 			
 			if(this._settings.onbeforecompile)
 			{
-				try {this._settings.onbeforecompile.call(this, {abs: abs});} catch(_) {}
+				try {
+					this._settings.onbeforecompile.call(this, {abs: abs});
+				} catch(_) {}
 			}
 			
 			
@@ -5856,7 +5873,14 @@
 			{
 				if(this._settings.onerror)
 				{
-					try {this._settings.onerror.call(this, {step: 'compile', type: e.name, message: e.message, token: this._rdp.getLastToken()});} catch(_) {}
+					try {
+						this._settings.onerror.call(this, {
+							step: 'compile',
+							type: e.name,
+							message: e.message,
+							token: this._rdp.getLastToken()
+						});
+					} catch(_) {}
 				}
 				else
 				{
@@ -5871,7 +5895,13 @@
 			
 			if(this._settings.onaftercompile)
 			{
-				try {this._settings.onaftercompile.call(this, {abs: abs, time: time, fn: fn});} catch(_) {}
+				try {
+					this._settings.onaftercompile.call(this, {
+						abs: abs,
+						time: time,
+						fn: fn
+					});
+				} catch(_) {}
 			}
 			
 			return fn;
@@ -5886,7 +5916,12 @@
 			
 			if(!fn)
 			{
-				try {this._settings.ondone.call(this, {time: performance.now() - now, success: false});} catch(_) {}
+				try {
+					this._settings.ondone.call(this, {
+						time: performance.now() - now,
+						success: false
+					});
+				} catch(_) {}
 				
 				return false;
 			}
@@ -5894,7 +5929,9 @@
 			
 			if(this._settings.onbeforeexec)
 			{
-				try {this._settings.onbeforeexec.call(this, {abs: abs});} catch(_) {}
+				try {
+					this._settings.onbeforeexec.call(this, {abs: abs});
+				} catch(_) {}
 			}
 			
 			var success = true;
@@ -5955,7 +5992,16 @@
 				
 				if(this._settings.onerror)
 				{
-					try {this._settings.onerror.call(this, {step: 'runtime', type: e.name, message: e.message, token: this._rdp.getLastToken()});} catch(_) {}
+					try {
+						var token = this._rdp.getLastToken()
+						
+						this._settings.onerror.call(this, {
+							step: 'runtime',
+							type: e.name,
+							message: e.message,
+							token: token
+						});
+					} catch(_) {}
 				}
 				else
 				{
@@ -5967,10 +6013,23 @@
 			
 			if(this._settings.onafterexec)
 			{
-				try {this._settings.onafterexec.call(this, {abs: abs, time: time, success: success, result: result});} catch(_) {}
+				try {
+					this._settings.onafterexec.call(this, {
+						abs: abs,
+						time: time,
+						success: success,
+						result: result
+					});
+				} catch(_) {}
 			}
 			
-			try {this._settings.ondone.call(this, {time: time, success: success, result: result});} catch(_) {}
+			try {
+				this._settings.ondone.call(this, {
+					time: time,
+					success: success,
+					result: result
+				});
+			} catch(_) {}
 			
 			return success;
 		},

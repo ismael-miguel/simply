@@ -76,10 +76,16 @@
 				}
 			},
 			onerror: function(info){
-				var text = '❌ Error on ' + info.step + ':\n'
+				var text = '\n❌ Error on ' + info.step + ':\n'
 					+ info.type + ' - ' + info.message
 					+ ' on line ' + info.token.line
-					+ ' on column ' + info.token.column;
+					+ ' on column ' + info.token.column
+					+ (info.code
+						? '\n\nCode on line ' + info.token.line + ':\n'
+							+ info.code + '\n'
+							+ (' '.repeat(info.token.column)) + '^'
+						: ''
+					);
 				
 				$output_json.text($output_json.text() + '\r\n\r\n' + text);
 				$output_js.text($output_js.text() + '\r\n\r\n' + text);
