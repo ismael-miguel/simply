@@ -5099,8 +5099,6 @@
 			'CommentStatement',
 			'IfBlockStatement',
 			'ElseBlockStatement',
-			'ForLoopBlockStatement',
-			'ForeachLoopBlockStatement',
 			'WhileLoopBlockStatement',
 			'UntilLoopBlockStatement'
 		],
