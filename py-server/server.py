@@ -156,21 +156,29 @@ class ServerFakeFileHandler:
 			"content": open(os.path.join(ROOT, "simply.js"), "rb").read()
 		}
 	
+	
+	# ========== MODULES ==========
 	@staticmethod
-	def root_modules_canvas_js(query):
+	def handle_module(name):
 		return {
 			"status_code": 200,
 			"content_type": "application/javascript",
-			"content": open(os.path.join(ROOT, "modules", "canvas.js"), "rb").read()
+			"content": open(os.path.join(ROOT, "modules", name, "module.js"), "rb").read()
 		}
 	
+	
 	@staticmethod
-	def root_modules_table_js(query):
-		return {
-			"status_code": 200,
-			"content_type": "application/javascript",
-			"content": open(os.path.join(ROOT, "modules", "table.js"), "rb").read()
-		}
+	def root_modules_canvas_module_js(query):
+		return ServerFakeFileHandler.handle_module("canvas")
+	
+	@staticmethod
+	def root_modules_table_module_js(query):
+		return ServerFakeFileHandler.handle_module("table")
+	
+	@staticmethod
+	def root_modules_regex_module_js(query):
+		return ServerFakeFileHandler.handle_module("regex")
+	
 	
 	
 	# ========== EXAMPLES ==========
