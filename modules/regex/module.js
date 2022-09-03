@@ -14,7 +14,16 @@
 				value: new RegExp(pattern, flags)
 			},
 			error: {
-				value: false
+				value: false,
+				enumerable: true
+			},
+			pattern: {
+				value: pattern,
+				enumerable: true
+			},
+			flags: {
+				value: flags,
+				enumerable: true
 			},
 			__doc__: {
 				value: [
@@ -159,6 +168,8 @@
 						error: true,
 						name: e.name,
 						message: e.message,
+						pattern: pattern,
+						flags: flags,
 						__doc__: [
 							'Regex error object, from the Regex module',
 							'Error message:' + e.name + ' - ' + e.message
