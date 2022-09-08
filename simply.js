@@ -314,7 +314,7 @@
 			// CALL FUNCTION
 			[/^(?:call(?:ing)?|run(?:ning)?|exec(?:ute|uting)?)(?![a-z\d])/i, 'CALL'],
 			
-			// ASSING
+			// ASSIGN
 			[/^(?:set|give|assign)(?![a-z\d])/i, 'ASSIGN'],
 			[/^(?:\:?=)(?![=>])/, 'ASSIGN'],
 			
@@ -339,10 +339,10 @@
 			[/^(?:return|send|pass)(?![a-z\d])/i, 'RETURN'],
 			
 			// FOR LOOP
-			[/^(?:for|loop from)(?![a-z\d])/i, 'FOR_LOOP'],
+			[/^(?:for|loop\s+from)(?![a-z\d])/i, 'FOR_LOOP'],
 			
 			// FOREACH LOOP
-			[/^(?:(?:for)?each|loop through)(?![a-z\d])/i, 'EACH_LOOP'],
+			[/^(?:(?:for)?each|loop\s+through)(?![a-z\d])/i, 'EACH_LOOP'],
 			
 			// REPEATING LOOPS
 			// while loop
@@ -359,7 +359,8 @@
 			[/^(?:continue)(?![a-z\d])/i, 'CONTINUE'],
 			
 			// OPERATORS
-			[/^(?:[=\-]>|::|\.\.|[\^\!\.~]|[><\-+\/\*\|]{1,2}|===?)/, 'OPERATOR'],
+			[/^(?:[=\-]>|::|\.\.|[\^\!\.~]|[+\-\|~&^<>]=|!(?:==?)?|<=?>|[><\-+\/\*\|]{1,2}|===?)/, 'OPERATOR'],
+			//[/^(?:(?:is(?:\s+not|n\'t)?\s+(?:lower|higher|greater)(?:\s+or\s+equal)?)|is(?:\s+not|n\'t)?(?:\s+equal)?|or|in|has|different)(?![a-z\d])/i, 'OPERATOR_WORDS'],
 			
 			// ANY 'WORD'
 			[/^[a-z][a-z_]*/i, 'WORD'],
@@ -388,8 +389,11 @@
 			]
 		},
 		Symbols: {
-			'BOOLEAN': [],
-			'COMPARE': ['==', '===', '<', '>', '>=', '<=', '=<', '!=', '!==', '<>'],
+			'BOOLEAN_A': ['!'],
+			'BOOLEAN_AB': ['==', '===', '<', '>', '>=', '<=', '!=', '!==', '<>'],
+			'ARITHMETIC_AB': ['+', '-', '*', '**', '\/', '^', '|'],
+			'ARITHMETIC_A': ['~', '++', '--'],
+			'ARITHMETIC_B': ['++', '--'],
 			'INDEX': ['::', '->'],
 			'ARROW': ['=>'],
 			'RANGE': ['..']
@@ -485,7 +489,7 @@
 			}, {
 				__doc__: [
 					'Turns the $object into a JSON string',
-					'Optionally, accepts a value into the $spaces variable, which will be used to indent the resulting JSON',
+					'Optionally, accepts a value into the $spaces argument, which will be used to indent the resulting JSON',
 					'It accepts the following values:',
 					'- A number between 0 and 10, which will be used as the number of spaces',
 					'- A character, which will be used as the character to indent',
@@ -1864,7 +1868,7 @@
 				__doc__: 'Alias to &convert_base'
 			}),
 			
-			// type convertion and information
+			// type conversion and information
 			int: Object.assign(function int(any, radix){
 				return parseInt(any, radix);
 			}, {
@@ -3327,17 +3331,115 @@
 		 *   ;
 		 */
 		Expression: function(){
+			var expression = null;
+			
 			switch(this._lookahead.type)
 			{
 				case '(':
-					return this.ParenthesizedExpression();
+					expression = this.ParenthesizedExpression();
+					break;
 				
-				/*case 'OPERATOR':
-					return this.OperatorExpression();*/
+				case 'OPERATOR':
+					return this.OperatorExpression();
 					
 				default:
-					return this.ValueExpression();
+					expression = this.ValueExpression();
+					break;
 			}
+			
+			if(this._lookahead && this._lookahead.type === 'OPERATOR')
+			{
+				return this.OperatorExpression(expression);
+			}
+			
+			return expression;
+		},
+		
+		
+		
+		/**
+		 * OperatorExpression
+		 *   : Expression? OPERATOR Expression?
+		 *   ;
+		 */
+		OperatorExpression: function(expression){
+			var operator = this._lookahead;
+			
+			var AB = expression ? /_A?B$/ : /_A$/;
+			var type = '';
+			
+			Object.keys(RDP.Symbols).every(function(key){
+				if(!AB.test(key) || !RDP.Utils.tokenIsOperatorOfType(operator, key))
+				{
+					return true;
+				}
+				
+				type = key;
+				return false;
+			});
+			
+			if(!type)
+			{
+				throw new SyntaxError('Unknown operator "' + operator.value + '"', FILENAME, this._line);
+			}
+			
+			if(expression)
+			{
+				switch(type)
+				{
+					case 'BOOLEAN_B':
+					case 'BOOLEAN_AB':
+						return this.BooleanExpression(expression);
+				}
+			}
+			else
+			{
+				switch(type)
+				{
+					case 'BOOLEAN_A':
+						return this.BooleanExpression();
+				}
+			}
+		},
+		
+		
+		
+		/**
+		 * BooleanExpression
+		 *   : Expression? OPERATOR Expression?
+		 *   ;
+		 */
+		BooleanExpression: function(expression){
+			var operator = this._eat('OPERATOR');
+			var result = {
+				type: 'BooleanExpression',
+				value: operator.value,
+				value_a: expression ? expression : null,
+				value_b: null,
+				line: operator.line,
+				column: operator.column
+			};
+			
+			if(RDP.Utils.tokenIsOperatorOfType(operator, 'BOOLEAN_AB'))
+			{
+				if(!expression)
+				{
+					throw new SyntaxError('Unexpected operator "' + operator.value + '"', FILENAME, operator.line);
+				}
+				
+				result.value_b = this.Expression();
+			}
+			else if(RDP.Utils.tokenIsOperatorOfType(operator, 'BOOLEAN_A'))
+			{
+				if(expression)
+				{
+					throw new SyntaxError('Unexpected expression before operator "' + operator.value + '"', FILENAME, operator.line);
+				}
+				
+				result.value_b = this.Expression();
+			}
+			
+			return result;
 		},
 		
 		
@@ -5287,6 +5389,10 @@
 				case 'ContinueStatement':
 					return this.compileContinueStatement(token, info);
 				
+				// OPERATOR EXPRESSIONS
+				case 'BooleanExpression':
+					return this.compileBooleanExpression(token, info);
+				
 				default:
 					return '// TODO: implement support for ' + token.type + '\n';
 			}
@@ -5738,6 +5844,61 @@
 		
 		compileParenthesizedExpression: function(token, info){
 			return '(' + this.compileToken(token.value, info) + ')';
+		},
+		
+		compileBooleanExpression: function(token, info){
+			var operators_ab = {
+				'==': '==',
+				'===': '===',
+				'is': '===',
+				'<': '<',
+				'>': '>',
+				'<=': '<=',
+				'>=': '>=',
+				'!=': '!=',
+				'!==': '!==',
+				'<>': '!==',
+				'&&': '&&',
+				'and': '&&',
+				'||': '||',
+				'or': '||'
+			};
+			
+			var complex_ab = {
+				'xor': function(value_a, value_b){
+					// dumb down to booleans, then cheat with a bitwise XOR
+					
+					return '!!(' + this.compileToken(value_a, info) + ')'
+						+ ' ^ '
+						+ '!!(' + this.compileToken(value_b, info) + ')';
+				}
+			};
+			
+			var operators_a = {
+				'!': '!',
+				'not': '!'
+			};
+			
+			if(token.value_a && token.value_b)
+			{
+				return '!!('
+					+ ( complex_ab.hasOwnProperty(token.value)
+						// dumb down all values to a boolean
+						? complex_ab[token.value](token.value_a, token.value_b)
+						
+						: '(' + this.compileToken(token.value_a, info) + ')'
+							+ ' ' + operators_ab[token.value] + ' '
+							+ '(' + this.compileToken(token.value_b, info) + ')'
+					)
+				+ ')';
+			}
+			else if(token.value_b)
+			{
+				return '(' + operators_a[token.value] + '(' + this.compileToken(token.value_b, info) + '))';
+			}
+			
+			// should never be reached
+			throw new SyntaxError('Invalid boolean expression', FILENAME, token.line);
 		}
 	};
 	
