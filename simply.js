@@ -1107,7 +1107,7 @@
 			str_pad: Object.assign(function str_pad(str, len, chars){
 				str = str.toString();
 				
-				if(!len || len >= str.length)
+				if(!len || str.length >= len)
 				{
 					return str;
 				}
@@ -1140,7 +1140,7 @@
 			str_lpad: Object.assign(function str_lpad(str, len, chars){
 				str = str.toString();
 				
-				if(!len || len >= str.length)
+				if(!len || str.length >= len)
 				{
 					return str;
 				}
@@ -1166,7 +1166,7 @@
 			str_rpad: Object.assign(function str_rpad(str, len, chars){
 				str = str.toString();
 				
-				if(!len || len >= str.length)
+				if(!len || str.length >= len)
 				{
 					return str;
 				}
