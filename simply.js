@@ -396,7 +396,7 @@
 			'ARITHMETIC_B': ['++', '--'],
 			'INDEX': ['::', '->'],
 			'ARROW': ['=>'],
-			'RANGE': ['..']
+			'RANGE_AB': ['..']
 		},
 		
 		FNS: {
@@ -3046,17 +3046,28 @@
 						// for <var> in <value>..<value>
 						result.loop.type = 'range';
 						
-						this._eat('WORD');
+						/*this._eat('WORD');
 						result.loop.start = this.Expression();
 						
 						var operator = this._eat('OPERATOR');
 						
-						if(!RDP.Utils.tokenIsOperatorOfType(operator, 'range'))
+						if(!RDP.Utils.tokenIsOperatorOfType(operator, 'range_ab'))
 						{
 							throw new SyntaxError('Expected range operator (".."), got ' + JSON.stringify(operator.value));
 						}
 						
-						result.loop.end = this.Expression();
+						result.loop.end = this.Expression();*/
+						
+						this._eat('WORD');
+						var expression = this.Expression();
+						
+						if(expression.type !== 'RangeExpression')
+						{
+							throw new SyntaxError('Expected range operator (".."), got ' + expression.type);
+						}
+						
+						result.loop.start = expression.value_a;
+						result.loop.end = expression.value_b;
 					}
 				}
 				else
@@ -3390,6 +3401,9 @@
 					case 'BOOLEAN_B':
 					case 'BOOLEAN_AB':
 						return this.BooleanExpression(expression);
+					
+					case 'RANGE_AB':
+						return this.RangeExpression(expression);
 				}
 			}
 			else
@@ -3438,6 +3452,27 @@
 				
 				result.value_b = this.Expression();
 			}
+			
+			return result;
+		},
+		
+		
+		
+		/**
+		 * RangeExpression
+		 *   : Expression OPERATOR Expression
+		 *   ;
+		 */
+		RangeExpression: function(expression){
+			var operator = this._eat('OPERATOR');
+			var result = {
+				type: 'RangeExpression',
+				value: operator.value,
+				value_a: expression,
+				value_b: this.Expression(),
+				line: operator.line,
+				column: operator.column
+			};
 			
 			return result;
 		},
@@ -5393,6 +5428,10 @@
 				case 'BooleanExpression':
 					return this.compileBooleanExpression(token, info);
 				
+				// OPERATOR EXPRESSIONS
+				case 'RangeExpression':
+					return this.compileRangeExpression(token, info);
+				
 				default:
 					return '// TODO: implement support for ' + token.type + '\n';
 			}
@@ -5461,9 +5500,49 @@
 							: '[' + token.value.map(this.compileToken, this) + ']'
 						)
 						+ ')';*/
-					return token.repeat
-						? 'Array(' + token.repeat + ').fill(' + this.compileToken(token.value[0]) + ')'
-						: '[' + token.value.map(this.compileToken, this) + ']';
+					
+					if(token.repeat)
+					{
+						return 'Array(' + token.repeat + ').fill(' + this.compileToken(token.value[0]) + ')';
+					}
+					
+					
+					var has_range = token.value.some(function(token_value){
+						return token_value.type === 'RangeExpression';
+					});
+					
+					if(has_range)
+					{
+						if(token.value.length === 1)
+						{
+							return this.compileToken(token.value[0], info);
+						}
+						
+						var new_token = {
+							type: 'CallExpression',
+							value: {
+								type: 'FunctionExpression',
+								value: 'array_concat',
+								index: null,
+								line: token.line,
+								column: token.column,
+								create: false
+							},
+							args: {
+								type: 'ArgumentsGroup',
+								value: token.value,
+								line: token.line,
+								column: token.column
+							},
+							line: token.line,
+							column: token.column
+						};
+						
+						return '(' + this.compileToken(new_token, info) + ')';
+					}
+					
+					
+					return '[' + token.value.map(this.compileToken, this) + ']';
 				
 				case 'ConstantLiteral':
 					return ({
@@ -5899,6 +5978,34 @@
 			
 			// should never be reached
 			throw new SyntaxError('Invalid boolean expression', FILENAME, token.line);
+		},
+		
+		compileRangeExpression: function(token, info){
+			var new_token = {
+				type: 'CallExpression',
+				value: {
+					type: 'FunctionExpression',
+					value: 'range',
+					index: null,
+					line: token.line,
+					column: token.column,
+					create: false
+				},
+				args: {
+					type: 'ArgumentsGroup',
+					value: [
+						token.value_a,
+						token.value_b
+					],
+					line: token.line,
+					column: token.column
+				},
+				line: token.line,
+				column: token.column
+			};
+			
+			
+			return '(' + this.compileToken(new_token, info) + ' || [])';
 		}
 	};
 	
