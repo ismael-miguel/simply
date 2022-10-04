@@ -11,7 +11,7 @@ simply is a very simple scripting language, with a C-like syntax and a more verb
 
 ## Why make it?
 
-I wanted to practive writting a language using the [recursive descent parser](https://en.wikipedia.org/wiki/Recursive_descent_parser) technique.
+I wanted to practice writting a language using the [recursive descent parser](https://en.wikipedia.org/wiki/Recursive_descent_parser) technique.
 
 And at the same time, why not make something that can be used to teach others how to write code?
 
