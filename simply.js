@@ -715,7 +715,7 @@
 				var offset = 0;
 				
 				for(var i = 0; i < size; i++) {
-					result[i] = str.slice(offset, offset + length);
+					result[i] = array.slice(offset, offset + length);
 					offset += length;
 				}
 				
@@ -821,6 +821,40 @@
 			}, {
 				__doc__: [
 					'Returns a random element from the $array, if there is any',
+					'⚠️ THIS FUNCTION IS NOT CRYPTOGRAPHICALLY SECURE'
+				]
+			}),
+			array_shuffle: Object.assign(function array_shuffle(array){
+				if(!array || !array.length || (typeof array !== 'object'))
+				{
+					return null;
+				}
+				
+				var new_array = [];
+				var keys = Object.keys(array);
+				
+				for(var i = 0, length = keys.length; i < length; i++)
+				{
+					var index = Math.floor(Math.random() * keys.length);
+					new_array[i] = array[keys[index]];
+					
+					keys.splice(index, 1);
+				}
+				
+				return new_array;
+				
+			}, {
+				__doc__: [
+					'Returns an array, with all the values from $array, but all mixed up',
+					'⚠️ This function does NOT preserve keys',
+					'⚠️ THIS FUNCTION IS NOT CRYPTOGRAPHICALLY SECURE'
+				]
+			}),
+			array_shuffle_keys: Object.assign(function array_shuffle_keys(array){
+				return RDP.FNS.array_shuffle(RDP.FNS.array_keys(array));
+			}, {
+				__doc__: [
+					'Returns the keys from the $array, but all mixed up',
 					'⚠️ THIS FUNCTION IS NOT CRYPTOGRAPHICALLY SECURE'
 				]
 			}),
