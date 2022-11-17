@@ -1121,10 +1121,12 @@
 				]
 			}),
 			str_contains: Object.assign(function str_contains(str, substr){
-				str = str.toString();
+				/*str = str.toString();
 				substr = substr.toString();
 				
-				return str.length !== str.replace(substr, '').length;
+				return str.length !== str.replace(substr, '').length;*/
+				
+				return !!~str.toString().indexOf(substr);
 			}, {
 				__doc__: 'Verifies if the $string contains the $substring'
 			}),
@@ -1273,13 +1275,13 @@
 					: Math.min(+count, Number.MAX_SAFE_INTEGER);
 				
 				
-				if(count < 1 || !str.length || search.length > str.length)
-				{
-					return '';
-				}
-				else if(str === search || !search.length)
+				if(count < 1 || !str.length || search.length > str.length || !search.length)
 				{
 					return str;
+				}
+				else if(str === search)
+				{
+					return '';
 				}
 				
 				
@@ -1319,13 +1321,13 @@
 				
 				// return str.replaceAll(search, fn);
 				
-				if(count < 1 || !str.length || search.length > str.length)
-				{
-					return '';
-				}
-				else if(str === search || !search.length)
+				if(count < 1 || !str.length || search.length > str.length || !search.length)
 				{
 					return str;
+				}
+				else if(str === search)
+				{
+					return '';
 				}
 				
 				
