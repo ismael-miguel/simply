@@ -939,23 +939,12 @@
 					return str.toLowerCase().replace(/[^a-z\d]/g, '').split('').sort().join('');
 				}
 				
-				if(!is_anagram.results)
-				{
-					is_anagram.results = {};
-				}
-				
 				str = cleanup(str);
 				str2 = cleanup(str2);
 				
-				if(!is_anagram.results[str].hasOwnProperty(str2))
-				{
-					is_anagram.results[str][str2] = str.length && str === str2;
-				}
-				
-				return is_anagram.results[str][str2];
+				return str.length && str === str2;
 			}, {
 				__doc__: 'Verifies if $str1 is an anagram of $str2 (E.g.: "listen" and "silent"). Please check: https://en.wikipedia.org/wiki/Anagram',
-				results: {}
 			}),
 			marsagain: Object.assign(function marsagain(str, str2){
 				return RDP.FNS.is_anagram(str, str2);
