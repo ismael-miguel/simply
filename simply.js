@@ -934,20 +934,34 @@
 				],
 				results: {racecar: true, tacocat: true}
 			}),
-			is_anagram: Object.assign(function is_anagram(str, str2){
-				var cleanup = function(str) {
-					return str.toLowerCase().replace(/[^a-z\d]/g, '').split('').sort().join('');
+			is_anagram: Object.assign(function is_anagram(subject, anagram, false_for_equal){
+				var normalize = function normalize(str) {
+					return str.toLowerCase().replace(/[^a-z\d]/g, '');
+				};
+				
+				var sort = function sort(str) {
+					return str.split('').sort().join('');
+				};
+				
+				subject = normalize(subject);
+				anagram = normalize(anagram);
+				
+				if(false_for_equal && subject === anagram)
+				{
+					return false;
 				}
 				
-				str = cleanup(str);
-				str2 = cleanup(str2);
-				
-				return str.length && str === str2;
+				return subject.length && sort(subject) === sort(anagram);
 			}, {
-				__doc__: 'Verifies if $str1 is an anagram of $str2 (E.g.: "listen" and "silent"). Please check: https://en.wikipedia.org/wiki/Anagram',
+				__doc__: [
+					'Verifies if $str1 is an anagram of $str2 (E.g.: "listen" and "silent")',
+					'Takes a $subject and a possible $anagram, returning true if it is an anagram',
+					'If $false_for_equal is set to a truthy value, will return false if $subject and $anagram are equal, after normalization',
+					'Please check https://en.wikipedia.org/wiki/Anagram for more information'
+				],
 			}),
-			marsagain: Object.assign(function marsagain(str, str2){
-				return RDP.FNS.is_anagram(str, str2);
+			marsagain: Object.assign(function marsagain(subject, anagram, false_for_equal){
+				return RDP.FNS.is_anagram(subject, anagram, false_for_equal);
 			}, {
 				__doc__: '🤫 this is a secret function. Just an anagram for &is_anagram().'
 			}),
