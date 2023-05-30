@@ -490,7 +490,7 @@
 							? fn.__doc__.join('.\n')
 							: fn.__doc__
 						) + '.'
-					).replace(/(?:([^\.])\.(\.)|(\:)\.)$/mg, '$1$2$3');
+					).replace(/(?:([^\.])\.(\.)|(\:)\.|^\.)$/mg, '$1$2$3');
 			}, {
 				__doc__: 'Returns the documentation string for a function, if it exists, otherwise returns null'
 			}),
