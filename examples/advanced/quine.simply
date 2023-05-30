@@ -4,8 +4,8 @@
 	The standard terms for these programs in the computability theory and computer science literature are "self-replicating programs", "self-reproducing programs", and "self-copying programs".
 */
 
-Set $code to "Set $code to %c%s%c
+Set $code to "Set $code to {:c}{}{:c}
 Display the format string $code with the values 34, $code, 34"
 Display the format string $code with the values 34, $code, 34
 
-// alternatively: $f="$f=%c%s%c;echof$f,34,$f,34";echof$f,34,$f,34
+// alternatively: $f="$f={:c}{}{:c};echof$f,34,$f,34;";echof$f,34,$f,34;

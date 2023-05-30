@@ -3,200 +3,240 @@
 (function(window, undefined){
 	'use strict';
 	
-	// https://github.com/hirak/phpjs/blob/master/functions/strings/sprintf.js
-	var sprintf = function sprintf() {
-		//  discuss at: http://phpjs.org/functions/sprintf/
-		// original by: Ash Searle (http://hexmen.com/blog/)
-		// improved by: Michael White (http://getsprink.com)
-		// improved by: Jack
-		// improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-		// improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-		// improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-		// improved by: Dj
-		// improved by: Allidylls
-		//    input by: Paulo Freitas
-		//    input by: Brett Zamir (http://brett-zamir.me)
-		//   example 1: sprintf("%01.2f", 123.1);
-		//   returns 1: 123.10
-		//   example 2: sprintf("[%10s]", 'monkey');
-		//   returns 2: '[    monkey]'
-		//   example 3: sprintf("[%'#10s]", 'monkey');
-		//   returns 3: '[####monkey]'
-		//   example 4: sprintf("%d", 123456789012345);
-		//   returns 4: '123456789012345'
-		//   example 5: sprintf('%-03s', 'E');
-		//   returns 5: 'E00'
-
-		var regex = /%%|%(\d+\$)?([\-+\'#0 ]*)(\*\d+\$|\*|\d+)?(?:\.(\*\d+\$|\*|\d+))?([scboxXuideEfFgG])/g;
-		var a = arguments;
-		var i = 0;
-		var format = a[i++];
-
-		// pad()
-		var pad = function (str, len, chr, leftJustify) {
-			if (!chr) {
-				chr = ' ';
-			}
-			var padding = (str.length >= len) ? '' : new Array(1 + len - str.length >>> 0)
-				.join(chr);
-			return leftJustify ? str + padding : padding + str;
+	/**
+	 * Formats a string based on the passed format.
+	 * The format is pretty basic, and loosely similar to Python.
+	 * 
+	 * To indicate a placeholder, use the following syntax:
+	 * `'{' [index] [':' [args] ] '}'`.
+	 * 
+	 * The `index` is optional, and starts at `0`.
+	 * If none is specified, it will increment automatically.
+	 * Using a placeholder with an index won't reset or increment the internal counter.
+	 * 
+	 * The arguments are also optional.
+	 * 
+	 * @param {!string} str - String to format.
+	 * @param {!array} data - The data to be formatted.
+	 * 
+	 * @return {!string}
+	 * 
+	 * @example
+	 * // A simple string formatting:
+	 * format('Hello {}!', ['World']);
+	 * 
+	 * // A simple example that shows the autoincrementing:
+	 * format('Hello {}, it\'s {} outside.', ['John', 'cold']);
+	 * 
+	 * // Using the same argument twice:
+	 * format('I like to {0} {0}.', ['move it']);
+	 * 
+	 * // Using a mix of increments with and without index:
+	 * format('{} {}\n{0} {}', ['Never gonna', 'give you up', 'let you down']);
+	 */
+	var str_format = function str_format(str, data) {
+		/**
+		 * Regular expression to match the placeholders.
+		 * 
+		 * Should match anything between `{}` that has a number and/or `':' [args]`.
+		 * 
+		 * @type {!RegExp}
+		 */
+		var regex = /\{(?:(\d+)?(?::([^}]+))?)?\}/g;
+		
+		
+		/**
+		 * Maps types into functions, if none is passed.
+		 * 
+		 * @type {!Object.<string, string>}
+		 */
+		var types = {
+			'undefined': 's',
+			'object': 'o',
+			'boolean': 'b',
+			'number': 'f',
+			'bigint': 'f',
+			'string': 's',
+			'symbol': 's',
+			'function': 's'
 		};
-
-		// justify()
-		var justify = function (value, prefix, leftJustify, minWidth, zeroPad, customPadChar) {
-			var diff = minWidth - value.length;
-			if (diff > 0) {
-				if (leftJustify || !zeroPad) {
-					value = pad(value, minWidth, customPadChar, leftJustify);
-				} else {
-					value = value.slice(0, prefix.length) + pad('', diff, '0', true) + value.slice(prefix.length);
+		
+		
+		/**
+		 * Internal counter for the function.
+		 * 
+		 * @type {!int}
+		 */
+		var count = 0;
+		
+		
+		/**
+		 * Functions used to do the formatting of the value
+		 * 
+		 * @type {!Object.<string, function>}
+		 */
+		var fns = {
+			s: function transform_string(value, args) {
+				var settings = {
+					padding: {
+						active: false,
+						direction: 'both',
+						min_length: 0,
+						char: ' '
+					}
+				};
+				
+				
+				args.forEach(function(arg){
+					switch(arg) {
+						case '-':
+							settings.padding.direction = 'left';
+							break;
+						
+						case '+':
+							settings.padding.direction = 'right';
+							break;
+						
+						default:
+							if(arg[0] === '"' || arg[0] === '\'') {
+								settings.padding.char = arg.replace(/^["']|["']$/g, '');
+							} else {
+								settings.padding.active = true;
+								settings.padding.min_length = parseFloat(arg);
+							}
+					}
+				});
+				
+				
+				value = value ? value.toString() : '';
+				
+				
+				if(
+					settings.padding.active
+					&& settings.padding.min_length
+					&& settings.padding.min_length > value.length
+				) {
+					switch(settings.padding.direction) {
+						case 'left':
+							value = value.padStart(settings.padding.min_length, settings.padding.char);
+							break;
+						
+						case 'right':
+							value = value.padEnd(settings.padding.min_length, settings.padding.char);
+							break;
+						
+						case 'both':
+							value = value.padStart(
+								(settings.padding.min_length >> 1) + (settings.padding.min_length % 2),
+								settings.padding.char
+							).padEnd(settings.padding.min_length, settings.padding.char);
+							break;
+					}
 				}
-			}
-			return value;
-		};
-
-		// formatBaseX()
-		var formatBaseX = function (value, base, prefix, leftJustify, minWidth, precision, zeroPad) {
-			// Note: casts negative numbers to positive ones
-			var number = value >>> 0;
-			prefix = (prefix && number && {
-				'2': '0b',
-				'8': '0',
-				'16': '0x'
-			}[base]) || '';
-			value = prefix + pad(number.toString(base), precision || 0, '0', false);
-			return justify(value, prefix, leftJustify, minWidth, zeroPad);
-		};
-
-		// formatString()
-		var formatString = function (value, leftJustify, minWidth, precision, zeroPad, customPadChar) {
-			if (precision !== null && precision !== undefined) {
-				value = value.slice(0, precision);
-			}
-			return justify(value, '', leftJustify, minWidth, zeroPad, customPadChar);
-		};
-
-		// doFormat()
-		var doFormat = function (substring, valueIndex, flags, minWidth, precision, type) {
-			var number, prefix, method, textTransform, value;
-
-			if (substring === '%%') {
-				return '%';
-			}
-
-			// parse flags
-			var leftJustify = false;
-			var positivePrefix = '';
-			var zeroPad = false;
-			var prefixBaseX = false;
-			var customPadChar = ' ';
-			var flagsl = flags.length;
-			var j;
-			for (j = 0; flags && j < flagsl; j++) {
-				switch (flags.charAt(j)) {
-					case ' ':
-						positivePrefix = ' ';
-						break;
-					case '+':
-						positivePrefix = '+';
-						break;
-					case '-':
-						leftJustify = true;
-						break;
-					case "'":
-						customPadChar = flags.charAt(j + 1);
-						break;
-					case '0':
-						zeroPad = true;
-						customPadChar = '0';
-						break;
-					case '#':
-						prefixBaseX = true;
-						break;
+				
+				
+				return value;
+			},
+			
+			b: function transform_boolean(value, args) {
+				switch(args[0] || 's') {
+					case 'd':
+					case 'f':
+						return value ? '1' : '0';
+					
+					case 's':
+						return value.toString();
+					
+					default:
+						return '';
 				}
-			}
-
-			// parameters may be null, undefined, empty-string or real valued
-			// we want to ignore null, undefined and empty-string values
-			if (!minWidth) {
-				minWidth = 0;
-			} else if (minWidth === '*') {
-				minWidth = +a[i++];
-			} else if (minWidth.charAt(0) === '*') {
-				minWidth = +a[minWidth.slice(1, -1)];
-			} else {
-				minWidth = +minWidth;
-			}
-
-			// Note: undocumented perl feature:
-			if (minWidth < 0) {
-				minWidth = -minWidth;
-				leftJustify = true;
-			}
-
-			if (!isFinite(minWidth)) {
-				throw new Error('sprintf: (minimum-)width must be finite');
-			}
-
-			if (!precision) {
-				precision = 'fFeE'.indexOf(type) > -1 ? 6 : (type === 'd') ? 0 : undefined;
-			} else if (precision === '*') {
-				precision = +a[i++];
-			} else if (precision.charAt(0) === '*') {
-				precision = +a[precision.slice(1, -1)];
-			} else {
-				precision = +precision;
-			}
-
-			// grab value using valueIndex if required?
-			value = valueIndex ? a[valueIndex.slice(0, -1)] : a[i++];
-
-			switch (type) {
-				case 's':
-					return formatString(String(value), leftJustify, minWidth, precision, zeroPad, customPadChar);
-				case 'c':
-					return formatString(String.fromCharCode(+value), leftJustify, minWidth, precision, zeroPad);
-				case 'b':
-					return formatBaseX(value, 2, prefixBaseX, leftJustify, minWidth, precision, zeroPad);
-				case 'o':
-					return formatBaseX(value, 8, prefixBaseX, leftJustify, minWidth, precision, zeroPad);
-				case 'x':
-					return formatBaseX(value, 16, prefixBaseX, leftJustify, minWidth, precision, zeroPad);
-				case 'X':
-					return formatBaseX(value, 16, prefixBaseX, leftJustify, minWidth, precision, zeroPad)
-						.toUpperCase();
-				case 'u':
-					return formatBaseX(value, 10, prefixBaseX, leftJustify, minWidth, precision, zeroPad);
-				case 'i':
-				case 'd':
-					number = +value || 0;
-					// Plain Math.round doesn't just truncate
-					number = Math.round(number - number % 1);
-					prefix = number < 0 ? '-' : positivePrefix;
-					value = prefix + pad(String(Math.abs(number)), precision, '0', false);
-					return justify(value, prefix, leftJustify, minWidth, zeroPad);
-				case 'e':
-				case 'E':
-				case 'f': // Should handle locales (as per setlocale)
-				case 'F':
-				case 'g':
-				case 'G':
-					number = +value;
-					prefix = number < 0 ? '-' : positivePrefix;
-					method = ['toExponential', 'toFixed', 'toPrecision']['efg'.indexOf(type.toLowerCase())];
-					textTransform = ['toString', 'toUpperCase']['eEfFgG'.indexOf(type) % 2];
-					value = prefix + Math.abs(number)[method](precision);
-					return justify(value, prefix, leftJustify, minWidth, zeroPad)[textTransform]();
-				default:
-					return substring;
+			},
+			
+			o: function transform_object(value, args) {
+				if(value === null) {
+					return '';
+				}
+				
+				if(Array.isArray(value)) {
+					return value.join(args.join('') || ',');
+				}
+				
+				return value.toString
+					? value.toString.apply(value, args)
+					: value + '';
+			},
+			
+			f: function transform_float(value, args) {
+				return value ? value.toString() : '';
+			},
+			
+			c: function transform_char_to_num(value, args) {
+				return value !== null && value !== undefined
+					? String.fromCodePoint(value)
+					: '';
+			},
+			
+			C: function transform_num_to_char(value, args) {
+				return value !== null && value !== undefined
+					? value.toString().charCodeAt(0)
+					: '';
+			},
+			
+			h: function transform_hex(value, args) {
+				if(value === undefined || value === null) {
+					return '0x00';
+				}
+				
+				return typeof value === 'number'
+					? '0x' + value.toString(16)
+					: '';
 			}
 		};
-
-		return format.replace(regex, doFormat);
+		
+		
+		/**
+		 * Function used to handle the format placeholders.
+		 * 
+		 * @param {!string} _ - The entire match - not useful
+		 * @param {!string} index - The index passed to the placeholder
+		 * @param {!string} args - Arguments to be split
+		 * 
+		 * @returns {string}
+		 */
+		var format_replacer = function format_replacer(_, index, args) {
+			
+			/**
+			 * Value taken from the data to be formatted.
+			 * 
+			 * @type {*}
+			 */
+			var value = data[index || count++];
+			
+			/**
+			 * Name of the function to execute, for a specific type
+			 * 
+			 * @type {string|undefined}
+			 */
+			var fn = types[typeof value];
+			
+			if(args) {
+				args = args
+					.split(/(^[a-z]|"[^"]*"|'(?:\\'|[^'])'|[+\-]|[a-z]+)/i)
+					.filter(function(value) {
+						return value !== '';
+					});
+				
+				fn = fns.hasOwnProperty(args[0]) ? args.shift() : fn;
+			}
+	
+			return fn ? fns[fn](value, args || []) : '';
+		};
+		
+		return str.toString().replace(regex, format_replacer);
 	};
 	
 	
-	const VERSION = 0.11;
+	const VERSION = 0.12;
 	
 	// used only for error reporting
 	const FILENAME = 'simply';
@@ -211,11 +251,12 @@
 		Init: function(){},
 		CSS: ''
 	};
+	
 	const MODULES = {
 		'rick': Object.assign(Object.create(null), MODULES_DEFAULTS, {
 			Exports: {
 				'version': '1.0',
-				'roll': Object.assign(function rickroll(){
+				'roll': Object.assign(function rickroll() {
 					if(!rickroll.result)
 					{
 						var n = 'Never gonna ';
@@ -1369,23 +1410,53 @@
 				]
 			}),
 			format: Object.assign(function format(){
-				if(!arguments.length)
-				{
+				var args = Array.from(arguments);
+				var str = args.shift();
+				
+				if(!str) {
 					return '';
 				}
 				
-				var format = arguments[0].toString();
-				
-				if(!format.length)
-				{
-					return length;
-				}
-				
-				return sprintf.apply(window, Array.from(arguments));
+				return str_format(str, args);
 			}, {
 				__doc__: [
 					'Returns a string based on the format provided in the first argument',
-					'Works the same as https://www.php.net/manual/en/function.sprintf.php'
+					'Each placeholder starts with { and ends with }',
+					'For example: &format("{}", "test"); // Should output "test"',
+					'',
+					'You can specify a 0-based index to reference a specific value',
+					'For example: &format("{} {0}!", "Hello"); // Should output "Hello Hello!"',
+					'⚠️ Notice: When specifying an index, the internal counter WILL NOT increment.',
+					'',
+					'You can also pass some arguments',
+					'To specify arguments, just write : after the optional index',
+					'For example: &format("{:b}", true); // Should output "1"',
+					'',
+					'The first letter will indicate how the data should be interpreted',
+					'It should be one of these:',
+					' • s - string',
+					' • b - boolean',
+					' • o - object',
+					' • f - number',
+					' • c - character',
+					' • h - hexadecimal',
+					'',
+					'Format information - strings',
+					' • a number - pads the string to be at least this many chars long',
+					' • the \'-\' symbol - pad the string from the left side',
+					' • the \'+\' symbol - pad the string from the right side',
+					' • a char or a string - use this as the padding char(s)',
+					'Example: &format("{0:s-10\\"-=\\"}", "a"); // Should output "-=-=-=-=-a"',
+					'By default, the padding will pad on both sides, preferring to pad on the right side',
+					'Example: &format("{0:s10\\"-=\\"}", "a"); // Should output "-=-=a-=-=-"',
+					'',
+					'Format information - array',
+					' • anything - will use all characters passed to join all elements',
+					'Example: &format("{:+}=55", &range(1, 10)); // Should output "1+2+3+4+5+6+7+8+9+10=55"',
+					'',
+					'Format information - boolean',
+					' • d or f - shows the value as a number - 0 = false, 1 = true',
+					// '',
 				]
 			}),
 			base64_encode: Object.assign(function base64_encode(str){
@@ -6262,8 +6333,9 @@
 				writeln: function(){
 					return me.writeln(Array.from(arguments).join(''));
 				},
-				format: function(){
-					return sprintf(...Array.from(arguments));
+				format: function() {
+					var args = Array.from(arguments);
+					return str_format(args.shift(), args);
 				}
 			};
 			
